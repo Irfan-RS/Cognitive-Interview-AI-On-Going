@@ -1,10 +1,16 @@
+import os
+
 from sqlalchemy.orm import Session
 
 from app.models.question import Question
 from app.rag.embeddings import embed_texts
 from app.rag.vector_store import upsert_questions
 
-BATCH_SIZE = 128
+# Kept small deliberately: the embedding runtime plus a batch of documents is
+# the peak-memory moment of the whole app, and on a Docker Desktop configured
+# with only 1-2GB the container gets OOM-killed (exit 137) here. Raise it via
+# INDEX_BATCH_SIZE if you have memory to spare and want a faster build.
+BATCH_SIZE = int(os.getenv("INDEX_BATCH_SIZE", "32"))
 
 
 def build_document(q: Question) -> str:
@@ -29,17 +35,32 @@ def build_index(db: Session, *, only_missing: bool = False) -> int:
     """Embeds every question in SQL and upserts into the Chroma index.
     Called by scripts/build_index.py after seeding, and safe to re-run
     (upsert is idempotent on id)."""
-    query = db.query(Question)
-    questions = query.all()
-
     indexed = 0
-    for i in range(0, len(questions), BATCH_SIZE):
-        batch = questions[i : i + BATCH_SIZE]
-        documents = [build_document(q) for q in batch]
-        embeddings = embed_texts(documents)
-        metadatas = [build_metadata(q) for q in batch]
-        ids = [q.id for q in batch]
-        upsert_questions(ids=ids, embeddings=embeddings, documents=documents, metadatas=metadatas)
-        indexed += len(batch)
+    batch: list[Question] = []
+
+    # Streamed rather than .all(): every question now carries several hundred
+    # words of cognitive scaffolding, so materialising the whole bank at once is
+    # a lot of live objects to hold alongside the embedding runtime.
+    for question in db.query(Question).yield_per(BATCH_SIZE):
+        batch.append(question)
+        if len(batch) < BATCH_SIZE:
+            continue
+        indexed += _flush(batch)
+        batch = []
+
+    if batch:
+        indexed += _flush(batch)
 
     return indexed
+
+
+def _flush(batch: list[Question]) -> int:
+    documents = [build_document(q) for q in batch]
+    embeddings = embed_texts(documents)
+    upsert_questions(
+        ids=[q.id for q in batch],
+        embeddings=embeddings,
+        documents=documents,
+        metadatas=[build_metadata(q) for q in batch],
+    )
+    return len(batch)
