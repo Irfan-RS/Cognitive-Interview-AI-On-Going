@@ -1,0 +1,9 @@
+node_modules
+dist
+dist-ssr
+backend
+.git
+.claude
+.vscode
+.idea
+*.md

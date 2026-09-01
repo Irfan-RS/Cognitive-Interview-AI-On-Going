@@ -1,0 +1,54 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  ollama-init:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: ["sh", "-c", "OLLAMA_HOST=ollama:11434 ollama pull qwen2.5:3b-instruct"]
+    restart: "no"
+
+  backend:
+    build: ./backend
+    depends_on:
+      ollama-init:
+        condition: service_completed_successfully
+    environment:
+      LLM_LOCAL_BASE_URL: http://ollama:11434
+      CORS_ORIGINS: http://localhost:5173
+      # Native ML libs (onnxruntime/ctranslate2) auto-detect the HOST's CPU count,
+      # not the container's cgroup limit, and can over-allocate threads relative to
+      # what's actually available — a known cause of heap corruption crashes
+      # ("corrupted double-linked list") under concurrent load in containers.
+      OMP_NUM_THREADS: "1"
+      OMP_WAIT_POLICY: "PASSIVE"
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend_storage:/app/storage
+      - model_cache:/root/.cache
+
+  frontend:
+    build: .
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+
+volumes:
+  ollama_data:
+  backend_storage:
+  model_cache:

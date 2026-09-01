@@ -333,6 +333,25 @@ Cognitive Interview AI/
 
 ## Getting Started
 
+### Option A: Docker (fastest — nothing to install but Docker)
+
+One command builds and runs everything — frontend, backend, and a local Ollama instance with the model auto-pulled:
+
+```bash
+docker compose up --build
+```
+
+Then open `http://localhost:5173`.
+
+The only prerequisite is **[Docker Desktop](https://www.docker.com/products/docker-desktop/)**. Everything else — Python, Node, the LLM model, the question bank, the RAG index — is handled automatically inside the containers. The first run takes a few minutes (pulling the ~2GB model and building the search index); later runs are fast, since the model and index are cached in Docker volumes.
+
+```bash
+docker compose down        # stop everything, keep data (model, DB, index) for next time
+docker compose down -v     # stop and wipe everything for a completely clean slate
+```
+
+### Option B: Run natively
+
 ### Prerequisites
 
 - **Node.js** v18+ (v20+ recommended)
