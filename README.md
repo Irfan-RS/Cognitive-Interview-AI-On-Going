@@ -333,22 +333,42 @@ Cognitive Interview AI/
 
 ## Getting Started
 
-### Option A: Docker (fastest — nothing to install but Docker)
+### Option A: Docker (recommended — nothing to install but Docker)
 
-One command builds and runs everything — frontend, backend, and a local Ollama instance with the model auto-pulled:
+The only prerequisite is **[Docker Desktop](https://www.docker.com/products/docker-desktop/)**. Python, Node, the question bank, and the search index are all handled inside the containers.
+
+**1. Configure the LLM.** From the project root:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Open `backend/.env` and paste a **[Groq API key](https://console.groq.com)** into `LLM_CLOUD_API_KEY` (free tier is fine). This is what analyses answers — expect ~5 seconds per answer.
+
+**2. Start it:**
 
 ```bash
 docker compose up --build
 ```
 
-Then open `http://localhost:5173`.
+Then open **http://localhost:5173**. First run takes a few minutes to build the search index over 900+ questions; later starts are quick, since it's cached in a Docker volume.
 
-The only prerequisite is **[Docker Desktop](https://www.docker.com/products/docker-desktop/)**. Everything else — Python, Node, the LLM model, the question bank, the RAG index — is handled automatically inside the containers. The first run takes a few minutes (pulling the ~2GB model and building the search index); later runs are fast, since the model and index are cached in Docker volumes.
+**Prefer fully offline?** Skip the API key and run:
 
 ```bash
-docker compose down        # stop everything, keep data (model, DB, index) for next time
-docker compose down -v     # stop and wipe everything for a completely clean slate
+docker compose --profile local-llm up --build
 ```
+
+That adds an Ollama container and pulls a ~2GB model, with no internet needed afterwards. Set `LLM_PROVIDER=local` in `backend/.env`. Be aware answer analysis takes **~90s per answer on CPU** versus ~5s via cloud — fine for a no-internet demo, slow for real practice.
+
+**Stopping:**
+
+```bash
+docker compose down        # stop, keep data (DB, index, model) for next time
+docker compose down -v     # stop and wipe everything for a clean slate
+```
+
+> Speech-to-text and text-to-speech always run locally in both modes — only answer analysis uses the cloud provider.
 
 ### Option B: Run natively
 
@@ -356,7 +376,7 @@ docker compose down -v     # stop and wipe everything for a completely clean sla
 
 - **Node.js** v18+ (v20+ recommended)
 - **Python** 3.11 (3.10–3.12 also work)
-- **[Ollama](https://ollama.com)** — for the local LLM (no account needed)
+- **[Ollama](https://ollama.com)** — only if running the LLM locally instead of via cloud
 
 ### 1. Backend
 
@@ -368,7 +388,7 @@ pip install -r requirements.txt
 copy .env.example .env        # Windows — use `cp .env.example .env` on macOS/Linux
 ```
 
-Pull the local LLM model (one-time):
+Add a [Groq API key](https://console.groq.com) to `LLM_CLOUD_API_KEY` in `.env` (the default `LLM_PROVIDER=cloud`). For a fully offline setup instead, set `LLM_PROVIDER=local` and pull the model:
 
 ```bash
 ollama pull qwen2.5:3b-instruct
@@ -377,6 +397,7 @@ ollama pull qwen2.5:3b-instruct
 Seed the question bank and build the search index (one-time; safe to re-run):
 
 ```bash
+python scripts/migrate_answer_schema.py   # only needed if upgrading an existing DB
 python scripts/seed_questions.py
 python scripts/build_index.py
 ```

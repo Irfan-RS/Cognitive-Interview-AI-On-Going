@@ -1,6 +1,16 @@
+# Two ways to run:
+#
+#   docker compose up --build                        cloud LLM (fast — no model download)
+#   docker compose --profile local-llm up --build    fully offline via Ollama (~2GB pull)
+#
+# Cloud mode reads backend/.env for LLM_PROVIDER / LLM_CLOUD_* — copy
+# backend/.env.example to backend/.env and fill in your key first.
 services:
+  # Only started with `--profile local-llm`. In cloud mode there's no reason to
+  # pull a 2GB model that will never be used.
   ollama:
     image: ollama/ollama:latest
+    profiles: ["local-llm"]
     volumes:
       - ollama_data:/root/.ollama
     ports:
@@ -13,6 +23,7 @@ services:
 
   ollama-init:
     image: ollama/ollama:latest
+    profiles: ["local-llm"]
     depends_on:
       ollama:
         condition: service_healthy
@@ -21,16 +32,19 @@ services:
 
   backend:
     build: ./backend
-    depends_on:
-      ollama-init:
-        condition: service_completed_successfully
+    # Optional so cloud config is picked up when present, without making the
+    # file mandatory for a purely local-LLM run.
+    env_file:
+      - path: ./backend/.env
+        required: false
     environment:
+      # Inside the compose network Ollama is a service name, not localhost.
+      # Set here rather than in .env so the same .env works natively too.
       LLM_LOCAL_BASE_URL: http://ollama:11434
       CORS_ORIGINS: http://localhost:5173
-      # Native ML libs (onnxruntime/ctranslate2) auto-detect the HOST's CPU count,
-      # not the container's cgroup limit, and can over-allocate threads relative to
-      # what's actually available — a known cause of heap corruption crashes
-      # ("corrupted double-linked list") under concurrent load in containers.
+      # Native ML libs (onnxruntime/ctranslate2) size their thread pools from the
+      # HOST's CPU count rather than the container's limit, which can over-allocate
+      # and cause heap corruption ("corrupted double-linked list") under load.
       OMP_NUM_THREADS: "1"
       OMP_WAIT_POLICY: "PASSIVE"
       OPENBLAS_NUM_THREADS: "1"
