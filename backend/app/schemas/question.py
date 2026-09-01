@@ -30,6 +30,15 @@ class QuestionIn(BaseModel):
     scoring_rubric: dict[str, str] = Field(default_factory=dict)
     status: str = "verified"
 
+    # Cognitive scaffolding — optional so the existing bank still imports, but
+    # a question authored with these grades far more consistently.
+    concept: str = ""
+    sub_concept: str = ""
+    expected_reasoning: str = ""
+    common_mistakes: list[str] = Field(default_factory=list)
+    progressive_hints: list[str] = Field(default_factory=list)
+    learning_objective: str = ""
+
 
 class QuestionOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -54,6 +63,12 @@ class QuestionAdminOut(QuestionOut):
     follow_up_questions: list[str]
     evaluation_criteria: list[str]
     scoring_rubric: dict[str, str]
+    concept: str
+    sub_concept: str
+    expected_reasoning: str
+    common_mistakes: list[str]
+    progressive_hints: list[str]
+    learning_objective: str
     status: str
     version: int
     usage_count: int

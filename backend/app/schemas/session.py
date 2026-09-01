@@ -56,6 +56,7 @@ class SessionOut(BaseModel):
 
 class HintOut(BaseModel):
     hint: str
+    hint_level: int = 1
 
 
 class SessionSummaryOut(BaseModel):

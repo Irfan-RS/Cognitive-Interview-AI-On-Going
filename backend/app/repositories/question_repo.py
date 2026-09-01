@@ -75,6 +75,12 @@ def upsert_from_bank(db: Session, item: QuestionIn) -> str:
         follow_up_questions=item.follow_up_questions,
         evaluation_criteria=item.evaluation_criteria,
         scoring_rubric=item.scoring_rubric,
+        concept=item.concept,
+        sub_concept=item.sub_concept,
+        expected_reasoning=item.expected_reasoning,
+        common_mistakes=item.common_mistakes,
+        progressive_hints=item.progressive_hints,
+        learning_objective=item.learning_objective,
         status=item.status,
     )
 

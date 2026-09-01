@@ -125,11 +125,17 @@ async def submit_answer(
         key_points=key_points,
         transcription=transcription,
         eye_contact_ratio=eye_contact_ratio,
+        concept=bank_question.concept if bank_question else None,
+        sub_concept=bank_question.sub_concept if bank_question else None,
+        expected_reasoning=bank_question.expected_reasoning if bank_question else None,
+        common_mistakes=bank_question.common_mistakes if bank_question else None,
         previous_question=previous_question,
         previous_answer_transcript=previous_answer_transcript,
     )
 
-    next_difficulty = difficulty_service.next_difficulty(session.current_difficulty, analysis["relevance_score"])
+    # Adapt on the full cognitive score, not just topical relevance — a
+    # perfectly on-topic answer with no reasoning shouldn't escalate difficulty.
+    next_difficulty = difficulty_service.next_difficulty(session.current_difficulty, analysis["overall_score"])
     session.current_difficulty = next_difficulty
 
     answer = answer_repo.create_answer(
@@ -148,8 +154,16 @@ async def submit_answer(
         missed_key_points=analysis["missed_key_points"],
         eye_contact_ratio=analysis["eye_contact_ratio"],
         llm_model_solution=analysis["llm_model_solution"],
-        answer_framework=analysis["answer_framework"],
-        improvement_tips=analysis["improvement_tips"],
+        concepts_demonstrated=analysis["concepts_demonstrated"],
+        strengths=analysis["strengths"],
+        weaknesses=analysis["weaknesses"],
+        reasoning_analysis=analysis["reasoning_analysis"],
+        mistakes=analysis["mistakes"],
+        hint_required=analysis["hint_required"],
+        follow_up_required=analysis["follow_up_required"],
+        suggested_follow_up=analysis["suggested_follow_up"],
+        improvement_feedback=analysis["improvement_feedback"],
+        recommended_next_action=analysis["recommended_next_action"],
         next_difficulty=next_difficulty,
     )
     db.commit()

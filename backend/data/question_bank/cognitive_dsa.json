@@ -1,0 +1,136 @@
+[
+  {
+    "id": "cog-dsa-0001",
+    "question": "Given an array of integers and a target sum K, find the number of contiguous subarrays that sum to exactly K. Walk me through how you'd approach it.",
+    "type": "coding",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend"],
+    "topics": ["dsa", "arrays"],
+    "tech_keywords": ["algorithms", "hashmap"],
+    "concepts": ["prefix-sum"],
+    "concept": "Prefix Sum",
+    "sub_concept": "Counting subarrays with a HashMap of prefix-sum frequencies",
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "faang-common",
+    "learning_objective": "Recognise when a running cumulative value plus a hash map converts a repeated-range-scan problem into a single pass, and be able to justify why — not just recite the pattern.",
+    "expected_reasoning": "A strong candidate states the brute force first (check every subarray, O(n^2) or O(n^3)) and names its bottleneck: recomputing overlapping range sums. They then observe sum(i..j) = prefix[j] - prefix[i-1], so asking 'how many subarrays ending at j sum to K' becomes 'how many earlier prefix values equal prefix[j] - K'. That reframing is what makes a hash map of prefix-sum COUNTS the natural structure, giving one pass and O(n) time / O(n) space. They should seed the map with {0: 1} and explain why — it accounts for subarrays starting at index 0 — and note that counts (not first-index) are stored because we want the NUMBER of subarrays, and that negative numbers are handled fine by this approach while a sliding window would not be.",
+    "reference_solution": {
+      "key_points": [
+        "States a brute-force baseline and names its actual bottleneck (recomputing overlapping sums)",
+        "Derives sum(i..j) = prefix[j] - prefix[i-1] rather than asserting the pattern",
+        "Reframes the question as 'how many earlier prefixes equal prefix[j] - K'",
+        "Uses a hash map of prefix-sum -> frequency count, single pass, O(n) time and O(n) space",
+        "Explains the {0: 1} seed and why it is needed for subarrays starting at index 0",
+        "Notes this works with negative numbers, where a sliding window would not"
+      ],
+      "sample_answer": "Brute force is to check every subarray and sum it, which is O(n^2) at best — and the waste is that overlapping subarrays recompute the same sums. Since sum(i..j) = prefix[j] - prefix[i-1], a subarray ending at j sums to K exactly when some earlier prefix equals prefix[j] - K. So I keep a running prefix sum and a hash map from prefix value to how many times I've seen it; at each index I add map[prefix - K] to my count, then record the current prefix. That's one pass, O(n) time and O(n) space. I seed the map with {0: 1} so a subarray starting at index 0 is counted. I store counts rather than indices because we want the number of subarrays, not one of them. Note a sliding window wouldn't work here if the array can contain negatives, since the sum isn't monotonic as the window grows."
+    },
+    "common_mistakes": [
+      "Jumping straight to the hash map solution without stating the brute force or its bottleneck",
+      "Storing the first index of each prefix sum instead of a frequency count — that finds one subarray, not all of them",
+      "Forgetting the {0: 1} seed, silently missing every subarray that starts at index 0",
+      "Proposing a sliding window without noticing it breaks when the array contains negative numbers",
+      "Reciting 'use prefix sum and a hashmap' as a memorised pattern with no derivation of why it applies"
+    ],
+    "progressive_hints": [
+      "Before optimising — what is the simplest correct solution, and what specifically is it doing repeatedly that it doesn't need to?",
+      "If you know the cumulative sum up to index i and up to index j, what can you compute in constant time?",
+      "For a subarray ending at index j to sum to K, what exact value must some earlier prefix sum have had? How would you look that up quickly?"
+    ],
+    "follow_up_questions": [
+      "Why do you store a frequency count for each prefix sum rather than its first index?",
+      "What breaks if the array contains negative numbers and you use a sliding window instead?",
+      "How would your solution change if you needed the longest such subarray rather than the count?"
+    ],
+    "follow_up_hint": "Probe the {0: 1} seed and why counts rather than indices are stored — candidates who memorised the pattern usually cannot justify either."
+  },
+  {
+    "id": "cog-dsa-0002",
+    "question": "You need to find the k largest elements in a very large stream of numbers that doesn't fit in memory. How would you approach this, and what are the trade-offs?",
+    "type": "coding",
+    "difficulty": 4,
+    "roles": ["general_sde", "backend"],
+    "topics": ["dsa", "heaps"],
+    "tech_keywords": ["algorithms", "heap", "streaming"],
+    "concepts": ["heap", "streaming-algorithms"],
+    "concept": "Heaps",
+    "sub_concept": "Min-heap of size k for top-k selection over a stream",
+    "companies_common": ["Amazon", "Google", "Uber"],
+    "source_style": "faang-common",
+    "learning_objective": "Understand why a size-k MIN-heap (counter-intuitively) is the right structure for top-k, and be able to reason about memory-constrained streaming problems from constraints rather than pattern-matching.",
+    "expected_reasoning": "A strong candidate first clarifies constraints — how large is k relative to the stream, is one pass required, is exactness needed. They should reject sorting (needs all data in memory, O(n log n)) specifically because the data doesn't fit in memory. The key insight is a MIN-heap of size k, not a max-heap: the heap's root is the smallest of the current top k, so each new element is compared against it in O(1) and either discarded or swapped in for O(log k). That gives O(n log k) time and crucially O(k) memory, independent of stream length. The counter-intuitive min-heap choice is the point to probe: candidates often say max-heap by reflex. Strong answers also note trade-offs — for k close to n a different approach is better, and if approximate results are acceptable, sketch algorithms use even less memory.",
+    "reference_solution": {
+      "key_points": [
+        "Clarifies constraints first: size of k, single-pass requirement, exact vs approximate",
+        "Rejects sorting explicitly because the data does not fit in memory, not just on time complexity",
+        "Chooses a MIN-heap of size k and can justify why the minimum at the root is what makes it work",
+        "States O(n log k) time and O(k) memory — memory independent of stream length is the crucial property",
+        "Notes trade-offs: approach changes if k approaches n, or if approximate answers are acceptable"
+      ],
+      "sample_answer": "First I'd clarify how big k is relative to the stream and whether the result must be exact. Sorting is out — not mainly for the O(n log n), but because it requires holding all the data, which by assumption doesn't fit. I'd keep a min-heap of size k. The root is the smallest element among the current best k, so for each incoming element I compare against the root in O(1): if it's smaller I discard it immediately, otherwise I pop the root and push the new element in O(log k). Total O(n log k) time and O(k) memory, and that memory bound is independent of how long the stream is, which is the property that actually matters here. A min-heap is right precisely because I need cheap access to the weakest of my current winners, which is the one to evict. If k were close to n this would be a poor fit and I'd reconsider, and if approximate top-k were acceptable, a sketch would use far less memory still."
+    },
+    "common_mistakes": [
+      "Proposing a max-heap of size k — the root would be the largest, which is not the element you ever need to evict",
+      "Suggesting sorting the data without addressing that it does not fit in memory",
+      "Quoting O(n log k) without articulating that the real win is O(k) memory bounded independently of stream length",
+      "Not clarifying constraints (k's size, exactness) before choosing an approach",
+      "Failing to consider that the answer changes when k approaches n"
+    ],
+    "progressive_hints": [
+      "What constraint in this problem rules out the approaches you'd normally reach for first?",
+      "If you can only keep k elements at a time, which single one of them do you need to be able to find instantly, and why?",
+      "You need to constantly evict the weakest of your current best k. Which heap type puts that element where you can reach it in O(1)?"
+    ],
+    "follow_up_questions": [
+      "Why a min-heap rather than a max-heap here — what would go wrong with a max-heap?",
+      "How does your answer change if k is close to n?",
+      "What if the stream is distributed across 10 machines — how would you combine their results?"
+    ],
+    "follow_up_hint": "The min-heap-vs-max-heap justification separates genuine understanding from a memorised 'top-k means heap' rule."
+  },
+  {
+    "id": "cog-dsa-0003",
+    "question": "You're told a function that reverses a linked list should be written iteratively rather than recursively. Do you agree, and how would you decide?",
+    "type": "trade_off_questions",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["dsa", "linked-lists"],
+    "tech_keywords": ["algorithms", "recursion"],
+    "concepts": ["linked-list", "recursion"],
+    "concept": "Recursion vs Iteration",
+    "sub_concept": "Call-stack space cost and tail-call behaviour in list traversal",
+    "companies_common": ["Amazon", "Microsoft"],
+    "source_style": "common-interview",
+    "learning_objective": "Evaluate an imposed constraint on its merits and justify a design choice on concrete resource costs rather than accepting or rejecting it by preference.",
+    "expected_reasoning": "The point of this question is whether the candidate evaluates the claim rather than just agreeing. Both approaches are O(n) time; the real difference is space: iterative is O(1) auxiliary, while recursive consumes O(n) call-stack frames and will overflow the stack on a long enough list — for a list of millions of nodes that's a real crash, not a theoretical concern. A strong answer identifies that as the deciding factor, and notes that most mainstream languages (Python, Java, JavaScript) don't guarantee tail-call optimisation, so the recursive version doesn't get flattened. They may reasonably argue the recursive version is more readable and fine when list length is bounded and small — that's a legitimate engineering position if justified. Weak answers pick a side on aesthetics ('recursion is elegant', 'iteration is faster') without naming the stack-space cost.",
+    "reference_solution": {
+      "key_points": [
+        "Evaluates the claim rather than simply agreeing or disagreeing with it",
+        "Identifies that both are O(n) time, so time complexity is not the deciding factor",
+        "Names stack space as the real difference: O(1) iterative vs O(n) call frames recursive",
+        "Connects that to a concrete failure: stack overflow on a sufficiently long list",
+        "Notes most mainstream languages do not guarantee tail-call optimisation",
+        "Acknowledges readability as a genuine counter-consideration when input size is bounded"
+      ],
+      "sample_answer": "Broadly yes, but for a specific reason rather than as a rule. Both versions are O(n) time, so that's not what decides it. The difference is space: the iterative version needs O(1) extra space with a couple of pointers, whereas the recursive version pushes a stack frame per node, so it's O(n) stack. On a linked list with millions of nodes that's an actual stack overflow, not a theoretical cost — and I can't rely on tail-call optimisation to save me, since Python, Java and JavaScript don't guarantee it. So for a list of unbounded length, iterative is the defensible choice. That said, if this were a list I knew to be short and bounded, the recursive version is arguably more readable, and I wouldn't reject it purely on principle."
+    },
+    "common_mistakes": [
+      "Agreeing or disagreeing on aesthetic grounds ('recursion is cleaner') without naming a concrete cost",
+      "Claiming recursion is slower without identifying stack space as the actual difference",
+      "Assuming tail-call optimisation will eliminate the stack frames in languages that don't guarantee it",
+      "Not connecting O(n) stack space to the concrete consequence of a stack overflow",
+      "Accepting the constraint unquestioningly without evaluating whether it's justified"
+    ],
+    "progressive_hints": [
+      "Both versions do the same number of operations. So what resource are they actually spending differently?",
+      "What is the recursive version consuming once per node that the iterative version isn't?",
+      "If the list had ten million nodes, what would actually happen when you ran the recursive version — and could the language save you?"
+    ],
+    "follow_up_questions": [
+      "When would the recursive version be a perfectly reasonable choice?",
+      "Which languages could eliminate that stack cost, and what would they need to guarantee to do so?",
+      "How would you reverse only the first k nodes, and does that change your answer?"
+    ],
+    "follow_up_hint": "Push on whether they'd ever defend recursion here — candidates who treat 'iterative is correct' as a rule cannot say when the opposite is fine."
+  }
+]

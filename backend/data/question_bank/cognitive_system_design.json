@@ -1,0 +1,96 @@
+[
+  {
+    "id": "cog-sd-0001",
+    "question": "Design a URL shortening service like bit.ly. Take me through your thinking.",
+    "type": "system_design",
+    "difficulty": 4,
+    "roles": ["backend", "system_design"],
+    "topics": ["system-design"],
+    "tech_keywords": ["system-design", "caching", "databases"],
+    "concepts": ["system-design-fundamentals"],
+    "concept": "System Design Fundamentals",
+    "sub_concept": "Requirements clarification and read/write asymmetry driving design",
+    "companies_common": ["Amazon", "Google", "Uber", "Microsoft"],
+    "source_style": "faang-common",
+    "learning_objective": "Drive a design from explicitly gathered requirements and traffic characteristics, rather than reciting a components diagram — and justify each choice against the numbers you established.",
+    "expected_reasoning": "The single biggest differentiator is whether the candidate CLARIFIES BEFORE DESIGNING. A strong answer opens with questions: expected URLs created per day, the read:write ratio (redirects vastly outnumber creations — typically 100:1 or more), do links expire, are custom aliases needed, is analytics required, latency target. They then do rough capacity math to justify decisions rather than asserting them. On the core mechanism they should reason about generating the short code: a base62-encoded auto-incrementing ID guarantees uniqueness with no collision handling, whereas hashing the URL requires collision detection and resolution — and they should state that trade-off rather than just picking one. Storage is a key-value point lookup, so a KV store or a simple indexed table fits; a strong candidate justifies this from the access pattern, not from preference. Because reads dominate so heavily, a cache in front of the DB and a stateless horizontally-scalable redirect tier follow naturally FROM the read:write ratio they established. They should also address the ID-generation service becoming a bottleneck or single point of failure at scale.",
+    "reference_solution": {
+      "key_points": [
+        "Clarifies requirements BEFORE designing: scale, read:write ratio, expiry, custom aliases, analytics",
+        "Does rough capacity estimation and uses those numbers to justify later decisions",
+        "Reasons about base62 auto-increment ID vs hashing, and states the collision trade-off explicitly",
+        "Justifies the datastore from the access pattern (single-key point lookup), not from preference",
+        "Derives caching and a stateless redirect tier FROM the established read-heavy ratio",
+        "Identifies ID generation as a potential bottleneck / single point of failure and addresses it",
+        "Chooses an HTTP redirect status and can justify 301 vs 302 in terms of caching and analytics"
+      ],
+      "sample_answer": "First I'd clarify the requirements: how many URLs created per day, the read-to-write ratio, whether links expire, whether custom aliases are supported, and whether we need click analytics. Redirects will vastly outnumber creations — say 100:1 — and that asymmetry should drive the whole design. For the short code, I'd use a base62 encoding of an auto-incrementing ID: uniqueness is guaranteed by construction, so there's no collision handling. Hashing the long URL is the alternative, but then two URLs can collide and I need detection and a resolution strategy — that's the trade-off, and the counter approach is simpler unless I need the same URL to always map to the same code. Storage is just short_code to long_url, a single-key point lookup, so a key-value store or an indexed table both work. Given how read-heavy this is, I'd put a cache in front for hot codes, and keep the redirect service stateless so it scales horizontally behind a load balancer. The ID generator is the piece that worries me — a single counter is a bottleneck and a single point of failure, so I'd either pre-allocate ranges to each app server or use a distributed ID scheme. I'd use a 302 rather than 301 if we want click analytics, since a permanent redirect gets cached by browsers and we'd stop seeing the traffic."
+    },
+    "common_mistakes": [
+      "Starting to design immediately without clarifying scale, read:write ratio, or requirements",
+      "Listing components (load balancer, cache, DB) as a generic diagram without justifying any from the requirements",
+      "Choosing hashing for short codes without acknowledging collisions need detection and resolution",
+      "Adding a cache because 'caching is good' rather than deriving it from the read-heavy traffic pattern",
+      "Ignoring that a single auto-incrementing ID generator is a bottleneck and single point of failure",
+      "Not considering that a 301 permanent redirect gets cached and breaks click analytics"
+    ],
+    "progressive_hints": [
+      "Before you design anything — what do you actually need to know about how this system will be used?",
+      "Think about the traffic: are creations and redirects going to happen at similar rates? What does the imbalance imply?",
+      "You need to turn a long URL into a short unique code. What are your options, and what problem does each one create that the other doesn't?"
+    ],
+    "follow_up_questions": [
+      "How would you generate unique IDs at scale without the ID service becoming a single point of failure?",
+      "Would you return a 301 or 302 redirect, and what does that choice cost you?",
+      "Now assume 100 million users and a global audience — what changes in your design?",
+      "How would you support custom aliases without breaking your uniqueness guarantee?"
+    ],
+    "follow_up_hint": "Change a requirement mid-answer (add 100M users, or add analytics) — this tests adaptability, which a memorised design answer cannot handle."
+  },
+  {
+    "id": "cog-sd-0002",
+    "question": "A service you own has a p99 latency of 2 seconds while its p50 is 40 milliseconds. How would you investigate?",
+    "type": "scenario_based",
+    "difficulty": 4,
+    "roles": ["backend", "devops", "system_design"],
+    "topics": ["system-design", "performance", "observability"],
+    "tech_keywords": ["performance", "observability", "debugging"],
+    "concepts": ["latency-analysis"],
+    "concept": "Performance Debugging",
+    "sub_concept": "Tail-latency diagnosis and hypothesis-driven investigation",
+    "companies_common": ["Amazon", "Google", "Uber", "Netflix"],
+    "source_style": "faang-common",
+    "learning_objective": "Investigate a production problem by narrowing hypotheses with evidence, instead of listing every possible cause or guessing at fixes.",
+    "expected_reasoning": "What is being tested is investigative METHOD, not knowledge of latency trivia. A strong candidate first reads the signal itself: p50 being healthy while p99 is 50x worse means this is not a broad slowdown — most requests are fine, so a specific subset is pathological. That immediately rules out whole classes of cause (the service isn't simply under-provisioned overall) and points at something that affects a minority of requests. Good next steps are to segment: is the tail concentrated in a particular endpoint, customer, payload size, shard, or instance? Then look for the usual tail-latency mechanisms and check them against evidence — garbage collection pauses, lock contention or connection-pool exhaustion under bursts, a slow dependency's own tail, cache misses hitting cold paths, a data-skew hotspot where a few keys hold far more data, or noisy-neighbour effects on one host. The critical behaviour is forming a hypothesis and stating what evidence would confirm or kill it, rather than reciting causes. They should mention using traces to see WHERE the time goes in slow requests specifically, comparing a slow trace against a fast one.",
+    "reference_solution": {
+      "key_points": [
+        "Reads the signal: healthy p50 with a bad p99 means a specific subset of requests is pathological, not a general slowdown",
+        "Segments the tail to localise it: by endpoint, customer, payload size, shard, or instance",
+        "Uses distributed tracing to see where time is spent in SLOW requests specifically, comparing against a fast trace",
+        "Considers concrete tail mechanisms: GC pauses, lock/connection-pool contention, slow dependency tail, cold cache, data skew, noisy neighbour",
+        "Forms hypotheses and states what evidence would confirm or eliminate each, rather than listing causes",
+        "Checks whether the tail correlates with load, a deploy, or a specific time pattern"
+      ],
+      "sample_answer": "The shape of the signal tells me a lot before I look at anything: p50 at 40ms means the common path is healthy, so this isn't general under-provisioning — something is badly wrong for a minority of requests. So my goal is to characterise which requests. I'd segment the p99 by endpoint, customer, payload size, and instance to see if it's concentrated somewhere; if one shard or one host owns the tail, that's a very different problem from it being spread evenly. Then I'd pull traces for slow requests specifically and compare them against fast ones to see which span the extra time is in — that usually localises it to a dependency, a lock, or the datastore. From there the candidates I'd weigh are GC pauses, connection-pool or lock contention under bursts, a downstream service's own tail latency, cold-cache misses falling through to a slow path, or data skew where a few large keys do far more work. I'd also check whether the tail correlates with traffic peaks or started at a particular deploy. The important thing is that each of those is a hypothesis I can test with specific evidence, rather than something to fix speculatively."
+    },
+    "common_mistakes": [
+      "Listing every possible latency cause without prioritising or explaining how to distinguish them",
+      "Missing that a healthy p50 alongside a bad p99 rules out a general slowdown",
+      "Jumping straight to a fix ('add a cache', 'scale up') before establishing what's actually slow",
+      "Looking only at averages instead of segmenting the tail to localise it",
+      "Not using traces to compare a slow request against a fast one",
+      "Treating it as a pure knowledge question rather than describing an investigative process"
+    ],
+    "progressive_hints": [
+      "Compare the two numbers. What does a healthy p50 alongside a terrible p99 already tell you about how many requests are affected?",
+      "If only a small fraction of requests are slow, what would you want to know about that specific fraction?",
+      "You have distributed tracing available. What comparison would most quickly show you where the extra time is going?"
+    ],
+    "follow_up_questions": [
+      "You find the tail is concentrated on one of ten instances. What are the likely explanations now?",
+      "The traces show time spent waiting on a database connection. What's your next step?",
+      "How would your investigation differ if p50 had also risen to 1.5 seconds?"
+    ],
+    "follow_up_hint": "Give them a mid-investigation finding and see whether they adapt their hypothesis or restate their original plan — this is the adaptability probe."
+  }
+]

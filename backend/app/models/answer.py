@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Boolean, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -42,8 +42,21 @@ class Answer(Base):
     eye_contact_ratio: Mapped[float] = mapped_column(Float, default=1.0)  # 0-1, from monitoring events
 
     llm_model_solution: Mapped[str] = mapped_column(Text, default="")
-    answer_framework: Mapped[dict] = mapped_column(JSON, default=dict)  # {problem_understanding, approach, reasoning, trade_offs, adaptability, communication} -> how to approach THIS question
-    improvement_tips: Mapped[list] = mapped_column(JSON, default=list)  # [{dimension, tip}] for whichever dimensions scored weak
+
+    # --- Cognitive evaluation: what they showed, how they thought, what next ---
+    concepts_demonstrated: Mapped[list] = mapped_column(JSON, default=list)
+    strengths: Mapped[list] = mapped_column(JSON, default=list)
+    weaknesses: Mapped[list] = mapped_column(JSON, default=list)
+    # {problem_decomposition, logical_flow, justification, trade_off_analysis} -> qualitative rating
+    reasoning_analysis: Mapped[dict] = mapped_column(JSON, default=dict)
+    mistakes: Mapped[list] = mapped_column(JSON, default=list)
+
+    hint_required: Mapped[bool] = mapped_column(Boolean, default=False)
+    follow_up_required: Mapped[bool] = mapped_column(Boolean, default=False)
+    suggested_follow_up: Mapped[str] = mapped_column(Text, default="")
+    improvement_feedback: Mapped[str] = mapped_column(Text, default="")
+    recommended_next_action: Mapped[str] = mapped_column(Text, default="")
+
     next_difficulty: Mapped[int] = mapped_column(Integer, default=2)
 
     submitted_at: Mapped[datetime] = mapped_column(UTCDateTime, default=lambda: datetime.now(timezone.utc))

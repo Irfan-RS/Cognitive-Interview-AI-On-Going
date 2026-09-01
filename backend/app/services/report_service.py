@@ -9,11 +9,15 @@ from app.schemas.report import ProctoringSummary, ReportTurn, SessionReport
 from app.services.llm_json import parse_llm_json
 
 _SYSTEM_PROMPT = """You are an interview coach reviewing a candidate's full mock/practice
-session. You're given the transcript, relevance score, grammar issues, filler words, and
-missed key points for every question they answered. Write a short overall summary and a
-concrete, prioritized list of actions the candidate should take before their next real
-interview. Be specific — reference what actually happened, not generic advice. Respond with
-ONLY a JSON object, no markdown fences, no extra prose."""
+session. For every answered question you get the cognitive breakdown: scores, how their
+reasoning held up, strengths, weaknesses, and mistakes.
+
+Your job is to find the PATTERN across questions, not to restate individual results — if their
+justification was weak on three separate questions, that pattern is the headline. Write a short
+overall assessment and a prioritized list of concrete actions. Reference what actually happened.
+Never give generic advice like "practice more" or "communicate clearly".
+
+Respond with ONLY a JSON object, no markdown fences, no extra prose."""
 
 _USER_TEMPLATE = """SESSION: {mode} mode, {track} track, {question_count} question(s) answered.
 
@@ -37,11 +41,13 @@ def _format_breakdown(session: InterviewSession) -> str:
         a = turn.answer
         blocks.append(
             f"Q{i}: {turn.question_text}\n"
-            f"  Relevance: {a.relevance_score}% | Overall score: {a.overall_score}/100\n"
-            f"  Category scores: {a.category_scores}\n"
-            f"  Grammar issues: {'; '.join(a.grammar_issues) or 'none'}\n"
-            f"  Filler words: {', '.join(a.filler_words.keys()) or 'none'}\n"
-            f"  Missed key points: {'; '.join(a.missed_key_points) or 'none'}"
+            f"  Overall: {a.overall_score}/100 | Category scores: {a.category_scores}\n"
+            f"  Reasoning analysis: {a.reasoning_analysis}\n"
+            f"  Strengths: {'; '.join(a.strengths) or 'none noted'}\n"
+            f"  Weaknesses: {'; '.join(a.weaknesses) or 'none noted'}\n"
+            f"  Mistakes: {'; '.join(a.mistakes) or 'none'}\n"
+            f"  Missed key points: {'; '.join(a.missed_key_points) or 'none'}\n"
+            f"  Filler words: {', '.join(a.filler_words.keys()) or 'none'}"
         )
     return "\n\n".join(blocks) if blocks else "(no questions were answered)"
 

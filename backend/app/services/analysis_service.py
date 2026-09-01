@@ -3,7 +3,10 @@ import re
 from app.providers.llm.base import LLMProvider
 from app.providers.stt.base import TranscriptionResult
 from app.services.evaluation_defaults import (
-    LLM_SCORED_DIMENSIONS,
+    DIMENSION_GUIDE,
+    DIMENSION_WEIGHTS,
+    REASONING_FACETS,
+    REASONING_RATINGS,
     SCORING_BANDS,
     compute_category_scores,
     compute_overall_score,
@@ -12,104 +15,114 @@ from app.services.llm_json import parse_llm_json
 
 FILLER_WORDS = ["umm", "um", "uh", "uhh", "ah", "like", "you know", "i mean", "basically", "actually", "so yeah"]
 
-ANSWER_FRAMEWORK_DIMENSIONS = [
-    "problem_understanding",
-    "approach",
-    "reasoning",
-    "trade_offs",
-    "adaptability",
-    "communication",
-]
+# Below this, the candidate is struggling enough that a hint serves them better
+# than another question; above the follow-up bar, probe deeper instead.
+HINT_THRESHOLD = 40.0
+FOLLOW_UP_CEILING = 85.0
 
-_SYSTEM_PROMPT = """You are a cognitive interview evaluator. Your job is to judge HOW the
-candidate arrived at their answer, not only whether it happens to be correct — score their
-reasoning, justification, and trade-off thinking as their own dimensions, separate from raw
-technical correctness.
+_SYSTEM_PROMPT = """You are a cognitive interview evaluator. Your job is NOT to rank the
+candidate — it is to describe HOW they thought, where their reasoning broke down, and what
+would make them better. Judge the reasoning process as seriously as the final answer.
 
-Calibration example: asked "Why did you use MongoDB?", an answer like "because it's fast" is
-weak on problem_solving_reasoning and trade_off_analysis even if the choice itself is
-defensible — there's no justification. An answer like "our post/profile schemas are flexible
-and expected to evolve, and the document model maps naturally to our API objects; for highly
-relational transactional data I'd prefer PostgreSQL" is strong on both, because it states the
-actual reasoning AND a trade-off against an alternative. Grade every dimension with that bar:
-justification and awareness of alternatives matter as much as the surface-level answer.
+Calibration: asked "Why MongoDB?", "because it's fast" is weak on reasoning and
+trade_off_analysis even though the choice may be defensible — there is no justification.
+"Our post schemas are flexible and expected to evolve, and documents map to our API objects;
+for relational transactional data I'd use PostgreSQL" is strong on both — it states the actual
+reasoning AND weighs an alternative.
 
-Grading against reference key points is FLEXIBLE — any phrasing that covers a key point
-counts, exact wording doesn't matter.
+Rules — follow every one:
+1. SCORE EACH DIMENSION INDEPENDENTLY. They measure different things and must NOT all receive
+   the same number. A candidate can be technically correct (high) while justifying nothing
+   (low). Before scoring, ask yourself per dimension: what in THIS answer evidences it?
+2. "strengths" and "weaknesses" must describe what the CANDIDATE ACTUALLY SAID OR OMITTED.
+   Never copy items from the reference key points into "strengths" unless the candidate
+   genuinely demonstrated them. If they did not say it, it is a weakness, not a strength.
+3. "concepts_demonstrated" means technical concepts the candidate showed command of
+   (e.g. "Prefix Sum", "Hash Map", "CAP theorem") — never dimension names, never generic words.
+4. "reasoning_analysis" ratings must be CONSISTENT with the scores. A weak answer cannot be
+   "Good" across every facet. Use "Not demonstrated" when the answer gives no evidence either way.
+5. "mistakes" holds concrete errors or unjustified leaps. If there are none, return an empty
+   list — never the string "Not demonstrated".
+6. An answer that reaches the right conclusion with no justification is NOT a strong answer:
+   score reasoning and depth_of_knowledge low even when technical_correctness is high.
+7. improvement_feedback must be actionable coaching ("state the brute-force approach and its
+   bottleneck before jumping to the optimised one"), never a vague platitude.
+8. If the answer is empty or clearly unattempted, score near zero across the board.
 
-You also teach the candidate HOW to think through this specific question — not generic
-interview advice, but concretely tied to what THIS question actually demands (e.g. for "How
-would you design a URL shortener?", problem_understanding means clarifying expected requests
-per day and read:write ratio, not a generic "clarify requirements"). And for whichever of the
-candidate's dimensions came out weak, give one specific, actionable tip on how they could have
-answered that part better, referencing what they actually said. Respond with ONLY a JSON
-object, no markdown fences, no extra prose."""
+Respond with ONLY a JSON object. No markdown fences, no prose outside the JSON."""
 
-_USER_TEMPLATE = """QUESTION:
+_USER_TEMPLATE = """QUESTION ASKED:
 {question}
-{adaptability_context}
-REFERENCE KEY POINTS a strong answer should cover (any phrasing counts):
+{cognitive_context}{adaptability_context}
+REFERENCE KEY POINTS a strong answer would cover (any phrasing counts — do not require exact wording):
 {key_points}
-
-SCORE EACH DIMENSION 0-10 using this band guide (applies to every dimension):
-{bands}
-
-DIMENSIONS TO SCORE:
-- technical_correctness: is the core answer factually/technically right?
-- problem_solving_reasoning: did they break the problem down and reason through it logically,
-  step by step, rather than jumping straight to a conclusion?
-- depth_of_understanding: do they explain WHY/HOW, from fundamentals, rather than reciting a
-  memorized answer?
-- communication: is the explanation clear and structured, not rambling or disorganized?
-- problem_approach: did they move requirements -> approach -> validation in a sensible order?
-- adaptability: {adaptability_instruction}
-- trade_off_analysis: do they show awareness of alternatives and the pros/cons of their choice
-  (e.g. consistency vs availability, SQL vs NoSQL), not just defend one option blindly?
 
 CANDIDATE'S TRANSCRIBED ANSWER:
 {transcript}
 
-Return a JSON object with exactly these fields:
-{{
-  "dimension_scores": {{
-    "technical_correctness": <0-10>,
-    "problem_solving_reasoning": <0-10>,
-    "depth_of_understanding": <0-10>,
-    "communication": <0-10>,
-    "problem_approach": <0-10>,
-    "adaptability": <0-10>,
-    "trade_off_analysis": <0-10>
-  }},
-  "grammar_issues": [ "short description of each grammatical mistake found, empty list if none" ],
-  "relevance_score": <integer 0-100, how directly this answers the actual question>,
-  "covered_key_points": [ "the key points from the reference list that this answer covers" ],
-  "missed_key_points": [ "the key points from the reference list that this answer does NOT cover" ],
-  "model_solution": "a concise, well-formed model answer to this question (2-6 sentences), usable as a study reference",
-  "answer_framework": {{
-    "problem_understanding": "one sentence: what THIS question needs clarified upfront (requirements, scale, users, etc.) before answering",
-    "approach": "one sentence: how to break THIS question into components and in what order",
-    "reasoning": "one sentence: what justification a strong answer to THIS question must give, not just what to conclude",
-    "trade_offs": "one sentence: the specific alternatives/trade-offs THIS question's answer should weigh",
-    "adaptability": "one sentence: a plausible way the interviewer could change THIS question's requirements, and what should shift in response",
-    "communication": "one sentence: how to structure the delivery of an answer to THIS specific question"
-  }},
-  "improvement_tips": [
-    {{"dimension": "<dimension key from dimension_scores that scored weak>", "tip": "one specific, actionable sentence on how this exact answer could improve on that dimension"}}
-  ]
-}}
-Only include entries in improvement_tips for dimensions that actually scored weak (roughly
-below 6/10) — omit dimensions the candidate already did well on, and include at most 4
-entries."""
+DELIVERY SIGNALS (context for the communication score only): {delivery}
 
-_FALLBACK = {
-    "dimension_scores": {},
+Score each dimension 0-100 using these bands:
+{bands}
+
+DIMENSIONS:
+{dimensions}
+
+Return a JSON object with exactly these fields, IN THIS ORDER:
+{{
+  "dimension_evidence": {{
+    "technical_correctness": "the specific thing in THIS answer that evidences this dimension, or what was absent",
+    "problem_understanding": "...",
+    "reasoning": "...",
+    "problem_solving": "...",
+    "communication": "...",
+    "depth_of_knowledge": "...",
+    "adaptability": "..."
+  }},
+  "technical_correctness": <0-100>,
+  "problem_understanding": <0-100>,
+  "reasoning": <0-100>,
+  "problem_solving": <0-100>,
+  "communication": <0-100>,
+  "depth_of_knowledge": <0-100>,
+  "adaptability": <0-100>,
+  "concepts_demonstrated": ["concepts the candidate actually showed command of"],
+  "strengths": ["specific things they did well, referencing what they said"],
+  "weaknesses": ["specific gaps, referencing what they said or failed to say"],
+  "reasoning_analysis": {{
+    "problem_decomposition": "<{ratings}>",
+    "logical_flow": "<{ratings}>",
+    "justification": "<{ratings}>",
+    "trade_off_analysis": "<{ratings}>"
+  }},
+  "mistakes": ["concrete errors or unjustified leaps, empty list if none"],
+  "follow_up_question": "one targeted question probing the single biggest gap in THIS answer",
+  "improvement_feedback": "2-3 sentences of specific, actionable coaching on how to answer better next time",
+  "recommended_next_action": "what the interviewer should do next and why",
+  "relevance_score": <0-100, how directly this addressed the question actually asked>,
+  "grammar_issues": ["notable grammatical problems, empty list if none"],
+  "covered_key_points": ["reference key points this answer covered"],
+  "missed_key_points": ["reference key points this answer did NOT cover"],
+  "model_solution": "a concise model answer (2-6 sentences) usable as a study reference"
+}}
+
+Write dimension_evidence FIRST and let each score follow from its own evidence — that is what
+stops every dimension collapsing to the same number."""
+
+_FALLBACK: dict = {
+    "concepts_demonstrated": [],
+    "strengths": [],
+    "weaknesses": [],
+    "reasoning_analysis": {},
+    "mistakes": [],
+    "follow_up_question": "",
+    "improvement_feedback": "",
+    "recommended_next_action": "",
+    "relevance_score": 0,
     "grammar_issues": [],
-    "relevance_score": 50,
     "covered_key_points": [],
     "missed_key_points": [],
     "model_solution": "",
-    "answer_framework": {},
-    "improvement_tips": [],
 }
 
 
@@ -117,19 +130,74 @@ def count_filler_words(transcript: str) -> dict[str, int]:
     counts: dict[str, int] = {}
     lower = transcript.lower()
     for filler in FILLER_WORDS:
-        pattern = r"\b" + re.escape(filler) + r"\b"
-        n = len(re.findall(pattern, lower))
+        n = len(re.findall(r"\b" + re.escape(filler) + r"\b", lower))
         if n:
             counts[filler] = n
     return counts
 
 
-def compute_delivery_clarity(*, filler_words: dict[str, int], pause_count: int) -> float:
-    """0-10 algorithmic proxy for hesitation/vagueness in HOW the answer was
-    delivered verbally (fillers, pauses) — not eye contact or personality."""
-    total_fillers = sum(filler_words.values())
-    fluency_penalty = min(100, total_fillers * 5 + pause_count * 8)
-    return round(max(0.0, min(10.0, (100 - fluency_penalty) / 10.0)), 1)
+# Small local models sometimes emit a rating word as a list ITEM ("mistakes":
+# ["Not demonstrated"]) instead of an empty list — which would render to the
+# candidate as a mistake literally named "Not demonstrated".
+_NON_ITEMS = {
+    "not demonstrated", "none", "n/a", "na", "nothing", "no mistakes",
+    "absent", "not applicable", "no weaknesses", "no strengths", "-", "",
+}
+
+
+def _clean_str_list(value, limit: int = 8) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    out = []
+    for v in value:
+        text = str(v).strip()
+        if text and text.lower().rstrip(".") not in _NON_ITEMS:
+            out.append(text)
+    return out[:limit]
+
+
+def _drop_contradictory_strengths(strengths: list[str], *contradicting: list[str]) -> list[str]:
+    """Drop any "strength" the model simultaneously listed as a missed key point,
+    a weakness, or a mistake — a self-contradiction that would otherwise credit
+    the candidate for something the same response says they failed to do."""
+    blocked = {item.strip().lower() for group in contradicting for item in group}
+    if not blocked:
+        return strengths
+    return [s for s in strengths if s.strip().lower() not in blocked]
+
+
+def _normalize_reasoning_analysis(raw) -> dict[str, str]:
+    """Coerce to the fixed facet set with valid ratings — the report renders
+    these as labelled chips, so an unexpected key or free-text rating would
+    silently render as junk."""
+    raw = raw if isinstance(raw, dict) else {}
+    lookup = {r.lower(): r for r in REASONING_RATINGS}
+    out: dict[str, str] = {}
+    for facet in REASONING_FACETS:
+        out[facet] = lookup.get(str(raw.get(facet, "")).strip().lower(), "Not demonstrated")
+    return out
+
+
+def _build_cognitive_context(
+    concept: str | None,
+    sub_concept: str | None,
+    expected_reasoning: str | None,
+    common_mistakes: list[str] | None,
+) -> str:
+    """Authored cognitive scaffolding for this question, when the bank has it —
+    it makes grading far more consistent than letting the model infer the
+    intended reasoning path from the question text alone."""
+    parts = []
+    if concept:
+        parts.append(f"CONCEPT UNDER TEST: {concept}" + (f" -> {sub_concept}" if sub_concept else ""))
+    if expected_reasoning:
+        parts.append(f"EXPECTED REASONING PATH (how a strong candidate gets there):\n{expected_reasoning}")
+    if common_mistakes:
+        parts.append(
+            "COMMON MISTAKES on this question (flag them in 'mistakes' if present):\n"
+            + "\n".join(f"- {m}" for m in common_mistakes)
+        )
+    return ("\n" + "\n\n".join(parts) + "\n") if parts else ""
 
 
 async def analyze_answer(
@@ -139,6 +207,10 @@ async def analyze_answer(
     key_points: list[str],
     transcription: TranscriptionResult,
     eye_contact_ratio: float,
+    concept: str | None = None,
+    sub_concept: str | None = None,
+    expected_reasoning: str | None = None,
+    common_mistakes: list[str] | None = None,
     previous_question: str | None = None,
     previous_answer_transcript: str | None = None,
 ) -> dict:
@@ -147,72 +219,76 @@ async def analyze_answer(
 
     if previous_question:
         adaptability_context = (
-            f"\nThis is a FOLLOW-UP to an earlier question, asked specifically to see if the "
-            f"candidate adapts their thinking. Earlier question: \"{previous_question}\"\n"
-            f"Candidate's earlier answer: \"{previous_answer_transcript or '(no answer)'}\"\n"
-        )
-        adaptability_instruction = (
-            "did they meaningfully adjust their approach from their earlier answer to fit this "
-            "follow-up's changed requirement, rather than repeating the same answer unchanged?"
+            f"\nThis is a FOLLOW-UP, asked to test whether the candidate ADAPTS.\n"
+            f'Earlier question: "{previous_question}"\n'
+            f'Their earlier answer: "{previous_answer_transcript or "(no answer)"}"\n'
+            f"Score adaptability on whether they meaningfully adjusted their thinking here, "
+            f"rather than repeating the same answer.\n"
         )
     else:
-        adaptability_context = "\n"
-        adaptability_instruction = (
-            "does the answer show awareness that the approach might need to change under "
-            "different constraints or scale, even without being explicitly asked?"
-        )
+        adaptability_context = ""
+
+    total_fillers = sum(filler_words.values())
+    delivery = f"{total_fillers} filler word(s), {pause_count} long pause(s)"
 
     user_prompt = _USER_TEMPLATE.format(
         question=question_text,
+        cognitive_context=_build_cognitive_context(concept, sub_concept, expected_reasoning, common_mistakes),
         adaptability_context=adaptability_context,
-        key_points="\n".join(f"- {kp}" for kp in key_points) or "(no reference key points provided)",
+        key_points="\n".join(f"- {kp}" for kp in key_points) or "(none authored for this question)",
+        transcript=transcription.text or "(empty — the candidate did not answer)",
+        delivery=delivery,
         bands="\n".join(f"- {band}: {desc}" for band, desc in SCORING_BANDS.items()),
-        adaptability_instruction=adaptability_instruction,
-        transcript=transcription.text or "(empty — candidate did not answer)",
+        dimensions="\n".join(f"- {dim}: {guide}" for dim, guide in DIMENSION_GUIDE.items()),
+        ratings=" | ".join(REASONING_RATINGS),
     )
 
     raw = await llm.chat(_SYSTEM_PROMPT, user_prompt, json_mode=True, temperature=0.2)
     parsed = parse_llm_json(raw, _FALLBACK)
 
-    relevance_score = float(parsed.get("relevance_score", _FALLBACK["relevance_score"]))
-    relevance_score = max(0.0, min(100.0, relevance_score))
+    def score(key: str) -> float:
+        try:
+            return max(0.0, min(100.0, float(parsed.get(key, 0.0))))
+        except (TypeError, ValueError):
+            return 0.0
 
-    raw_dims = parsed.get("dimension_scores") or {}
-    dimension_scores = {
-        dim: max(0.0, min(10.0, float(raw_dims.get(dim, 0.0)))) for dim in LLM_SCORED_DIMENSIONS
-    }
-    dimension_scores["delivery_clarity"] = compute_delivery_clarity(
-        filler_words=filler_words, pause_count=pause_count
-    )
-
+    dimension_scores = {dim: score(dim) for dim in DIMENSION_WEIGHTS}
     overall_score = compute_overall_score(dimension_scores)
     category_scores = compute_category_scores(dimension_scores)
 
-    raw_framework = parsed.get("answer_framework") or {}
-    answer_framework = {
-        key: str(raw_framework.get(key, "")) for key in ANSWER_FRAMEWORK_DIMENSIONS
-    }
-
-    raw_tips = parsed.get("improvement_tips") or []
-    improvement_tips = [
-        {"dimension": str(t.get("dimension", "")), "tip": str(t.get("tip", ""))}
-        for t in raw_tips
-        if isinstance(t, dict) and t.get("dimension") and t.get("tip")
-    ][:4]
+    # Derived from the scores rather than trusted from the model, so the
+    # interview flow's behaviour stays predictable and tunable.
+    hint_required = overall_score < HINT_THRESHOLD
+    follow_up_required = HINT_THRESHOLD <= overall_score < FOLLOW_UP_CEILING
 
     return {
         "transcript": transcription.text,
-        "grammar_issues": parsed.get("grammar_issues", []),
         "filler_words": filler_words,
         "pause_count": pause_count,
-        "relevance_score": relevance_score,
+        "relevance_score": score("relevance_score"),
         "dimension_scores": dimension_scores,
         "overall_score": overall_score,
         "category_scores": category_scores,
-        "covered_key_points": parsed.get("covered_key_points", []),
-        "missed_key_points": parsed.get("missed_key_points", []),
-        "llm_model_solution": parsed.get("model_solution", ""),
-        "answer_framework": answer_framework,
-        "improvement_tips": improvement_tips,
+        "concepts_demonstrated": [
+            c for c in _clean_str_list(parsed.get("concepts_demonstrated")) if c not in DIMENSION_WEIGHTS
+        ],
+        "strengths": _drop_contradictory_strengths(
+            _clean_str_list(parsed.get("strengths")),
+            _clean_str_list(parsed.get("missed_key_points")),
+            _clean_str_list(parsed.get("weaknesses")),
+            _clean_str_list(parsed.get("mistakes")),
+        ),
+        "weaknesses": _clean_str_list(parsed.get("weaknesses")),
+        "reasoning_analysis": _normalize_reasoning_analysis(parsed.get("reasoning_analysis")),
+        "mistakes": _clean_str_list(parsed.get("mistakes")),
+        "hint_required": hint_required,
+        "follow_up_required": follow_up_required,
+        "suggested_follow_up": str(parsed.get("follow_up_question", "")).strip(),
+        "improvement_feedback": str(parsed.get("improvement_feedback", "")).strip(),
+        "recommended_next_action": str(parsed.get("recommended_next_action", "")).strip(),
+        "grammar_issues": _clean_str_list(parsed.get("grammar_issues")),
+        "covered_key_points": _clean_str_list(parsed.get("covered_key_points")),
+        "missed_key_points": _clean_str_list(parsed.get("missed_key_points")),
+        "llm_model_solution": str(parsed.get("model_solution", "")).strip(),
         "eye_contact_ratio": eye_contact_ratio,
     }

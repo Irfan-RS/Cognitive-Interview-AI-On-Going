@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowRight,
+  Brain,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -25,25 +26,27 @@ const TABS = [
   { key: "actions", label: "Action items", icon: ListChecks },
 ];
 
-const FRAMEWORK_LABELS = {
-  problem_understanding: "Problem understanding",
-  approach: "Approach",
-  reasoning: "Reasoning",
-  trade_offs: "Trade-offs",
-  adaptability: "Adaptability",
-  communication: "Communication",
+const REASONING_LABELS = {
+  problem_decomposition: "Decomposition",
+  logical_flow: "Logical flow",
+  justification: "Justification",
+  trade_off_analysis: "Trade-offs",
 };
 
-const DIMENSION_LABELS = {
-  technical_correctness: "Technical correctness",
-  problem_solving_reasoning: "Reasoning",
-  depth_of_understanding: "Depth of understanding",
-  communication: "Communication",
-  problem_approach: "Approach",
-  adaptability: "Adaptability",
-  trade_off_analysis: "Trade-off analysis",
-  delivery_clarity: "Delivery clarity",
-};
+function ratingTone(rating) {
+  switch (rating) {
+    case "Strong":
+      return "bg-practice-500/15 text-practice-500";
+    case "Good":
+      return "bg-glow-400/15 text-glow-400";
+    case "Needs improvement":
+      return "bg-amber-400/15 text-amber-400";
+    case "Weak":
+      return "bg-mock-500/15 text-mock-500";
+    default:
+      return "bg-ink-700 text-mist-500";
+  }
+}
 
 function ReadinessRing({ value, passed }) {
   const radius = 46;
@@ -180,22 +183,82 @@ function QuestionFeedback({ report }) {
               Eye contact (not part of the score) · {Math.round(a.eye_contact_ratio * 100)}% on screen · relevance {a.relevance_score}%
             </p>
 
-            {a.improvement_tips?.length > 0 && (
-              <div className="mt-4 rounded-lg border border-amber-400/20 bg-amber-400/5 p-3">
-                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-400">
-                  <AlertTriangle size={12} />
-                  Where to improve
+            {a.reasoning_analysis && Object.keys(a.reasoning_analysis).length > 0 && (
+              <div className="mt-4 rounded-lg border border-ink-600 bg-ink-900/50 p-3">
+                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-mist-300">
+                  <Brain size={12} />
+                  How you reasoned
                 </p>
-                <ul className="mt-2 flex flex-col gap-2">
-                  {a.improvement_tips.map((t, k) => (
-                    <li key={k} className="text-xs text-mist-300">
-                      <span className="font-semibold text-mist-100">
-                        {DIMENSION_LABELS[t.dimension] || t.dimension}:
-                      </span>{" "}
-                      {t.tip}
-                    </li>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {Object.entries(REASONING_LABELS).map(([key, label]) => (
+                    <div key={key} className="flex items-center justify-between gap-2 text-xs">
+                      <span className="text-mist-400">{label}</span>
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 font-medium ${ratingTone(a.reasoning_analysis[key])}`}>
+                        {a.reasoning_analysis[key] || "—"}
+                      </span>
+                    </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {(a.strengths?.length > 0 || a.weaknesses?.length > 0) && (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {a.strengths?.length > 0 && (
+                  <div className="rounded-lg border border-practice-500/20 bg-practice-500/5 p-2.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-practice-500">Strengths</p>
+                    <ul className="mt-1 list-inside list-disc text-xs text-mist-300">
+                      {a.strengths.map((s, k) => <li key={k}>{s}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {a.weaknesses?.length > 0 && (
+                  <div className="rounded-lg border border-amber-400/20 bg-amber-400/5 p-2.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-400">Weaknesses</p>
+                    <ul className="mt-1 list-inside list-disc text-xs text-mist-300">
+                      {a.weaknesses.map((w, k) => <li key={k}>{w}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {a.mistakes?.length > 0 && (
+              <div className="mt-3 rounded-lg border border-mock-500/20 bg-mock-500/5 p-2.5">
+                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-mock-500">
+                  <AlertTriangle size={12} />
+                  Mistakes
+                </p>
+                <ul className="mt-1 list-inside list-disc text-xs text-mist-300">
+                  {a.mistakes.map((m, k) => <li key={k}>{m}</li>)}
                 </ul>
+              </div>
+            )}
+
+            {a.concepts_demonstrated?.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                <span className="text-[11px] uppercase tracking-wide text-mist-500">Concepts shown:</span>
+                {a.concepts_demonstrated.map((c, k) => (
+                  <span key={k} className="rounded-full border border-brand-500/30 bg-brand-500/10 px-2 py-0.5 text-[11px] text-brand-300">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {a.improvement_feedback && (
+              <div className="mt-4 rounded-lg border border-brand-500/20 bg-brand-500/5 p-3">
+                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-brand-300">
+                  <Compass size={12} />
+                  How to answer this better
+                </p>
+                <p className="mt-2 text-xs text-mist-200">{a.improvement_feedback}</p>
+                {a.suggested_follow_up && (
+                  <p className="mt-2 border-t border-ink-700 pt-2 text-xs text-mist-400">
+                    <span className="font-semibold text-mist-300">An interviewer would probe: </span>
+                    {a.suggested_follow_up}
+                  </p>
+                )}
               </div>
             )}
 
@@ -234,25 +297,6 @@ function QuestionFeedback({ report }) {
                     </ul>
                   </div>
                 )}
-              </div>
-            )}
-
-            {a.answer_framework && Object.values(a.answer_framework).some(Boolean) && (
-              <div className="mt-4 rounded-lg border border-brand-500/20 bg-brand-500/5 p-3">
-                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-brand-300">
-                  <Compass size={12} />
-                  How to think through this question
-                </p>
-                <ul className="mt-2 flex flex-col gap-1.5">
-                  {Object.entries(FRAMEWORK_LABELS).map(
-                    ([key, label]) =>
-                      a.answer_framework[key] && (
-                        <li key={key} className="text-xs text-mist-300">
-                          <span className="font-semibold text-mist-100">{label}:</span> {a.answer_framework[key]}
-                        </li>
-                      )
-                  )}
-                </ul>
               </div>
             )}
 

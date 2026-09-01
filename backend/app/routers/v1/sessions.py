@@ -79,7 +79,10 @@ async def get_report(session_id: str, db: Session = Depends(get_db), llm: LLMPro
 
 @router.post("/questions/{session_question_id}/hint", response_model=HintOut)
 async def get_hint(
-    session_question_id: str, db: Session = Depends(get_db), llm: LLMProvider = Depends(get_llm_provider)
+    session_question_id: str,
+    hint_level: int = 1,
+    db: Session = Depends(get_db),
+    llm: LLMProvider = Depends(get_llm_provider),
 ):
     turn = session_repo.get_turn(db, session_question_id)
     if turn is None:
@@ -88,5 +91,7 @@ async def get_hint(
     if session.mode != "practice":
         raise HTTPException(status_code=403, detail="Hints are only available in practice mode")
 
-    hint = await hint_service.generate_hint(db, llm, session_question_id=session_question_id)
-    return HintOut(hint=hint)
+    hint = await hint_service.generate_hint(
+        db, llm, session_question_id=session_question_id, hint_level=hint_level
+    )
+    return HintOut(hint=hint, hint_level=hint_level)

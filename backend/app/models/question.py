@@ -31,6 +31,29 @@ class Question(Base):
     sample_answer: Mapped[str] = mapped_column(Text, default="")
     follow_up_hint: Mapped[str] = mapped_column(Text, default="")
 
+    # --- Cognitive scaffolding -------------------------------------------------
+    # Role -> Topic -> Skill -> Concept -> Sub-concept -> Question -> Follow-up.
+    # Role/topic/skill are the many-to-many tags below; these two pin down the
+    # precise idea under test, so the selector can avoid re-testing a concept the
+    # candidate has already demonstrated.
+    concept: Mapped[str] = mapped_column(String, default="")
+    sub_concept: Mapped[str] = mapped_column(String, default="")
+
+    # How a strong candidate should REASON to the answer — not the answer itself.
+    # Fed to the grader so "right conclusion, no justification" scores honestly.
+    expected_reasoning: Mapped[str] = mapped_column(Text, default="")
+
+    # Known failure modes, so the grader flags them by name instead of inventing
+    # vague criticism.
+    common_mistakes: Mapped[list[str]] = mapped_column(JSON, default=list)
+
+    # Escalating nudges: hint 1 is the gentlest, the last is the strongest.
+    # None of them may contain the full solution.
+    progressive_hints: Mapped[list[str]] = mapped_column(JSON, default=list)
+
+    # What the candidate should walk away understanding.
+    learning_objective: Mapped[str] = mapped_column(Text, default="")
+
     # Pre-authored candidate follow-ups (distinct from the ones followup_service
     # generates fresh from a candidate's actual transcript at runtime) — a real
     # bank question can suggest these, e.g. for use when there's no transcript
