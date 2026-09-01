@@ -1,0 +1,443 @@
+[
+  {
+    "id": "oop-0001",
+    "question": "Explain the four pillars of object-oriented programming with a concrete example of each.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["general_sde", "backend", "fullstack"],
+    "topics": ["oop-fundamentals"],
+    "tech_keywords": ["oop", "java", "c++", "python"],
+    "companies_common": ["Amazon", "Microsoft", "Infosys", "TCS", "Adobe"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Encapsulation: bundling data and methods together, restricting direct access via access modifiers",
+        "Abstraction: exposing only relevant behavior while hiding implementation detail, e.g. via interfaces/abstract classes",
+        "Inheritance: a class acquiring properties/behavior from a parent class, enabling code reuse",
+        "Polymorphism: the same interface behaving differently based on the runtime type (method overriding) or call signature (overloading)",
+        "Gives a concrete, distinct example for each pillar rather than just definitions"
+      ],
+      "sample_answer": "Encapsulation hides an object's internal state behind private fields and public getters/setters, like a BankAccount hiding its balance. Abstraction exposes only what's needed, e.g. a Shape interface with a computeArea() method without exposing how each shape calculates it. Inheritance lets a SavingsAccount class extend Account to reuse and extend behavior. Polymorphism lets a single computeArea() call behave differently depending on whether the actual object is a Circle or Square."
+    },
+    "follow_up_hint": "Ask them to explain the difference between compile-time and runtime polymorphism."
+  },
+  {
+    "id": "oop-0002",
+    "question": "What is the difference between an abstract class and an interface? When would you choose one over the other?",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["general_sde", "backend"],
+    "topics": ["oop-fundamentals", "design"],
+    "tech_keywords": ["oop", "java", "c++"],
+    "companies_common": ["Amazon", "Microsoft", "Oracle"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Abstract classes can hold state (fields) and provide partial implementation; interfaces traditionally only declare a contract",
+        "A class can implement multiple interfaces but (in most languages) extend only one abstract/base class",
+        "Abstract classes model an 'is-a' relationship with shared implementation; interfaces model a 'can-do' capability",
+        "Notes modern languages (Java 8+) allow default methods in interfaces, blurring the line somewhat",
+        "Gives a concrete example of when each is the right choice"
+      ],
+      "sample_answer": "An abstract class can hold shared state and partially implemented methods, and is extended by subclasses that share a common identity — good when there's real shared implementation. An interface defines a pure contract with no state, and a class can implement several of them — good for expressing that unrelated classes share a capability, like Comparable or Serializable. Use an abstract class for 'is-a' hierarchies with shared code, an interface for 'can-do' capabilities across unrelated types."
+    },
+    "follow_up_hint": "Ask about default methods in interfaces (Java 8+) and how they change this distinction."
+  },
+  {
+    "id": "oop-0003",
+    "question": "Explain the SOLID principles and give an example of a design that violates the Single Responsibility Principle.",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend"],
+    "topics": ["design-principles", "solid"],
+    "tech_keywords": ["oop", "design-patterns", "clean-code"],
+    "companies_common": ["Amazon", "Microsoft", "ThoughtWorks", "Adobe"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Single Responsibility: a class should have only one reason to change",
+        "Open/Closed: open for extension, closed for modification",
+        "Liskov Substitution: subtypes must be substitutable for their base types without breaking correctness",
+        "Interface Segregation: prefer many small specific interfaces over one large general one",
+        "Dependency Inversion: depend on abstractions, not concrete implementations",
+        "Gives a concrete SRP-violation example, e.g. a class that both handles business logic and persists to a database"
+      ],
+      "sample_answer": "SOLID is Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion. A common SRP violation is a UserService class that both validates business rules AND directly writes SQL to persist users — it has two reasons to change (a validation-rule change or a database-schema change), so it should be split into a UserService and a UserRepository."
+    },
+    "follow_up_hint": "Ask for a real violation of the Liskov Substitution Principle, such as a Square extending Rectangle."
+  },
+  {
+    "id": "oop-0004",
+    "question": "What is method overloading versus method overriding? Explain with examples.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["general_sde", "backend"],
+    "topics": ["oop-fundamentals", "polymorphism"],
+    "tech_keywords": ["oop", "java", "c++"],
+    "companies_common": ["Amazon", "Infosys", "TCS", "Wipro"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Overloading: same method name, different parameter list, resolved at compile time",
+        "Overriding: subclass redefines a parent's method with the same signature, resolved at runtime (dynamic dispatch)",
+        "Overloading happens within the same class; overriding happens across an inheritance relationship",
+        "Notes overriding requires the same (or covariant) return type and access modifier that isn't more restrictive",
+        "Gives a distinct, correct example of each"
+      ],
+      "sample_answer": "Overloading is having multiple methods with the same name but different parameters in the same class, e.g. add(int, int) and add(double, double) — resolved at compile time based on argument types. Overriding is a subclass providing its own implementation of a method inherited from its parent with the exact same signature, e.g. Dog overriding Animal's makeSound() — resolved at runtime based on the actual object type."
+    },
+    "follow_up_hint": "Ask what happens if you try to override a method but change only its return type incompatibly."
+  },
+  {
+    "id": "oop-0005",
+    "question": "Explain composition versus inheritance, and why 'favor composition over inheritance' is common advice.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["general_sde", "backend"],
+    "topics": ["design-principles"],
+    "tech_keywords": ["oop", "design-patterns"],
+    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Inheritance models 'is-a', composition models 'has-a'",
+        "Inheritance creates tight coupling to the parent's implementation, and can break with deep hierarchies (fragile base class problem)",
+        "Composition allows swapping behavior at runtime by injecting different collaborator objects",
+        "Gives a concrete example: a Car 'has-a' Engine (composition) rather than a Car 'is-a' Engine",
+        "Notes composition supports better testability via dependency injection/mocking"
+      ],
+      "sample_answer": "Inheritance expresses 'is-a' and reuses code by extending a parent class, but tightly couples the subclass to the parent's implementation and can create fragile, deep hierarchies. Composition expresses 'has-a' — a Car has an Engine rather than being one — and lets you swap the Engine implementation at runtime, which also makes unit testing easier since you can inject a mock Engine. This flexibility is why composition is generally preferred unless there's a genuine, stable 'is-a' relationship."
+    },
+    "follow_up_hint": "Ask for an example of the fragile base class problem in a real codebase."
+  },
+  {
+    "id": "oop-0006",
+    "question": "What is a virtual function in C++/Java, and how does dynamic dispatch (the vtable) work under the hood?",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend"],
+    "topics": ["oop-fundamentals", "internals"],
+    "tech_keywords": ["c++", "java", "oop"],
+    "companies_common": ["Amazon", "Microsoft", "Nvidia"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A virtual function allows a subclass to override behavior that's resolved based on the object's actual runtime type, not its static/declared type",
+        "In C++, each class with virtual functions gets a vtable (a table of function pointers); each object holds a hidden vptr pointing to its class's vtable",
+        "Calling a virtual function looks up the correct implementation via the vptr/vtable indirection at runtime",
+        "Explains the small performance cost of this indirection versus a direct (non-virtual) call",
+        "In Java, all non-static, non-final methods are virtual by default"
+      ],
+      "sample_answer": "A virtual function's actual implementation is chosen at runtime based on the object's real type, enabling polymorphism. In C++, the compiler generates a vtable per class containing function pointers to its virtual methods; every object of that class holds a hidden vptr pointing to its class's vtable. A virtual call dereferences the vptr, looks up the right function pointer, and calls it — one extra indirection compared to a direct call. Java methods are virtual by default unless marked static or final."
+    },
+    "follow_up_hint": "Ask why marking a method 'final' in Java can allow the JIT to skip virtual dispatch."
+  },
+  {
+    "id": "oop-0007",
+    "question": "Explain the Singleton design pattern, how to implement it thread-safely, and its drawbacks.",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend"],
+    "topics": ["design-patterns"],
+    "tech_keywords": ["oop", "design-patterns", "concurrency"],
+    "companies_common": ["Amazon", "Microsoft", "Oracle"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Singleton ensures a class has exactly one instance and provides a global access point to it",
+        "Naive lazy initialization is not thread-safe under concurrent first access",
+        "Thread-safe options: synchronized method (slow), double-checked locking with a volatile field, or eager/static holder initialization",
+        "Drawbacks: hidden global state makes unit testing harder, can hide dependencies, and can become a concurrency bottleneck",
+        "Notes dependency injection is often preferred over Singleton in modern designs"
+      ],
+      "sample_answer": "A Singleton restricts a class to one instance, accessed globally. A naive lazy getInstance() with a null check isn't thread-safe — two threads could both see null and create two instances. Fixes include synchronizing the whole method (correct but slow), double-checked locking with a volatile field, or the static holder idiom that relies on the JVM's class-loading guarantees. Drawbacks are that Singletons introduce hidden global state, make unit testing harder (can't easily substitute a mock), and can become a hidden bottleneck; dependency injection is often a cleaner alternative."
+    },
+    "follow_up_hint": "Ask them to actually write the double-checked locking implementation with the correct memory-visibility keyword."
+  },
+  {
+    "id": "oop-0008",
+    "question": "What is the difference between a shallow copy and a deep copy of an object?",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["general_sde"],
+    "topics": ["oop-fundamentals"],
+    "tech_keywords": ["oop", "java", "python", "c++"],
+    "companies_common": ["Amazon", "Infosys", "Cognizant"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Shallow copy duplicates the top-level object but copies references to nested objects, so both copies share the same nested objects",
+        "Deep copy recursively duplicates every nested object, so the copies are fully independent",
+        "Explains the risk of shallow copies: mutating a nested object through one copy affects the other",
+        "Gives a concrete example (e.g. a list of lists, or an object holding another object)",
+        "Names common language mechanisms (e.g. Python's copy.deepcopy, Java's clone() overriding, copy constructors in C++)"
+      ],
+      "sample_answer": "A shallow copy creates a new top-level object but its fields still point to the exact same nested objects as the original — so mutating a nested object through the copy also changes the original. A deep copy recursively duplicates every nested object too, giving two fully independent object graphs. For example, copying a list containing another list: shallow copy gives two outer lists sharing the same inner list; deep copy gives two completely separate inner lists as well."
+    },
+    "follow_up_hint": "Ask how they'd implement a correct deep copy for an object graph containing cycles."
+  },
+  {
+    "id": "oop-0009",
+    "question": "Explain the Observer design pattern and where you've seen it used in a real system (e.g. UI frameworks, event systems).",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["general_sde", "frontend"],
+    "topics": ["design-patterns"],
+    "tech_keywords": ["oop", "design-patterns", "event-driven"],
+    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Defines a one-to-many dependency: when a subject's state changes, all registered observers are notified automatically",
+        "Decouples the subject from concrete observer implementations — subject only knows about the observer interface",
+        "Gives a real example: DOM event listeners, React state subscriptions, or a pub/sub message system",
+        "Mentions the trade-off of notification ordering and potential memory leaks if observers aren't unsubscribed",
+        "Distinguishes Observer from the Publish-Subscribe pattern (which typically adds a broker/event bus in between)"
+      ],
+      "sample_answer": "The Observer pattern lets a subject maintain a list of observers and notify them all automatically when its state changes, without knowing their concrete types. A classic example is a DOM element's event listeners, or a React component subscribing to a store's state changes — the store doesn't need to know what the subscribing components do with the update. A common pitfall is forgetting to unsubscribe observers, causing memory leaks."
+    },
+    "follow_up_hint": "Ask them to distinguish Observer from Pub/Sub, which typically has a broker decoupling publishers from subscribers entirely."
+  },
+  {
+    "id": "oop-0010",
+    "question": "What is dependency injection, and what problem does it solve compared to a class constructing its own dependencies?",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["general_sde", "backend"],
+    "topics": ["design-principles", "design-patterns"],
+    "tech_keywords": ["oop", "dependency-injection", "spring", "testing"],
+    "companies_common": ["Amazon", "Microsoft", "Adobe"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Dependency injection provides a class's collaborators from the outside (constructor, setter, or a DI framework) rather than the class creating them itself",
+        "Solves tight coupling: a class hardcoding 'new ConcreteDependency()' can't easily swap implementations or be unit-tested with a mock",
+        "Enables the Dependency Inversion Principle: depend on an interface/abstraction, injected with any conforming implementation",
+        "Names a concrete example, e.g. injecting a PaymentGateway interface so tests can supply a fake gateway",
+        "Mentions frameworks that automate this (e.g. Spring, .NET's built-in DI container)"
+      ],
+      "sample_answer": "Dependency injection means a class receives its dependencies from outside — via constructor or setter — instead of instantiating them itself. If a class does 'new StripeGateway()' internally, it's hardcoded to that implementation and hard to test. Injecting a PaymentGateway interface lets production code pass a real Stripe implementation while tests pass a fake one, without changing the class. Frameworks like Spring automate wiring these dependencies together."
+    },
+    "follow_up_hint": "Ask about constructor injection versus field/setter injection, and which is generally preferred and why."
+  },
+  {
+    "id": "oop-0011",
+    "question": "Explain the Factory Method and Abstract Factory design patterns, and how they differ.",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend"],
+    "topics": ["design-patterns"],
+    "tech_keywords": ["oop", "design-patterns"],
+    "companies_common": ["Amazon", "Microsoft", "Oracle"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Factory Method defines an interface for creating one type of object, letting subclasses decide which concrete class to instantiate",
+        "Abstract Factory provides an interface for creating families of related objects without specifying their concrete classes",
+        "Both avoid hardcoding 'new ConcreteClass()' calls scattered through client code",
+        "Gives a concrete example distinguishing the two, e.g. a UI toolkit's Abstract Factory producing matching Button/Checkbox for a theme, versus a single Factory Method producing one type of document parser",
+        "Explains the benefit: adding a new product family/type doesn't require changing existing client code (Open/Closed Principle)"
+      ],
+      "sample_answer": "Factory Method defines a single creation method that subclasses override to produce different concrete types of one product, e.g. a Dialog subclass deciding which Button subtype to create. Abstract Factory goes further, producing entire families of related objects together — e.g. a WindowsUIFactory producing a matching WindowsButton, WindowsCheckbox, and WindowsScrollbar so they're all visually consistent. Both let client code depend only on interfaces, so adding a new product family doesn't require touching existing code."
+    },
+    "follow_up_hint": "Ask them to design an Abstract Factory for supporting multiple database backends (MySQL vs PostgreSQL)."
+  },
+  {
+    "id": "oop-0012",
+    "question": "What are access modifiers (public, private, protected, package-private), and why does encapsulation matter in practice?",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["general_sde"],
+    "topics": ["oop-fundamentals", "encapsulation"],
+    "tech_keywords": ["oop", "java", "c++"],
+    "companies_common": ["Infosys", "TCS", "Wipro", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "public: accessible from anywhere; private: only within the declaring class; protected: within the class, subclasses, and (in Java) same package",
+        "Package-private/default (Java): accessible only within the same package",
+        "Encapsulation via access modifiers prevents external code from putting an object into an invalid state directly",
+        "Enables changing internal implementation without breaking external callers, as long as the public interface stays stable",
+        "Gives a concrete example, e.g. a private balance field only modifiable through a validated deposit()/withdraw() method"
+      ],
+      "sample_answer": "Public members are accessible from any code; private members only within the declaring class; protected members within the class, its subclasses, and (in Java) the same package. Encapsulating fields as private and only exposing validated methods — like a BankAccount exposing deposit()/withdraw() instead of a public balance field — prevents external code from setting an account to an invalid state, and lets the internal representation change later without breaking callers."
+    },
+    "follow_up_hint": "Ask about the difference between protected access in Java versus C++."
+  },
+  {
+    "id": "oop-0013",
+    "question": "Explain what a constructor and destructor are, and when RAII (Resource Acquisition Is Initialization) is used in C++.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["general_sde", "backend"],
+    "topics": ["oop-fundamentals", "memory-management"],
+    "tech_keywords": ["c++", "oop", "memory-management"],
+    "companies_common": ["Nvidia", "Microsoft", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Constructor initializes a newly created object's state; destructor cleans up resources when the object goes out of scope or is deleted",
+        "RAII ties a resource's lifetime to an object's lifetime: acquire the resource in the constructor, release it in the destructor",
+        "Guarantees cleanup happens even if an exception is thrown, since C++ destructors run during stack unwinding",
+        "Gives a concrete example: a file handle or mutex lock wrapped in a class so it's automatically released when the wrapper goes out of scope",
+        "Contrasts with manual acquire/release (e.g. malloc/free) which is error-prone if an early return or exception skips the release"
+      ],
+      "sample_answer": "A constructor sets up an object's initial state when it's created; a destructor releases resources when the object's lifetime ends. RAII wraps a resource — like a file handle, mutex, or heap allocation — inside an object that acquires it in the constructor and releases it in the destructor, so the resource is automatically freed when the object goes out of scope, even if an exception is thrown in between. std::lock_guard and std::unique_ptr are standard-library examples of this pattern."
+    },
+    "follow_up_hint": "Ask how RAII compares to Java's try-with-resources or Python's context managers."
+  },
+  {
+    "id": "oop-0014",
+    "question": "What is the diamond problem in multiple inheritance, and how do different languages resolve it?",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["oop-fundamentals", "inheritance"],
+    "tech_keywords": ["c++", "java", "oop"],
+    "companies_common": ["Nvidia", "Microsoft", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Diamond problem: a class inherits from two classes that both inherit from a common base, creating ambiguity about which base method/field is used",
+        "C++ allows multiple inheritance and resolves ambiguity via explicit scope resolution, or avoids duplication with virtual inheritance",
+        "Java disallows multiple inheritance of classes entirely (only single class inheritance) to sidestep the problem, but allows multiple interface implementation",
+        "Java 8+ default methods can reintroduce a milder version of the problem, requiring the implementing class to explicitly resolve the conflict",
+        "Gives a concrete example of the ambiguity (e.g. two paths to the same grandparent method)"
+      ],
+      "sample_answer": "The diamond problem occurs when class D inherits from both B and C, which both inherit from A — if D calls a method defined in A, it's ambiguous whether it comes via B's or C's path, and without care D could end up with two separate copies of A's state. C++ allows multiple inheritance and lets you resolve the ambiguity explicitly, or use 'virtual inheritance' to share a single A subobject. Java sidesteps this by only allowing single class inheritance, though default methods in interfaces (Java 8+) can create a similar conflict that the implementing class must explicitly override to resolve."
+    },
+    "follow_up_hint": "Ask them to demonstrate resolving a Java default-method conflict by overriding and explicitly choosing an interface's implementation."
+  },
+  {
+    "id": "oop-0015",
+    "question": "Explain the Strategy design pattern and how it helps avoid large conditional (if/else or switch) blocks.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["general_sde", "backend"],
+    "topics": ["design-patterns"],
+    "tech_keywords": ["oop", "design-patterns", "clean-code"],
+    "companies_common": ["Amazon", "Microsoft", "Adobe"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Strategy defines a family of interchangeable algorithms behind a common interface, selected/injected at runtime",
+        "Replaces a large switch/if-else selecting behavior with polymorphic dispatch to the chosen strategy object",
+        "Adding a new behavior means adding a new strategy class, not modifying existing conditional logic (Open/Closed Principle)",
+        "Gives a concrete example, e.g. different discount/pricing strategies, or different sorting comparators",
+        "Notes the trade-off of more classes/objects versus centralized conditional logic"
+      ],
+      "sample_answer": "The Strategy pattern encapsulates each variant of an algorithm as its own class implementing a shared interface, and the context object holds a reference to whichever strategy is currently active, delegating to it. Instead of a giant switch statement picking pricing logic based on a customer type, you'd inject a PricingStrategy object — RegularPricing, VipPricing, etc. — and call strategy.calculatePrice(). Adding a new pricing tier means adding a new class, not touching the existing switch."
+    },
+    "follow_up_hint": "Ask them to compare Strategy with the State pattern, which looks structurally similar but solves a different problem."
+  },
+  {
+    "id": "oop-0016",
+    "question": "What does it mean for a class to be immutable, and how would you design an immutable class in Java?",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["general_sde", "backend"],
+    "topics": ["oop-fundamentals", "immutability"],
+    "tech_keywords": ["java", "oop", "concurrency"],
+    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "An immutable object's state cannot change after construction — any 'modification' returns a new instance instead",
+        "In Java: mark the class final, all fields private and final, no setters, initialize everything in the constructor",
+        "For mutable fields (e.g. arrays, dates, collections), defensively copy on input and on output (getters) to prevent external mutation",
+        "Explains the benefit: inherently thread-safe with no synchronization needed, safe to share and cache freely",
+        "Gives a real example, e.g. Java's String or LocalDate classes"
+      ],
+      "sample_answer": "An immutable object can't have its state changed after construction; operations that seem to modify it actually return a new object. In Java, you'd make the class final (so it can't be subclassed to add mutability), make all fields private and final, provide no setters, and if a field is itself a mutable type like a List, defensively copy it both when accepted in the constructor and when returned from a getter. This makes the object inherently thread-safe since no synchronization is needed — multiple threads can read it freely."
+    },
+    "follow_up_hint": "Ask why defensive copying is necessary even if a field is marked final."
+  },
+  {
+    "id": "oop-0017",
+    "question": "Explain the difference between 'has-a', 'is-a', and 'uses-a' relationships in object-oriented design, with an example of each.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["general_sde"],
+    "topics": ["oop-fundamentals", "design"],
+    "tech_keywords": ["oop"],
+    "companies_common": ["Infosys", "TCS", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "'Is-a' expresses inheritance/specialization, e.g. a Dog is-a Animal",
+        "'Has-a' expresses composition/aggregation, e.g. a Car has-a Engine",
+        "'Uses-a' expresses a dependency where one class calls/depends on another temporarily without owning it, e.g. a service uses-a Logger",
+        "Notes choosing the wrong relationship type (e.g. inheritance where composition fits better) is a common design smell",
+        "Gives a distinct, correct example for all three"
+      ],
+      "sample_answer": "'Is-a' is inheritance — a Car is-a Vehicle, sharing its interface and being substitutable for it. 'Has-a' is composition or aggregation — a Car has-a Engine as a component it owns. 'Uses-a' is a dependency — a Car uses-a NavigationService to get directions, without owning or being composed of it. Mixing these up, like inheriting from a class purely for code reuse when there's no real 'is-a' relationship, is a common design mistake."
+    },
+    "follow_up_hint": "Ask them to identify which relationship type is being misused in a flawed example, like a Stack extending Vector in early Java."
+  },
+  {
+    "id": "oop-0018",
+    "question": "What is operator overloading, and what are its potential pitfalls?",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["general_sde"],
+    "topics": ["oop-fundamentals"],
+    "tech_keywords": ["c++", "python", "oop"],
+    "companies_common": ["Nvidia", "Microsoft", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Operator overloading lets custom types define behavior for built-in operators (e.g. +, ==, <) so they read naturally, like value types",
+        "Common use case: a Vector or Complex number class supporting + and * as if they were primitives",
+        "Pitfall: overloading operators in surprising or non-intuitive ways (e.g. + doing something unrelated to addition) hurts readability",
+        "Pitfall: forgetting related overloads (e.g. defining == without also correctly defining hashCode in Java, or != alongside == in C++)",
+        "Notes not all languages support this (Java doesn't allow user-defined operator overloading, only method-based equivalents)"
+      ],
+      "sample_answer": "Operator overloading lets a custom type define what operators like +, ==, or < mean for it, so a Vector class can support v1 + v2 naturally instead of v1.add(v2). The main pitfall is 'surprising' overloads — using an operator for something unrelated to its usual meaning confuses readers. Another common pitfall is inconsistent overloads, like overriding equals() without hashCode() in Java, which breaks hash-based collections. Java deliberately disallows operator overloading to avoid this class of confusion; C++ and Python both allow it."
+    },
+    "follow_up_hint": "Ask why overriding equals() without hashCode() breaks HashMap/HashSet behavior in Java."
+  },
+  {
+    "id": "oop-0019",
+    "question": "Explain polymorphism through the lens of the Liskov Substitution Principle: why does a Square extending Rectangle often break correctness?",
+    "type": "scenario",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend"],
+    "topics": ["oop-fundamentals", "solid", "polymorphism"],
+    "tech_keywords": ["oop", "design-principles"],
+    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Liskov Substitution: any code working with a base type should work correctly when given a subtype instance",
+        "A Square extending Rectangle typically overrides setWidth/setHeight to keep both sides equal, changing behavior a caller expects from Rectangle",
+        "Client code that sets width and height independently and expects area = width * height breaks when given a Square",
+        "Correct fix: don't model Square as a Rectangle subclass; instead have both implement a common Shape interface, or make Rectangle immutable",
+        "Connects this back to why inheritance should model true behavioral substitutability, not just a natural-language 'is-a' at the data level"
+      ],
+      "sample_answer": "Liskov Substitution says subclass instances must be usable anywhere the base class is expected, without surprising behavior. A Square extending Rectangle usually overrides setWidth/setHeight so both dimensions change together, which breaks a caller that sets width and height independently and expects the area to reflect exactly those two values. The real problem is that geometrically a square 'is-a' rectangle, but behaviorally it isn't substitutable in a mutable Rectangle's API — the fix is to model both as separate implementations of a Shape interface, or make the shape hierarchy immutable so there's no setWidth/setHeight to conflict."
+    },
+    "follow_up_hint": "Ask how making the Rectangle class immutable would sidestep this problem entirely."
+  },
+  {
+    "id": "oop-0020",
+    "question": "What is the Decorator pattern, and how does it differ from simply subclassing to add behavior?",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend"],
+    "topics": ["design-patterns"],
+    "tech_keywords": ["oop", "design-patterns"],
+    "companies_common": ["Amazon", "Microsoft", "Adobe"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Decorator wraps an object of the same interface, adding behavior before/after delegating to the wrapped object",
+        "Allows combining multiple behaviors dynamically at runtime by stacking decorators, versus a fixed compile-time subclass hierarchy",
+        "Avoids a combinatorial explosion of subclasses for every combination of features (e.g. a Coffee with milk, sugar, and whipped cream needing one subclass per combination)",
+        "Gives a concrete example, like Java's InputStream wrapping (BufferedInputStream wrapping a FileInputStream)",
+        "Notes decorators must implement the same interface as the object they wrap, so they're transparently interchangeable"
+      ],
+      "sample_answer": "A Decorator wraps an object implementing the same interface, adding its own behavior and then delegating the actual work to the wrapped object. This lets you compose behaviors at runtime — like Java's BufferedInputStream wrapping a FileInputStream to add buffering — without needing a new subclass for every combination of features. Plain subclassing would require a separate class for every feature combination (e.g. MilkAndSugarCoffee, MilkAndCreamCoffee), whereas decorators can be stacked dynamically."
+    },
+    "follow_up_hint": "Ask them to compare Decorator with the Proxy pattern, which has a structurally similar wrapping approach but a different intent."
+  }
+]

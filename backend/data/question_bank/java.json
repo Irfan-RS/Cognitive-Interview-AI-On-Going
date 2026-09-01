@@ -1,0 +1,332 @@
+[
+  {
+    "id": "java-0001",
+    "question": "Explain the difference between JDK, JRE, and JVM.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["backend", "general_sde"],
+    "topics": ["java-fundamentals"],
+    "tech_keywords": ["java", "jvm"],
+    "companies_common": ["Infosys", "TCS", "Amazon", "Oracle"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "JVM (Java Virtual Machine): executes bytecode, providing platform independence and managing memory (garbage collection)",
+        "JRE (Java Runtime Environment): the JVM plus the core class libraries needed to run (not develop) Java applications",
+        "JDK (Java Development Kit): the JRE plus development tools (compiler javac, debugger, etc.) needed to build Java applications",
+        "Explains the containment relationship: JDK contains JRE, which contains JVM",
+        "Notes 'write once, run anywhere' comes from compiling to JVM bytecode rather than native machine code"
+      ],
+      "sample_answer": "The JVM executes compiled Java bytecode and handles memory management via garbage collection, giving Java its platform independence. The JRE bundles the JVM with the standard class libraries needed to actually run a compiled Java application. The JDK adds development tools on top of the JRE — the javac compiler, debugger, and other tooling needed to write and build Java programs. So the containment is JDK ⊃ JRE ⊃ JVM."
+    },
+    "follow_up_hint": "Ask what JIT (Just-In-Time) compilation is and how it improves on pure bytecode interpretation."
+  },
+  {
+    "id": "java-0002",
+    "question": "Explain how garbage collection works in the JVM, including the generational hypothesis.",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["backend", "general_sde"],
+    "topics": ["jvm-internals", "memory-management"],
+    "tech_keywords": ["java", "jvm", "garbage-collection"],
+    "companies_common": ["Amazon", "Oracle", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "The generational hypothesis: most objects die young, so the heap is split into young (Eden + Survivor spaces) and old generations for efficient collection",
+        "Minor GC collects the young generation frequently and cheaply; surviving objects are promoted to the old generation after enough survived collections",
+        "Major/full GC collects the old generation less often but is more expensive, as it typically scans a much larger heap area",
+        "Names common collectors (e.g. G1, ZGC) and mentions that modern collectors aim to minimize pause times, especially for large heaps",
+        "Explains that GC identifies garbage via reachability from GC roots, not reference counting, so it can collect cyclic references correctly"
+      ],
+      "sample_answer": "Most objects are short-lived, so the JVM heap is split into a young generation (Eden plus Survivor spaces) and an old generation. New objects are allocated in Eden; a minor GC runs frequently and cheaply on just the young generation, and objects that survive several such collections get promoted to the old generation. A major/full GC on the old generation runs less often but costs more since it scans a larger area. The JVM determines garbage by tracing reachability from GC roots (like active stack frames and static references), not simple reference counting, so it correctly collects even cyclic references. Modern collectors like G1 or ZGC are designed to minimize pause times on large heaps."
+    },
+    "follow_up_hint": "Ask why reference counting alone (like in some other languages) fails to collect cyclic references."
+  },
+  {
+    "id": "java-0003",
+    "question": "What is the difference between '==' and '.equals()' in Java, and why does this matter for Strings specifically?",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["backend", "general_sde"],
+    "topics": ["java-fundamentals"],
+    "tech_keywords": ["java"],
+    "companies_common": ["Infosys", "TCS", "Wipro", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "'==' compares references (object identity) for objects, and value for primitives",
+        "'.equals()' compares logical/content equality, if the class overrides it meaningfully",
+        "Strings are objects, so '==' compares whether two references point to the exact same object, not whether the text is equal",
+        "Explains the string pool/interning: string literals are often the same object due to pooling, which can make '==' misleadingly appear to work for literals",
+        "Recommends always using .equals() for content comparison, especially for Strings created via 'new String(...)' which bypass the pool"
+      ],
+      "sample_answer": "'==' checks whether two object references point to the exact same object in memory (or, for primitives, whether their values are equal). '.equals()' checks logical equality as defined by the class's implementation. This matters a lot for Strings: two String objects with identical text created via 'new String(\"a\")' are different objects, so '==' returns false even though the content matches, while string literals are often pooled/interned so '==' might coincidentally return true for those — which is why relying on '==' for Strings is a common bug, and .equals() should always be used for content comparison."
+    },
+    "follow_up_hint": "Ask what String interning is and how String.intern() relates to the string pool."
+  },
+  {
+    "id": "java-0004",
+    "question": "Explain checked versus unchecked exceptions in Java, and when you would design a custom exception as one or the other.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["backend", "general_sde"],
+    "topics": ["exceptions"],
+    "tech_keywords": ["java", "exception-handling"],
+    "companies_common": ["Amazon", "Infosys", "TCS"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Checked exceptions (extend Exception, not RuntimeException) must be either caught or declared in the method signature (throws) at compile time",
+        "Unchecked exceptions (extend RuntimeException) don't require explicit handling and can propagate silently until caught",
+        "Checked exceptions suit recoverable conditions the caller should be forced to handle, e.g. a file not found",
+        "Unchecked exceptions suit programming errors or conditions callers typically can't meaningfully recover from, e.g. a null pointer or illegal argument",
+        "Notes the ongoing debate: many modern codebases/frameworks favor unchecked exceptions even for recoverable errors, since checked exceptions can lead to verbose, boilerplate-heavy handling or catch-and-ignore anti-patterns"
+      ],
+      "sample_answer": "Checked exceptions extend Exception and must be either caught or declared with 'throws' — the compiler enforces the caller acknowledges the possibility, which suits genuinely recoverable situations like a missing file. Unchecked exceptions extend RuntimeException and don't require explicit handling, suiting programming errors like a null pointer dereference or an illegal argument that indicate a bug rather than an expected recoverable condition. In practice, many modern Java codebases lean toward unchecked exceptions even for some recoverable errors, since checked exceptions can force verbose try/catch chains or tempt developers into swallowing exceptions just to satisfy the compiler."
+    },
+    "follow_up_hint": "Ask them to argue for or against Java's checked exception design compared to languages that don't have this distinction."
+  },
+  {
+    "id": "java-0005",
+    "question": "Explain the contract between equals() and hashCode(), and what breaks if you override one without the other.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["backend", "general_sde"],
+    "topics": ["java-fundamentals", "collections"],
+    "tech_keywords": ["java", "collections"],
+    "companies_common": ["Amazon", "Microsoft", "Oracle"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Contract: if two objects are equal per equals(), they must return the same hashCode()",
+        "The reverse isn't required: unequal objects can share a hash code (a hash collision), just not the other way around",
+        "Overriding equals() without hashCode() breaks hash-based collections (HashMap, HashSet): two 'equal' objects could land in different buckets and both be treated as distinct/present",
+        "Explains the practical symptom: a HashSet.contains() returning false for an object that IS equal to one already in the set, because it hashed differently",
+        "Mentions the same care is needed for compareTo() consistency with equals() when used with TreeMap/TreeSet"
+      ],
+      "sample_answer": "The contract requires that if a.equals(b) is true, then a.hashCode() must equal b.hashCode() — otherwise hash-based collections break down. If you override equals() but leave the default hashCode() (based on memory address), two logically equal objects can get different hash codes, land in different buckets of a HashMap or HashSet, and the collection will fail to recognize them as the same entry — so contains() can wrongly return false, or you can end up with duplicate 'equal' entries in a HashSet. The fix is always overriding both together, and keeping hashCode() consistent with whatever fields equals() considers."
+    },
+    "follow_up_hint": "Ask them to write a correct equals()/hashCode() pair for a simple class with two fields."
+  },
+  {
+    "id": "java-0006",
+    "question": "Explain how HashMap works internally in Java, including how collisions are handled.",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["backend", "general_sde"],
+    "topics": ["collections", "data-structures"],
+    "tech_keywords": ["java", "collections", "data-structures", "hashing"],
+    "companies_common": ["Amazon", "Microsoft", "Oracle"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Internally an array of 'buckets', each holding entries whose key's hash maps to that bucket index",
+        "Collisions (different keys, same bucket) are handled by chaining — a linked list of entries in that bucket",
+        "Since Java 8, a bucket's linked list converts to a balanced red-black tree once it grows past a threshold (default 8 entries), improving worst-case lookup from O(n) to O(log n) for that bucket",
+        "Explains the load factor and resizing: when the map's size exceeds capacity * load factor, the internal array is resized (typically doubled) and all entries rehashed",
+        "Notes a good hashCode() distribution is essential — a poor hash function causing many collisions degrades performance significantly"
+      ],
+      "sample_answer": "HashMap stores entries in an array of buckets; a key's hash code (further mixed/spread by the map itself) determines which bucket it lands in. When two different keys land in the same bucket, that's a collision, handled by chaining entries together — traditionally as a linked list, but since Java 8, a bucket's list is converted into a red-black tree once it exceeds a size threshold (8 by default), improving worst-case performance for that bucket from O(n) to O(log n). The map tracks a load factor (default 0.75); once the number of entries exceeds capacity times load factor, the internal array is resized (usually doubled) and every entry is rehashed into the new, larger array."
+    },
+    "follow_up_hint": "Ask what happens to iteration order and performance if a poorly designed hashCode() puts everything in one bucket."
+  },
+  {
+    "id": "java-0007",
+    "question": "What is the difference between ArrayList and LinkedList in Java, and when would you choose one over the other?",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["backend", "general_sde"],
+    "topics": ["collections", "data-structures"],
+    "tech_keywords": ["java", "collections", "data-structures"],
+    "companies_common": ["Infosys", "TCS", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "ArrayList is backed by a resizable array: O(1) random access by index, O(n) insert/remove in the middle (shifting elements)",
+        "LinkedList is a doubly linked list: O(1) insert/remove at a known node (e.g. via an iterator), but O(n) random access since it must walk from an end",
+        "ArrayList generally has better cache locality due to contiguous memory, making it faster in practice for most workloads despite the theoretical trade-offs",
+        "LinkedList makes sense when there's frequent insertion/removal at the ends or via iterators, and random access isn't needed",
+        "Notes that in practice ArrayList is the default choice unless there's a specific, measured reason to prefer LinkedList"
+      ],
+      "sample_answer": "ArrayList is backed by a resizable array, giving O(1) random access by index but O(n) insertion/removal in the middle since elements have to shift. LinkedList is a doubly linked list, giving O(1) insertion/removal once you're positioned at a node (e.g. via an iterator) but O(n) random access since you have to walk from an end. In practice, ArrayList's contiguous memory layout gives much better CPU cache locality, so it tends to outperform LinkedList for most real workloads even where LinkedList's theoretical complexity looks better — LinkedList is really only worth it for specific access patterns like a queue/deque with frequent head/tail operations."
+    },
+    "follow_up_hint": "Ask why ArrayDeque is often recommended over LinkedList even for queue-like use cases."
+  },
+  {
+    "id": "java-0008",
+    "question": "Explain Java's memory model briefly: what does 'volatile' guarantee, and why isn't it a substitute for synchronization in all cases?",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["backend", "general_sde"],
+    "topics": ["concurrency", "jvm-internals"],
+    "tech_keywords": ["java", "concurrency", "multithreading"],
+    "companies_common": ["Amazon", "Oracle", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "volatile guarantees visibility: a write to a volatile field is immediately visible to other threads, preventing stale cached reads",
+        "volatile also prevents certain instruction reordering around that field (establishes a happens-before relationship)",
+        "volatile does NOT guarantee atomicity for compound operations like increment (read-modify-write), which can still race",
+        "Explains a correct use case: a simple flag (e.g. a 'shutdown requested' boolean) read by multiple threads, written by one",
+        "Explains an incorrect use case: a volatile counter incremented by multiple threads, which still needs a lock or an atomic class like AtomicInteger"
+      ],
+      "sample_answer": "Marking a field volatile guarantees that a write to it is immediately visible to all other threads, rather than potentially sitting in a CPU cache invisible to others, and it also prevents the compiler/CPU from reordering certain operations around it. What it doesn't do is make compound operations atomic — incrementing a volatile int is still a read-modify-write sequence that two threads can interleave and lose an update. A correct use is a simple boolean flag like 'running', written by one thread and read by others to decide when to stop; an incorrect use is a shared counter incremented by multiple threads, which needs an actual lock or AtomicInteger instead."
+    },
+    "follow_up_hint": "Ask them to demonstrate why 'count++' on a volatile int is still not thread-safe, tracing through a specific interleaving."
+  },
+  {
+    "id": "java-0009",
+    "question": "What are Java Streams, and how do they differ from directly iterating over a collection with a for loop?",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["backend", "general_sde"],
+    "topics": ["streams", "functional-programming"],
+    "tech_keywords": ["java", "java8", "streams", "functional-programming"],
+    "companies_common": ["Amazon", "Microsoft", "Adobe"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Streams provide a functional, declarative pipeline (map/filter/reduce/collect) for processing sequences of data",
+        "Streams are lazy: intermediate operations (map, filter) don't execute until a terminal operation (collect, forEach, reduce) is invoked",
+        "Explains streams can be parallelized easily via .parallelStream(), unlike a manual for loop which requires explicit thread management",
+        "Notes a stream can only be consumed once; reusing a consumed stream throws an exception",
+        "Discusses readability trade-off: streams can express intent concisely for transformations, but deeply chained streams can sometimes be harder to debug than an explicit loop"
+      ],
+      "sample_answer": "Streams let you express a data-processing pipeline declaratively — filtering, mapping, and reducing a collection — rather than manually writing the loop and accumulator logic yourself. Streams are lazy: operations like map and filter just build up the pipeline definition, and nothing actually executes until a terminal operation like collect() or forEach() is called, which allows the JVM to potentially optimize the whole pipeline. They also make parallelism straightforward via parallelStream(), without manually managing threads. One gotcha: a stream can only be traversed once — trying to reuse an already-consumed stream throws an IllegalStateException."
+    },
+    "follow_up_hint": "Ask when parallelStream() could actually make performance worse instead of better."
+  },
+  {
+    "id": "java-0010",
+    "question": "Explain the difference between an interface's default method and a static method, added in Java 8.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["backend", "general_sde"],
+    "topics": ["java-fundamentals", "interfaces"],
+    "tech_keywords": ["java", "java8"],
+    "companies_common": ["Amazon", "Oracle"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A default method provides a concrete implementation that implementing classes inherit unless they override it — it's callable on instances",
+        "A static method belongs to the interface itself, not to any instance, and can't be overridden by implementing classes",
+        "Default methods were introduced primarily to let existing interfaces (like Collection) add new methods without breaking every existing implementer",
+        "Explains what happens when a class implements two interfaces with conflicting default methods: it must explicitly override and resolve the conflict",
+        "Gives a concrete example, e.g. List's default replaceAll() method vs Comparator's static comparing() factory method"
+      ],
+      "sample_answer": "A default method gives an interface a concrete body that implementing classes inherit automatically unless they choose to override it — it's invoked on instances, like List's default replaceAll() method. A static method belongs to the interface type itself, not any instance, and can't be inherited or overridden — like Comparator.comparing(), called directly on the interface. Default methods were mainly added so existing interfaces like Collection could gain new methods (like stream()) without breaking every class that already implemented them before Java 8."
+    },
+    "follow_up_hint": "Ask what happens when a class implements two interfaces that each declare a conflicting default method with the same signature."
+  },
+  {
+    "id": "java-0011",
+    "question": "What is the difference between an abstract class and a functional interface in Java, and how do lambdas relate to functional interfaces?",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["backend", "general_sde"],
+    "topics": ["java-fundamentals", "functional-programming"],
+    "tech_keywords": ["java", "java8", "lambda"],
+    "companies_common": ["Amazon", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A functional interface has exactly one abstract method (may have default/static methods too), marked conventionally with @FunctionalInterface",
+        "A lambda expression is essentially syntactic sugar for an anonymous implementation of a functional interface's single abstract method",
+        "An abstract class can have state (fields), constructors, and multiple abstract or concrete methods — lambdas can't provide any of that",
+        "Gives concrete examples of built-in functional interfaces: Runnable, Comparator, Function<T,R>, Predicate<T>",
+        "Explains a class can extend only one abstract class but implement any number of (functional) interfaces"
+      ],
+      "sample_answer": "A functional interface declares exactly one abstract method, like Runnable's run() or Comparator's compare(), and can be implemented concisely with a lambda expression, which is essentially syntactic sugar for an anonymous class implementing that single method. An abstract class can hold state, have constructors, and mix abstract and concrete methods, which a lambda simply can't express — lambdas are purely about providing behavior for a single-method contract. A class can extend only one abstract class, but implement many interfaces, including functional ones, so lambdas compose more flexibly than abstract class inheritance."
+    },
+    "follow_up_hint": "Ask them to write a custom functional interface and use a lambda to implement it."
+  },
+  {
+    "id": "java-0012",
+    "question": "Explain how Java handles method resolution for overloaded methods when arguments could match multiple overloads (e.g. autoboxing, varargs).",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["backend", "general_sde"],
+    "topics": ["java-fundamentals"],
+    "tech_keywords": ["java"],
+    "companies_common": ["Amazon", "Oracle", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Java resolves overloads in phases: first tries an exact match without boxing/unboxing or varargs, then allows autoboxing/unboxing, then finally considers varargs methods",
+        "This means an exact-type overload is always preferred over one requiring autoboxing, which is preferred over a varargs overload",
+        "Gives a concrete example, e.g. overloads foo(int) and foo(Integer) and foo(int...) resolving foo(5) to foo(int) first",
+        "Explains ambiguity errors occur if two overloads are equally applicable at the same resolution phase",
+        "Notes this static resolution happens at compile time based on declared (not runtime) argument types"
+      ],
+      "sample_answer": "Java resolves overloaded methods in three phases at compile time: first it looks for an exact match using only widening primitive/reference conversions, with no autoboxing or varargs; if nothing matches, it allows autoboxing/unboxing; only if that still fails does it consider varargs overloads. So given foo(int), foo(Integer), and foo(int...), calling foo(5) picks foo(int) in the first phase, since an exact primitive match exists without needing boxing or varargs. If two candidates are equally applicable within the same phase, it's a compile error due to ambiguity."
+    },
+    "follow_up_hint": "Ask them to predict which overload is chosen for a trickier example mixing null arguments and multiple reference-type overloads."
+  },
+  {
+    "id": "java-0013",
+    "question": "What is the try-with-resources statement, and what interface must a resource implement to be used with it?",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["backend", "general_sde"],
+    "topics": ["exceptions", "resource-management"],
+    "tech_keywords": ["java", "exception-handling"],
+    "companies_common": ["Infosys", "Amazon", "TCS"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "try-with-resources automatically closes any resource declared in its parentheses when the block exits, whether normally or via an exception",
+        "The resource must implement AutoCloseable (or its subtype Closeable), providing a close() method",
+        "Resources are closed in reverse order of declaration if multiple are declared",
+        "Explains this eliminates the classic bug of forgetting to close a resource in a finally block, or closing it in the wrong place relative to exceptions",
+        "Mentions 'suppressed exceptions': if both the try block and the close() call throw, the close()'s exception is attached as suppressed rather than replacing the original"
+      ],
+      "sample_answer": "try-with-resources automatically calls close() on any resource declared in the try's parentheses once the block finishes, whether it completes normally or throws, eliminating the classic mistake of a manual close() call being skipped due to an early return or an exception. The resource type must implement AutoCloseable (or Closeable). If multiple resources are declared, they're closed in reverse order. If the try block throws AND close() also throws, the close() exception is attached to the original as a 'suppressed' exception rather than masking it."
+    },
+    "follow_up_hint": "Ask what happens to the original exception if both the try block and the resource's close() method throw."
+  },
+  {
+    "id": "java-0014",
+    "question": "Explain the Executor framework in Java: what problem does a thread pool solve compared to creating a new Thread per task?",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["backend", "general_sde"],
+    "topics": ["concurrency"],
+    "tech_keywords": ["java", "concurrency", "multithreading"],
+    "companies_common": ["Amazon", "Microsoft", "Uber"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Creating a new Thread per task has real overhead (OS thread creation cost, memory for each thread's stack) and no bound on concurrency, risking resource exhaustion under load",
+        "A thread pool (ExecutorService) reuses a fixed or bounded set of worker threads, queuing tasks when all workers are busy",
+        "Explains different pool types: fixed-size, cached (grows/shrinks based on demand), and scheduled (for delayed/periodic tasks)",
+        "Discusses the importance of choosing an appropriate queue and rejection policy for what happens when the pool and its queue are both full",
+        "Mentions Future/CompletableFuture as the mechanism for getting a task's result back asynchronously"
+      ],
+      "sample_answer": "Spawning a new Thread for every task has real overhead — OS-level thread creation and a dedicated stack per thread — and provides no natural limit, so a burst of tasks could spawn thousands of threads and exhaust memory or CPU. An ExecutorService thread pool reuses a bounded set of worker threads, queuing incoming tasks when all workers are busy, giving predictable resource usage under load. Java offers different pool flavors — fixed-size for steady, bounded concurrency, cached pools that grow and shrink with demand, and scheduled pools for delayed or periodic tasks — and lets you configure what happens if both the pool and its queue are full via a rejection policy."
+    },
+    "follow_up_hint": "Ask what the different RejectedExecutionHandler policies are and when each makes sense."
+  },
+  {
+    "id": "java-0015",
+    "question": "What is the difference between final, finally, and finalize() in Java?",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["backend", "general_sde"],
+    "topics": ["java-fundamentals"],
+    "tech_keywords": ["java"],
+    "companies_common": ["Infosys", "TCS", "Wipro"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "final: a keyword marking a variable as unreassignable, a method as unoverridable, or a class as unextendable",
+        "finally: a block that always executes after a try (and any catch), whether or not an exception occurred, typically used for cleanup",
+        "finalize(): a deprecated Object method the garbage collector could call before reclaiming an object, intended for cleanup — unreliable in practice (no timing guarantee, may never run)",
+        "Explains why finalize() is discouraged/deprecated in modern Java in favor of try-with-resources or explicit close() methods",
+        "Distinguishes all three clearly despite the similar-sounding names"
+      ],
+      "sample_answer": "final marks something as unchangeable — a final variable can't be reassigned, a final method can't be overridden, a final class can't be subclassed. finally is a block attached to a try/catch that always runs afterward regardless of whether an exception was thrown, typically used for cleanup like closing a resource. finalize() was a method the garbage collector might call on an object before reclaiming its memory, meant for last-resort cleanup — but it's unreliable since there's no guarantee it runs promptly or even at all, which is why it's deprecated in favor of explicit resource management like try-with-resources."
+    },
+    "follow_up_hint": "Ask why relying on finalize() for releasing an external resource (like a file handle) is considered bad practice."
+  }
+]

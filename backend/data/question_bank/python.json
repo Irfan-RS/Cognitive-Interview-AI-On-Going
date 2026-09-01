@@ -1,0 +1,332 @@
+[
+  {
+    "id": "python-0001",
+    "question": "Explain the Global Interpreter Lock (GIL) in CPython. How does it affect multithreaded versus multiprocessing performance?",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["backend", "general_sde", "ml"],
+    "topics": ["python-internals", "concurrency"],
+    "tech_keywords": ["python", "gil", "concurrency", "multithreading"],
+    "companies_common": ["Google", "Amazon", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "The GIL is a mutex ensuring only one thread executes Python bytecode at a time within a single process, even on a multi-core machine",
+        "This means CPU-bound multithreaded Python code doesn't get true parallelism — threads take turns, not run truly simultaneously",
+        "I/O-bound multithreaded code still benefits from threading, since the GIL is released during blocking I/O operations",
+        "multiprocessing sidesteps the GIL entirely by using separate processes (each with its own interpreter and memory), enabling true CPU parallelism at the cost of heavier IPC",
+        "Mentions newer developments (e.g. the experimental free-threaded/no-GIL CPython build) as ongoing efforts to remove this limitation"
+      ],
+      "sample_answer": "The GIL is a global mutex in CPython that allows only one thread to execute Python bytecode at any instant, regardless of how many CPU cores are available. This means CPU-bound work spread across multiple threads doesn't actually run in parallel — the threads just interleave on a single core's worth of Python execution. I/O-bound work still benefits from threading since the GIL is released during blocking calls like network or file I/O. To get genuine CPU parallelism, you use multiprocessing instead, which runs separate OS processes each with their own interpreter and memory space, avoiding the GIL entirely but requiring explicit, heavier inter-process communication for shared state."
+    },
+    "follow_up_hint": "Ask why asyncio doesn't need to fight the GIL the way threading does, given it's also single-threaded."
+  },
+  {
+    "id": "python-0002",
+    "question": "Explain Python's memory management model: how does reference counting work, and why is a separate cyclic garbage collector also needed?",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["backend", "general_sde"],
+    "topics": ["python-internals", "memory-management"],
+    "tech_keywords": ["python", "memory-management", "garbage-collection"],
+    "companies_common": ["Google", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "CPython primarily uses reference counting: every object tracks how many references point to it, and is deallocated immediately when the count hits zero",
+        "Reference counting alone can't reclaim reference cycles (e.g. two objects referencing each other), since their counts never reach zero even when unreachable from the program",
+        "A separate generational cyclic garbage collector periodically scans for and collects such unreachable cycles",
+        "Explains the generational aspect: objects are grouped into generations, and younger generations are scanned more frequently since most garbage is short-lived",
+        "Mentions this hybrid approach gives fast, deterministic cleanup for the common case (no cycles) plus a safety net for cycles"
+      ],
+      "sample_answer": "CPython primarily manages memory via reference counting: each object stores a count of how many references point to it, incremented and decremented as references are created and destroyed, and the object is freed the instant its count hits zero — giving fast, deterministic cleanup. The gap is reference cycles, like two objects referencing each other: their counts never naturally reach zero even if nothing else in the program can reach them. A separate generational garbage collector periodically scans for and breaks such cycles, checking younger generations (where most garbage lives) more frequently than older ones for efficiency."
+    },
+    "follow_up_hint": "Ask them to construct a simple example of a reference cycle and explain why reference counting alone would leak it."
+  },
+  {
+    "id": "python-0003",
+    "question": "What is the difference between a list and a tuple in Python, and why might you choose a tuple even though it's less flexible?",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["backend", "general_sde", "ml"],
+    "topics": ["python-fundamentals", "data-structures"],
+    "tech_keywords": ["python"],
+    "companies_common": ["Amazon", "Infosys", "TCS"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Lists are mutable (can be modified after creation); tuples are immutable",
+        "Tuples can be used as dictionary keys or set elements (since they're hashable, if their contents are); lists cannot",
+        "Tuples have slightly lower memory overhead and can be marginally faster to create/iterate due to their immutability enabling internal optimizations",
+        "Immutability communicates intent: a tuple signals 'this fixed-size, fixed-content record shouldn't change', useful for things like coordinate pairs or function returning multiple values",
+        "Notes both support similar indexing/slicing operations, the core difference is mutability"
+      ],
+      "sample_answer": "Lists are mutable — you can append, remove, or modify elements after creation — while tuples are immutable once created. Because tuples are immutable and hashable (if their elements are), they can be used as dictionary keys or set members, which lists can't. Beyond that, tuples signal intent — a fixed-size record like a coordinate pair (x, y) — and have a bit less memory overhead. You'd choose a tuple when the collection's size and contents genuinely shouldn't change, or when you need it as a hashable key."
+    },
+    "follow_up_hint": "Ask what happens if a tuple contains a mutable object like a list — is the tuple still considered hashable?"
+  },
+  {
+    "id": "python-0004",
+    "question": "Explain Python decorators: what are they, and write a simple decorator that logs a function's execution time.",
+    "type": "coding",
+    "difficulty": 2,
+    "roles": ["backend", "general_sde", "ml"],
+    "topics": ["python-fundamentals", "decorators"],
+    "tech_keywords": ["python", "decorators"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A decorator is a function that takes another function and returns a modified/wrapped version of it, typically applied with @decorator syntax",
+        "Uses a nested wrapper function that calls the original function and adds behavior before/after",
+        "Uses functools.wraps to preserve the original function's name/docstring metadata on the wrapped version",
+        "Handles the wrapped function's arbitrary arguments via *args, **kwargs so the decorator works generically",
+        "Gives a working timing-decorator implementation, not just a description"
+      ],
+      "sample_answer": "A decorator wraps a function to add behavior without modifying its source. Example: 'import time, functools\\ndef timed(func):\\n    @functools.wraps(func)\\n    def wrapper(*args, **kwargs):\\n        start = time.perf_counter()\\n        result = func(*args, **kwargs)\\n        print(f\"{func.__name__} took {time.perf_counter() - start:.4f}s\")\\n        return result\\n    return wrapper'. functools.wraps preserves the original function's __name__ and docstring on the wrapped version, which matters for debugging and introspection."
+    },
+    "follow_up_hint": "Ask them to modify the decorator to accept an argument, e.g. @timed(threshold=1.0) that only logs if execution exceeds the threshold."
+  },
+  {
+    "id": "python-0005",
+    "question": "What is the difference between a generator and a regular function that returns a list? When would you prefer a generator?",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["backend", "general_sde", "ml"],
+    "topics": ["generators", "python-fundamentals"],
+    "tech_keywords": ["python", "generators"],
+    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A generator (using 'yield') produces values lazily, one at a time, pausing its execution state between each yield, rather than computing and returning a full list upfront",
+        "This gives O(1) memory relative to the sequence length, versus O(n) for materializing a full list",
+        "Generators are especially useful for large or infinite sequences, or pipelines where only part of the output may ever be consumed",
+        "Explains a generator can only be iterated once; you can't 're-run' it from the start without creating a new generator instance",
+        "Gives a concrete example: processing a huge log file line by line without loading it all into memory"
+      ],
+      "sample_answer": "A regular function returning a list computes the entire result upfront and holds it all in memory. A generator function, using yield instead of return, produces values lazily one at a time, pausing its execution state between each value — so memory usage stays constant regardless of how many items the sequence eventually produces. This is ideal for processing something like a multi-gigabyte log file line by line, or an infinite sequence, where materializing the whole thing as a list would be wasteful or impossible. The trade-off is that a generator can only be consumed once; iterating it again requires creating a fresh generator."
+    },
+    "follow_up_hint": "Ask them to write a generator expression versus an equivalent list comprehension and explain the memory difference."
+  },
+  {
+    "id": "python-0006",
+    "question": "Explain Python's mutable default argument pitfall: why does `def f(x, lst=[])` behave unexpectedly, and how do you fix it?",
+    "type": "scenario",
+    "difficulty": 2,
+    "roles": ["backend", "general_sde"],
+    "topics": ["python-fundamentals", "common-pitfalls"],
+    "tech_keywords": ["python"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Default argument values are evaluated exactly once, at function definition time, not on every call",
+        "A mutable default (like a list) is therefore the SAME object shared across every call that doesn't explicitly pass its own value",
+        "Mutating it in one call (e.g. lst.append(x)) persists that mutation into subsequent calls' 'default' state, causing surprising accumulated state",
+        "The fix: use None as the default sentinel, and inside the function do 'if lst is None: lst = []' to create a fresh list per call",
+        "Explains this is a well-known Python gotcha, not a bug, rooted in how default arguments are evaluated"
+      ],
+      "sample_answer": "Python evaluates default argument values once, when the function is defined, not each time it's called — so `def f(x, lst=[])` creates exactly one list object that gets reused as the default across every call that omits the argument. If the function mutates that list, e.g. lst.append(x), the mutation persists into the next call's 'default', silently accumulating state across unrelated calls. The standard fix is `def f(x, lst=None): if lst is None: lst = []`, which creates a genuinely fresh list on every call that needs a default."
+    },
+    "follow_up_hint": "Ask them to predict the exact output of calling the buggy function three times in a row without passing lst."
+  },
+  {
+    "id": "python-0007",
+    "question": "Explain the difference between deep copy and shallow copy in Python, using the copy module.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["backend", "general_sde"],
+    "topics": ["python-fundamentals"],
+    "tech_keywords": ["python"],
+    "companies_common": ["Amazon", "Infosys"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "copy.copy() makes a shallow copy: a new outer object, but nested mutable objects are still shared references with the original",
+        "copy.deepcopy() recursively copies nested objects too, producing a fully independent structure",
+        "Simple assignment (b = a) doesn't copy at all — it's just a second reference to the exact same object",
+        "Gives a concrete example showing a shallow copy of a list-of-lists where mutating an inner list affects both copies",
+        "Notes deepcopy has more overhead and must handle cycles (which the standard library's implementation does via a memo dictionary)"
+      ],
+      "sample_answer": "Plain assignment like b = a doesn't copy anything — both names refer to the same object. copy.copy() creates a new top-level object, but any nested mutable objects inside it are still the same shared references as the original, so mutating a nested list through the copy also changes the original. copy.deepcopy() recursively duplicates every nested object, giving two fully independent structures with no shared mutable state. For example, copying a list of lists shallowly gives two outer lists that still share the same inner list objects; deep copying gives fully separate inner lists too."
+    },
+    "follow_up_hint": "Ask how deepcopy handles an object graph containing a cycle (an object referencing itself indirectly) without infinite recursion."
+  },
+  {
+    "id": "python-0008",
+    "question": "What are Python context managers, and how would you implement one using both a class (__enter__/__exit__) and the @contextmanager decorator?",
+    "type": "coding",
+    "difficulty": 3,
+    "roles": ["backend", "general_sde"],
+    "topics": ["context-managers", "python-fundamentals"],
+    "tech_keywords": ["python", "resource-management"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A context manager defines setup and teardown logic run automatically by the 'with' statement, even if an exception occurs inside the block",
+        "Class-based: implement __enter__ (returns the resource, runs setup) and __exit__ (runs teardown, receives exception info and can suppress it by returning True)",
+        "Decorator-based: use @contextlib.contextmanager on a generator function, with a single yield splitting setup (before yield) from teardown (after yield, ideally in a try/finally)",
+        "Explains why the decorator-based approach needs the yield wrapped in try/finally to guarantee cleanup runs even if the with-block raises",
+        "Gives working code for both approaches, not just a description"
+      ],
+      "sample_answer": "Context managers handle setup/teardown around a 'with' block automatically. Class-based: 'class Resource:\\n    def __enter__(self):\\n        self.conn = open_connection()\\n        return self.conn\\n    def __exit__(self, exc_type, exc_val, exc_tb):\\n        self.conn.close()'. Decorator-based, using a generator: 'from contextlib import contextmanager\\n@contextmanager\\ndef resource():\\n    conn = open_connection()\\n    try:\\n        yield conn\\n    finally:\\n        conn.close()'. The try/finally around yield in the generator version is essential — without it, an exception raised inside the with-block would skip the cleanup code after yield."
+    },
+    "follow_up_hint": "Ask how __exit__ can suppress an exception raised inside the with-block, and whether that's usually a good idea."
+  },
+  {
+    "id": "python-0009",
+    "question": "Explain the difference between `*args` and `**kwargs` in a Python function signature, and how argument unpacking works when calling a function.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["backend", "general_sde", "ml"],
+    "topics": ["python-fundamentals"],
+    "tech_keywords": ["python"],
+    "companies_common": ["Infosys", "TCS", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "*args collects extra positional arguments into a tuple inside the function",
+        "**kwargs collects extra keyword arguments into a dict inside the function",
+        "At a call site, *iterable unpacks an iterable into separate positional arguments, and **dict unpacks a dict into keyword arguments",
+        "Explains ordering rules in a function signature: positional, then *args, then keyword-only, then **kwargs",
+        "Gives a concrete example combining both, e.g. a wrapper function forwarding all arguments to another function"
+      ],
+      "sample_answer": "*args in a function definition collects any extra positional arguments into a tuple; **kwargs collects extra keyword arguments into a dict. At a call site, the same syntax does the opposite — unpacking: my_func(*some_list) spreads a list's elements as separate positional arguments, and my_func(**some_dict) spreads a dict's items as keyword arguments. This is commonly used in wrapper/decorator functions that need to forward arbitrary arguments through to another function: 'def wrapper(*args, **kwargs): return original(*args, **kwargs)'."
+    },
+    "follow_up_hint": "Ask them to write a function signature that requires certain arguments to be keyword-only, using the * separator."
+  },
+  {
+    "id": "python-0010",
+    "question": "What is the difference between `is` and `==` in Python, and why can `a is b` sometimes appear True for small integers even without explicit interning code?",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["backend", "general_sde"],
+    "topics": ["python-fundamentals", "python-internals"],
+    "tech_keywords": ["python"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "'==' compares values/content (calls __eq__); 'is' compares object identity (same object in memory)",
+        "CPython caches/interns small integers (typically -5 to 256) as singleton objects, so two references to the same small int often ARE the same object, making 'is' misleadingly return True",
+        "This caching is a CPython implementation detail, not a language guarantee — relying on it is a bug waiting to happen for larger or dynamically computed integers",
+        "Recommends always using '==' for value comparison, reserving 'is' for identity checks like 'is None'",
+        "Gives a concrete example showing 'is' failing for larger integers outside the cached range"
+      ],
+      "sample_answer": "'==' compares values by calling the object's __eq__ method, while 'is' checks whether two references point to the literal same object in memory. CPython, as an implementation detail, caches small integers (roughly -5 to 256) as shared singleton objects, so `a = 5; b = 5; a is b` often returns True just because both happen to reference the same cached object — but this isn't guaranteed by the language and breaks for larger numbers, e.g. `a = 1000; b = 1000; a is b` is typically False. Because of this, 'is' should only be used for genuine identity checks like comparing against None, never as a substitute for value equality."
+    },
+    "follow_up_hint": "Ask them to explain why comparing to None should always use 'is None' rather than '== None'."
+  },
+  {
+    "id": "python-0011",
+    "question": "Explain Python's Method Resolution Order (MRO) and the C3 linearization algorithm in the context of multiple inheritance.",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["backend", "general_sde"],
+    "topics": ["python-internals", "oop-fundamentals"],
+    "tech_keywords": ["python", "oop"],
+    "companies_common": ["Google", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "MRO defines the order Python searches base classes when resolving an attribute/method on an instance, given multiple inheritance",
+        "Python uses C3 linearization, which guarantees a consistent order respecting each class's own local precedence and the overall hierarchy",
+        "Explains this avoids the classic diamond-inheritance ambiguity by producing one well-defined, deterministic order",
+        "Mentions super() uses the MRO, not just 'the direct parent', which matters for cooperative multiple inheritance",
+        "Notes ClassName.__mro__ or ClassName.mro() can be inspected directly to see the resolved order"
+      ],
+      "sample_answer": "When a class inherits from multiple base classes, Python needs a deterministic order to search for an attribute or method — that's the MRO, computed using the C3 linearization algorithm, which respects both each class's local inheritance order and the overall class hierarchy consistently, resolving diamond-shaped inheritance without ambiguity. This matters especially for super() calls: super() doesn't just mean 'my direct parent', it means 'the next class in the MRO after me', which is what makes cooperative multiple inheritance (where several classes in a chain each call super().__init__()) work correctly. You can inspect the actual computed order via ClassName.__mro__."
+    },
+    "follow_up_hint": "Ask them to trace through the MRO for a small diamond-inheritance example by hand."
+  },
+  {
+    "id": "python-0012",
+    "question": "Explain how Python's `asyncio` and `async`/`await` work: what problem do they solve, and how is this different from using threads?",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["backend", "general_sde"],
+    "topics": ["asyncio", "concurrency"],
+    "tech_keywords": ["python", "asyncio", "async", "concurrency"],
+    "companies_common": ["Amazon", "Google", "Uber"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "asyncio provides single-threaded cooperative concurrency via an event loop, well suited to I/O-bound workloads with many concurrent operations",
+        "An 'async def' function is a coroutine; 'await' suspends it at a point where it's waiting on I/O, letting the event loop run other ready coroutines meanwhile",
+        "Unlike threads, there's no preemption and no OS-level context switching — a coroutine only yields control at explicit 'await' points, so there's less risk of race conditions on shared state between awaits",
+        "Explains this avoids the overhead of one OS thread per connection, letting a single thread efficiently juggle thousands of concurrent I/O-bound tasks",
+        "Notes asyncio doesn't help CPU-bound work at all, since it's still fundamentally single-threaded execution of Python code"
+      ],
+      "sample_answer": "asyncio runs many coroutines cooperatively on a single thread via an event loop: an 'async def' function is a coroutine, and 'await' marks a point where it's waiting on I/O, voluntarily yielding control back to the event loop so it can run other ready coroutines in the meantime. This differs from threads in that there's no preemptive OS-level context switching — a coroutine only ever gives up control at an explicit await point, which makes reasoning about shared state much simpler since you know exactly where interleaving can happen. It's ideal for I/O-bound work with many concurrent operations (e.g. thousands of open network connections), avoiding the memory and context-switch overhead of one OS thread per connection, but it does nothing to speed up CPU-bound work since it's still single-threaded Python execution under the hood."
+    },
+    "follow_up_hint": "Ask what happens if a CPU-bound, blocking call is accidentally placed inside an async function without offloading it — how does it affect the whole event loop?"
+  },
+  {
+    "id": "python-0013",
+    "question": "What is a Python metaclass, and give a real-world example of when you'd use one.",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["backend", "general_sde"],
+    "topics": ["python-internals", "oop-fundamentals"],
+    "tech_keywords": ["python", "metaclass"],
+    "companies_common": ["Google", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A metaclass is 'the class of a class' — it controls how classes themselves are created, similar to how a class controls how instances are created",
+        "By default, all Python classes are instances of 'type'; a custom metaclass typically subclasses type and overrides __new__ or __init__ to customize class creation",
+        "Explains a real use case: an ORM automatically registering model fields/validators when a class is defined, without the developer writing boilerplate",
+        "Notes metaclasses are rarely needed in typical application code — often a class decorator or __init_subclass__ hook can achieve similar results more simply",
+        "Distinguishes a metaclass (controls class creation) from a decorator (wraps an already-created class or function)"
+      ],
+      "sample_answer": "Just as a class defines how its instances behave, a metaclass defines how classes themselves are constructed — by default, every class in Python is an instance of the built-in 'type' metaclass. A custom metaclass subclasses type and overrides __new__ or __init__ to hook into class creation, for example an ORM's base model class using a metaclass to automatically scan class attributes and register them as database fields when a subclass is defined, without the developer writing that registration code manually. In practice, metaclasses are a fairly advanced, rarely-needed tool — many of the same use cases can be handled more simply with a class decorator or the __init_subclass__ hook added in Python 3.6."
+    },
+    "follow_up_hint": "Ask them to compare using a metaclass versus __init_subclass__ for the same class-registration use case."
+  },
+  {
+    "id": "python-0014",
+    "question": "Explain list comprehensions versus generator expressions in Python, including a case where using one instead of the other would cause a bug.",
+    "type": "scenario",
+    "difficulty": 2,
+    "roles": ["backend", "general_sde", "ml"],
+    "topics": ["python-fundamentals", "generators"],
+    "tech_keywords": ["python"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A list comprehension `[x for x in iterable]` eagerly builds the entire list in memory immediately",
+        "A generator expression `(x for x in iterable)` produces a lazy iterator, computing values on demand",
+        "A bug scenario: passing a generator expression to a function that needs to iterate over the data multiple times (e.g. calling len() then iterating) fails, since a generator is exhausted after one pass and has no len()",
+        "Explains when each is appropriate: list comprehension when you need random access, length, or multiple passes; generator expression when you only need a single forward pass and want to save memory",
+        "Notes both share the same syntax pattern, differing only in brackets [] versus parentheses ()"
+      ],
+      "sample_answer": "A list comprehension eagerly computes and stores every element in a new list immediately, so you can call len() on it, index into it, or iterate it multiple times. A generator expression looks almost identical but uses parentheses instead of brackets, and produces values lazily on a single forward pass — it doesn't support len() and can only be iterated once. A concrete bug: if you write `data = (x*2 for x in range(10))` and then pass it to a function that both checks `len(data)` and later iterates over it, it'll fail on len() immediately, and even if you avoided that, iterating it twice would yield nothing the second time since it's already exhausted. The fix is either using a list comprehension, or explicitly materializing the generator with list(data) once you need multiple passes."
+    },
+    "follow_up_hint": "Ask them what happens if you try to call len() directly on a generator expression, and why."
+  },
+  {
+    "id": "python-0015",
+    "question": "What is duck typing in Python, and how does it relate to Python being a dynamically typed language?",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["backend", "general_sde"],
+    "topics": ["python-fundamentals"],
+    "tech_keywords": ["python"],
+    "companies_common": ["Infosys", "TCS", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Duck typing: an object's suitability for an operation is determined by whether it has the needed methods/attributes, not by its declared type ('if it walks like a duck and quacks like a duck...')",
+        "Python doesn't check types at compile time (it has none, being interpreted) and doesn't require an object to explicitly declare/implement an interface to be used somewhere",
+        "Contrasts with statically typed languages that typically require explicit interface implementation or type declarations to allow substitution",
+        "Gives a concrete example: any object with a .read() method can be passed where 'a file-like object' is expected, regardless of its actual class",
+        "Mentions Python's optional type hints (PEP 484) and Protocol classes as a way to formalize duck-typed interfaces for tooling, without changing runtime behavior"
+      ],
+      "sample_answer": "Duck typing means Python cares about whether an object actually has the methods/attributes needed for an operation, not what class it's declared to be — 'if it walks like a duck and quacks like a duck, it's a duck' as far as the code is concerned. This fits naturally with Python being dynamically typed: there's no compile-time type checker requiring an object to formally implement an interface. For example, any object with a .read() method can be used anywhere 'a file-like object' is expected, whether it's an actual file, a network socket wrapper, or an in-memory io.StringIO. Python's optional type hints and typing.Protocol let you formalize these duck-typed contracts for static analysis tools, without changing how the code actually runs."
+    },
+    "follow_up_hint": "Ask how typing.Protocol lets you get static type-checking benefits while still preserving duck-typing at runtime."
+  }
+]

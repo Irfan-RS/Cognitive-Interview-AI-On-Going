@@ -1,0 +1,222 @@
+[
+  {
+    "id": "frontend-0001",
+    "question": "Explain the CSS box model, including the difference between `content-box` and `border-box` sizing.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["css", "layout"],
+    "tech_keywords": ["css", "html"],
+    "companies_common": ["Amazon", "Meta", "Infosys"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Every element's box is composed of content, padding, border, and margin, from inside out",
+        "content-box (the default): width/height apply only to the content area; padding and border are added on top, making the total rendered size larger than the specified width",
+        "border-box: width/height include content, padding, and border, so the specified size IS the total rendered size (margin is still separate/outside)",
+        "Explains why border-box is generally preferred in modern layouts since it makes sizing far more predictable",
+        "Mentions the common practice of setting `box-sizing: border-box` globally via a CSS reset"
+      ],
+      "sample_answer": "Every element's rendered box consists of content, padding, border, and margin from the inside out. With the default content-box model, a width/height you set applies only to the content area — padding and border add on top, so the element's actual rendered size ends up larger than the number you specified. With border-box, the width/height instead represent the total size including padding and border, making layout math far more predictable. Because of this, most modern CSS resets set `* { box-sizing: border-box; }` globally so sizing behaves intuitively across the whole page."
+    },
+    "follow_up_hint": "Ask them to explain how margin collapsing works between two adjacent block elements."
+  },
+  {
+    "id": "frontend-0002",
+    "question": "Explain the difference between Flexbox and CSS Grid, and when you'd choose one over the other.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["css", "layout"],
+    "tech_keywords": ["css", "flexbox", "grid"],
+    "companies_common": ["Amazon", "Meta", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Flexbox is fundamentally one-dimensional — it lays out items along a single row or column, distributing space and alignment along that axis",
+        "Grid is two-dimensional — it lets you define rows and columns simultaneously, placing items into an explicit or implicit grid structure",
+        "Flexbox suits component-level layout: navbars, button groups, centering content, distributing items along one direction",
+        "Grid suits page-level or complex layouts needing precise control over both rows and columns simultaneously, like a full page layout or a card grid",
+        "Notes they're commonly combined: Grid for the overall page structure, Flexbox for aligning content within individual grid cells/components"
+      ],
+      "sample_answer": "Flexbox is a one-dimensional layout model — it arranges and distributes items along a single row or column, handling alignment and spacing along that axis well. Grid is two-dimensional, letting you define both rows and columns at once and place items precisely into that structure. Flexbox is a natural fit for component-level layout like a navbar or a row of buttons that need to be aligned or evenly spaced; Grid fits page-level layouts or anything needing simultaneous control over rows and columns, like a dashboard or card gallery. In practice they're often combined — Grid for the overall page skeleton, Flexbox for aligning content inside individual grid areas."
+    },
+    "follow_up_hint": "Ask them to lay out a specific responsive card grid using CSS Grid, explaining how auto-fit and minmax() work together."
+  },
+  {
+    "id": "frontend-0003",
+    "question": "What is the Critical Rendering Path, and what are common techniques to improve a page's initial load performance?",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["performance", "rendering"],
+    "tech_keywords": ["css", "html", "javascript", "performance"],
+    "companies_common": ["Amazon", "Meta", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "The Critical Rendering Path is the sequence of steps the browser takes from receiving HTML/CSS/JS to painting pixels: parsing HTML into the DOM, CSS into the CSSOM, combining them into the render tree, layout, then paint",
+        "Render-blocking resources (synchronous <script> tags in <head>, external stylesheets) delay this path, since the browser typically must fetch/parse them before continuing",
+        "Techniques: defer or async non-critical JavaScript, inline critical above-the-fold CSS, lazy-load below-the-fold images, use resource hints (preload/preconnect)",
+        "Mentions server-side rendering or static generation to reduce the amount of JS-driven work needed before first paint",
+        "Discusses relevant Core Web Vitals metrics (e.g. Largest Contentful Paint) as the way this is actually measured/optimized against in practice"
+      ],
+      "sample_answer": "The Critical Rendering Path is the sequence from receiving raw HTML/CSS/JS to actual pixels on screen: parsing HTML into the DOM, parsing CSS into the CSSOM, combining them into a render tree, computing layout, then painting. Render-blocking resources — a synchronous script tag in the head, or an external stylesheet — force the browser to pause this pipeline until they're fetched and processed. Common optimizations include marking non-critical scripts as `defer` or `async`, inlining critical above-the-fold CSS so the browser doesn't wait on an external file for the first paint, lazy-loading images below the fold, and using `<link rel=preload>` for critical resources. Server-side rendering also helps by shipping meaningful HTML immediately rather than requiring JS execution before anything visible appears — measured in practice via Core Web Vitals like Largest Contentful Paint."
+    },
+    "follow_up_hint": "Ask them to explain the difference between `defer` and `async` on a script tag and when each is appropriate."
+  },
+  {
+    "id": "frontend-0004",
+    "question": "Explain the concept of responsive web design, and how CSS media queries and relative units (rem, %, vw/vh) support it.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["css", "responsive-design"],
+    "tech_keywords": ["css", "responsive-design"],
+    "companies_common": ["Amazon", "Infosys", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Responsive design means a layout adapts to different screen sizes and devices rather than requiring separate desktop/mobile sites",
+        "Media queries apply different CSS rules based on conditions like viewport width, enabling breakpoint-based layout changes",
+        "rem scales relative to the root font size, useful for consistent, accessible typographic scaling",
+        "% is relative to a parent element's size; vw/vh are relative to the viewport's width/height, useful for full-bleed or viewport-relative sizing",
+        "Explains a mobile-first approach: writing base styles for small screens, then adding media queries for progressively larger breakpoints"
+      ],
+      "sample_answer": "Responsive design means one layout adapts fluidly to different screen sizes, rather than serving separate mobile and desktop sites. Media queries let you apply different CSS rules based on conditions like viewport width, which is how breakpoint-based layout changes (e.g. stacking a two-column layout into one column below 768px) are implemented. For sizing, `rem` scales relative to the root element's font size, which is great for consistent, accessibility-respecting typography; `%` sizes relative to a parent element; `vw`/`vh` size relative to the viewport itself, useful for things like a full-height hero section. A common approach is 'mobile-first': write base styles targeting small screens, then layer on media queries that adjust the layout for progressively larger viewports."
+    },
+    "follow_up_hint": "Ask why a mobile-first approach (using min-width media queries) is often recommended over a desktop-first approach (max-width)."
+  },
+  {
+    "id": "frontend-0005",
+    "question": "Explain React's reconciliation process and why keys matter when rendering a list of components.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["react", "virtual-dom"],
+    "tech_keywords": ["react", "javascript", "virtual-dom"],
+    "companies_common": ["Meta", "Amazon", "Netflix"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Reconciliation is React's process of diffing the new Virtual DOM tree against the previous one to determine the minimal real DOM updates needed",
+        "For lists, React uses the 'key' prop to match elements between renders, rather than comparing purely by position/index",
+        "Without stable keys (or using array index as key when the list can reorder), React can misidentify which item is which, leading to incorrect state association or wasted re-renders",
+        "Explains a concrete bug scenario: a list of input fields keyed by index, where inserting an item at the top causes every existing input's local state (and DOM node) to shift to the wrong item",
+        "Recommends keys be a stable, unique identifier tied to the actual data item (e.g. a database ID), not its array position"
+      ],
+      "sample_answer": "Reconciliation is how React compares the newly rendered Virtual DOM tree to the previous one and figures out the minimal set of real DOM changes needed. For a list of children, React uses each item's 'key' prop to match elements across renders instead of relying purely on their position. If you use the array index as a key and the list can reorder or have items inserted/removed, React can incorrectly match the wrong element to the wrong key across renders — a classic bug is a list of text inputs keyed by index: inserting a new item at the top shifts every subsequent input's associated DOM node, so users see their typed values appear to jump to different fields. The fix is using a stable, unique identifier from the actual data (like a database ID) as the key, not the array index."
+    },
+    "follow_up_hint": "Ask them to walk through exactly what goes wrong, step by step, in the index-as-key input-reordering bug."
+  },
+  {
+    "id": "frontend-0006",
+    "question": "Explain the difference between controlled and uncontrolled components in React forms.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["react", "forms"],
+    "tech_keywords": ["react", "javascript"],
+    "companies_common": ["Meta", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A controlled component's value is driven entirely by React state — the input's value prop comes from state, and an onChange handler updates that state",
+        "An uncontrolled component manages its own internal state in the DOM, and React reads its current value on demand (e.g. via a ref) rather than tracking it on every keystroke",
+        "Controlled components give full programmatic control (validation on every keystroke, conditionally disabling submit, formatting input) at the cost of a re-render per keystroke",
+        "Uncontrolled components are simpler and can be more performant for very large forms, but make certain real-time validation/behavior harder to implement",
+        "Gives a concrete example of each: a search box with live validation (controlled) versus a simple form read only on submit (uncontrolled)"
+      ],
+      "sample_answer": "A controlled component has its value fully owned by React state — the input's `value` prop reflects state, and an `onChange` handler updates that state on every keystroke, so React re-renders and the input always reflects the current state value. An uncontrolled component instead lets the DOM manage its own value internally, and you read the current value only when needed, typically via a ref — like grabbing form values only when the user clicks submit. Controlled components give precise control, such as validating and disabling the submit button in real time as the user types, at the cost of a re-render per keystroke; uncontrolled components are simpler and can be more efficient for large, simple forms where per-keystroke reactivity isn't needed."
+    },
+    "follow_up_hint": "Ask them why mixing controlled and uncontrolled behavior for the same input (e.g. starting undefined, then defined) causes a React warning."
+  },
+  {
+    "id": "frontend-0007",
+    "question": "Explain what React hooks are, and why the 'Rules of Hooks' (only call at the top level, only from React functions) exist.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["react", "hooks"],
+    "tech_keywords": ["react", "javascript", "hooks"],
+    "companies_common": ["Meta", "Amazon", "Netflix"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Hooks let function components use state and other React features without needing a class",
+        "React tracks each hook's state by the ORDER in which hooks are called within a component, not by name — it relies on a stable call order across renders",
+        "Calling a hook conditionally, in a loop, or after an early return can change that order between renders, causing React to associate the wrong stored state with the wrong hook call",
+        "This is why hooks must be called unconditionally at the top level, in the same order, every render",
+        "Explains 'only from React functions' ensures hooks are always called within a component/render context where React's per-component hook state actually exists"
+      ],
+      "sample_answer": "Hooks let function components use state, effects, and other React features without needing to be written as classes. React internally keeps each component's hook state in a plain array-like list, matched up purely by the ORDER hooks are called in — not by name or any other identifier. If you call a hook conditionally, e.g. inside an if statement or after an early return, the call order can differ between renders, causing React to mismatch state between hook calls in a way it can't detect. That's exactly why hooks must always be called unconditionally, at the top level of the component, in the same order every single render — and only from actual React function components or custom hooks, where that per-component hook bookkeeping actually exists."
+    },
+    "follow_up_hint": "Ask them to trace through, call by call, what state gets misassociated with what if a useState call is placed inside an if statement."
+  },
+  {
+    "id": "frontend-0008",
+    "question": "Explain the difference between `useEffect` and `useLayoutEffect` in React, and give a scenario where the difference actually matters.",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["react", "hooks"],
+    "tech_keywords": ["react", "hooks"],
+    "companies_common": ["Meta", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "useEffect runs asynchronously after the browser has painted the updated DOM to the screen",
+        "useLayoutEffect runs synchronously after DOM mutations but BEFORE the browser paints, blocking the paint until it finishes",
+        "Because useEffect runs after paint, a DOM measurement/mutation inside it can cause a visible flicker (the user briefly sees the 'wrong' state before it's corrected)",
+        "useLayoutEffect avoids that flicker for cases needing to measure and immediately adjust the DOM (e.g. positioning a tooltip based on measured element size) before the user ever sees the intermediate state",
+        "Explains useLayoutEffect should be used sparingly, since blocking paint can hurt perceived performance if overused"
+      ],
+      "sample_answer": "useEffect runs its callback asynchronously, after React has updated the DOM AND the browser has already painted that update to the screen. useLayoutEffect runs synchronously, right after DOM mutations but before the browser paints — blocking the paint until it completes. This matters concretely for something like a tooltip that needs to measure its own rendered size and reposition itself to avoid going off-screen: doing that measurement-and-adjustment in useEffect can cause a visible flicker, since the user briefly sees the tooltip in its wrong initial position before the correction is painted; useLayoutEffect avoids that flicker entirely by finishing the adjustment before anything is shown. Because it blocks painting, useLayoutEffect should be used sparingly — only when you genuinely need to prevent a visual flash from a DOM measurement/adjustment."
+    },
+    "follow_up_hint": "Ask them for another concrete example beyond tooltip positioning where useLayoutEffect's synchronous timing is actually necessary."
+  },
+  {
+    "id": "frontend-0009",
+    "question": "What is web accessibility (a11y), and name at least three concrete practices for making a web page accessible to screen reader users.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["accessibility"],
+    "tech_keywords": ["html", "accessibility", "aria"],
+    "companies_common": ["Amazon", "Microsoft", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Accessibility means designing so people with disabilities (visual, motor, auditory, cognitive) can use the product effectively, often via assistive technology like screen readers",
+        "Use semantic HTML elements (nav, button, header) instead of generic divs with click handlers, since assistive tech relies on semantic meaning",
+        "Provide meaningful alt text for images, and appropriate ARIA labels/roles for custom interactive components that lack native semantics",
+        "Ensure full keyboard navigability (tab order, visible focus states) since not all users can use a mouse",
+        "Maintain sufficient color contrast and don't rely on color alone to convey information"
+      ],
+      "sample_answer": "Web accessibility means the site is usable by people with disabilities, often via assistive technology like screen readers or keyboard-only navigation. Concrete practices: use semantic HTML — a real <button> instead of a <div onClick=...> — since screen readers rely on an element's semantic role to announce what it is and how it can be used; provide meaningful alt text on images, and appropriate ARIA attributes for custom widgets (like a custom dropdown) that don't have native semantics; and ensure every interactive element is reachable and operable via keyboard alone, with a clearly visible focus indicator, since not every user can use a mouse. Sufficient color contrast, and not relying on color alone to convey meaning (e.g. error states), are also essential."
+    },
+    "follow_up_hint": "Ask them why a <div onClick=...> styled to look like a button is inaccessible even if it's visually indistinguishable from a real button."
+  },
+  {
+    "id": "frontend-0010",
+    "question": "Explain code splitting and lazy loading in a modern JavaScript frontend bundle, and why they improve initial load time.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["performance", "bundling"],
+    "tech_keywords": ["javascript", "webpack", "performance", "bundling"],
+    "companies_common": ["Amazon", "Meta", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Without code splitting, a bundler produces one large JavaScript bundle containing the entire application, all downloaded and parsed before the app can run",
+        "Code splitting breaks the bundle into smaller chunks that can be loaded independently, e.g. per route or per feature",
+        "Lazy loading defers fetching a chunk until it's actually needed, e.g. only loading a settings page's code when the user navigates there",
+        "Explains the mechanism in modern tooling: dynamic import() syntax signals a bundler (webpack, Vite) to create a separate chunk at that point",
+        "Discusses the trade-off: too many tiny chunks adds request overhead, so chunking granularity should balance initial load size against too many small network requests"
+      ],
+      "sample_answer": "By default, a bundler can produce one giant JavaScript file containing the whole application, which the browser must download and parse before anything can run — hurting initial load time as the app grows. Code splitting breaks this into smaller chunks, often one per route or feature, and lazy loading means a given chunk is only fetched when it's actually needed — for example, a settings page's code isn't downloaded until the user actually navigates there. In practice this is done via dynamic `import()` syntax, which signals bundlers like webpack or Vite to split that import point into its own chunk automatically. The trade-off is that splitting too finely creates many small network requests with their own overhead, so chunk granularity needs to be tuned rather than maximized blindly."
+    },
+    "follow_up_hint": "Ask them how they'd decide what to split by, e.g. route-based versus component-based code splitting, for a large app."
+  }
+]

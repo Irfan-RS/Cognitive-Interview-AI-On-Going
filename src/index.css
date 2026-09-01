@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+
+  --color-ink-950: #05060a;
+  --color-ink-900: #0a0c14;
+  --color-ink-800: #10131d;
+  --color-ink-700: #171b28;
+  --color-ink-600: #232838;
+  --color-ink-500: #343b50;
+  --color-mist-400: #7d879e;
+  --color-mist-300: #a3abbe;
+  --color-mist-200: #cbd0dc;
+  --color-mist-100: #eceef3;
+
+  --color-brand-500: #6d5bff;
+  --color-brand-400: #8b7bff;
+  --color-brand-300: #b1a5ff;
+  --color-glow-400: #22e0d8;
+
+  --color-mock-500: #ff6b6b;
+  --color-practice-500: #22d3b8;
+  --color-amber-400: #ffb454;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-ink-950);
+  color: var(--color-mist-200);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+}
+
+/* A faint, ever-present film grain over the whole app — the single cheapest
+   trick for making a flat dark UI stop looking like a template. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-brand-500) 40%, transparent);
+  color: white;
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-mist-100) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-mist-100) 6%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-gradient {
+  background: linear-gradient(100deg, var(--color-mist-100) 20%, var(--color-brand-300) 60%, var(--color-glow-400) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* A soft, slow-drifting two-tone glow used behind hero/panel content for depth
+   without resorting to a static flat gradient blob. */
+.ambient-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ambient-glow::before,
+.ambient-glow::after {
+  content: "";
+  position: absolute;
+  width: 42vw;
+  height: 42vw;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.28;
+  animation: drift 22s ease-in-out infinite alternate;
+}
+.ambient-glow::before {
+  top: -12%;
+  left: -8%;
+  background: var(--color-brand-500);
+}
+.ambient-glow::after {
+  bottom: -18%;
+  right: -10%;
+  background: var(--color-glow-400);
+  animation-delay: -11s;
+}
+
+@keyframes drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(6%, 4%) scale(1.08); }
+}
+
+/* Glass panel: the workhorse surface for the interview app's screens —
+   layered translucency + a hairline gradient border instead of a flat
+   single-color border, so panels read as "designed" rather than boxed. */
+.glass-panel {
+  position: relative;
+  border-radius: 1.25rem;
+  /* Fully opaque on purpose — a translucent ink-800/900 blend was nearly
+     indistinguishable from the near-black page background (ink-950) on any
+     section without a colorful ambient-glow blob directly behind it. */
+  background: linear-gradient(160deg, var(--color-ink-700), var(--color-ink-800));
+  border: 1px solid color-mix(in srgb, var(--color-mist-100) 16%, transparent);
+  box-shadow: 0 1px 0 0 color-mix(in srgb, white 8%, transparent) inset, 0 20px 60px -20px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(16px);
+}
+
+.glow-ring {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-brand-400) 50%, transparent), 0 0 32px -4px color-mix(in srgb, var(--color-brand-500) 55%, transparent);
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-mock-500) 45%, transparent); }
+  70% { box-shadow: 0 0 0 14px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.animate-rec {
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes soft-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.12); }
+}
+.animate-soft-pulse {
+  animation: soft-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-rise-in {
+  animation: rise-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes bar-bounce {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+.animate-bar-bounce {
+  animation: bar-bounce 1.1s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, white 14%, transparent), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2.2s ease-in-out infinite;
+}

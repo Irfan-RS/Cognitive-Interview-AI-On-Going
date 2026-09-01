@@ -1,0 +1,332 @@
+[
+  {
+    "id": "js-0001",
+    "question": "Explain the JavaScript event loop: how do the call stack, task queue (macrotasks), and microtask queue relate to each other?",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["frontend", "backend", "fullstack"],
+    "topics": ["event-loop", "javascript-internals"],
+    "tech_keywords": ["javascript", "nodejs", "event-loop", "async"],
+    "companies_common": ["Amazon", "Google", "Meta", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "JavaScript is single-threaded: only one thing runs on the call stack at a time",
+        "Macrotasks (e.g. setTimeout callbacks, I/O events) and microtasks (e.g. Promise callbacks, queueMicrotask) are queued separately",
+        "After each macrotask completes and the call stack is empty, the ENTIRE microtask queue is drained before the next macrotask runs",
+        "This is why a Promise.resolve().then() callback runs before a setTimeout(fn, 0) callback, even though both are 'async'",
+        "Explains the event loop's job: repeatedly check if the stack is empty, drain microtasks, then pull the next macrotask"
+      ],
+      "sample_answer": "JavaScript runs on a single thread with one call stack. Asynchronous callbacks don't run immediately — they're queued, either as macrotasks (like setTimeout callbacks or I/O completions) or microtasks (like Promise .then() callbacks). The event loop's rule is: once the call stack is empty after running a macrotask, it drains the ENTIRE microtask queue before picking up the next macrotask. That's why `Promise.resolve().then(() => console.log('a')); setTimeout(() => console.log('b'), 0);` logs 'a' before 'b', even with a 0ms timeout — the microtask queue is always fully drained first."
+    },
+    "follow_up_hint": "Ask them to predict the exact console.log output order for a snippet mixing setTimeout, Promise.then, and synchronous code."
+  },
+  {
+    "id": "js-0002",
+    "question": "Explain the difference between `var`, `let`, and `const`, particularly around scoping and hoisting.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["javascript-fundamentals", "scoping"],
+    "tech_keywords": ["javascript"],
+    "companies_common": ["Amazon", "Meta", "Infosys", "TCS"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "var is function-scoped (or global), let/const are block-scoped",
+        "var declarations are hoisted and initialized to undefined; let/const are hoisted but left in a 'temporal dead zone' until their declaration line executes",
+        "const prevents reassignment of the binding itself, but doesn't make the referenced object/array immutable (its contents can still be mutated)",
+        "Explains the classic var-in-a-loop closure bug (all closures share the same function-scoped variable) versus let creating a fresh binding per iteration",
+        "Recommends const by default, let when reassignment is needed, and avoiding var in modern code"
+      ],
+      "sample_answer": "var is function-scoped and hoisted with an initial value of undefined, meaning it's accessible (as undefined) even before its declaration line. let and const are block-scoped — confined to the nearest {} — and while they're technically hoisted too, accessing them before their declaration throws a ReferenceError due to the 'temporal dead zone'. const prevents reassigning the variable itself, though if it holds an object or array, that object's contents can still be mutated. The classic var pitfall is a loop like `for (var i = 0; i < 3; i++) { setTimeout(() => console.log(i)) }` logging 3, 3, 3 because all callbacks share the same var — using let instead creates a fresh binding per iteration, correctly logging 0, 1, 2."
+    },
+    "follow_up_hint": "Ask them to explain exactly why the var-in-a-loop closure example logs 3, 3, 3 instead of 0, 1, 2."
+  },
+  {
+    "id": "js-0003",
+    "question": "Explain how `this` is determined in JavaScript, comparing regular functions, arrow functions, and explicit binding with call/apply/bind.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["javascript-fundamentals", "this-binding"],
+    "tech_keywords": ["javascript"],
+    "companies_common": ["Amazon", "Meta", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "In a regular function, 'this' is determined dynamically by HOW the function is called (its call-site), not where it's defined",
+        "Arrow functions don't have their own 'this' — they lexically inherit 'this' from their enclosing scope at definition time",
+        "call()/apply() invoke a function immediately with an explicitly specified 'this'; bind() returns a new function permanently bound to a given 'this'",
+        "Gives a concrete example of the classic bug: a regular method passed as a callback (e.g. to setTimeout or an event handler) losing its intended 'this'",
+        "Explains arrow functions or .bind() as the fix for that specific bug"
+      ],
+      "sample_answer": "For a regular function, 'this' is determined by how it's called — as a method (obj.method()), 'this' is obj; called plainly, 'this' is undefined in strict mode or the global object otherwise. Arrow functions don't have their own 'this' at all — they capture 'this' lexically from whatever scope surrounds them when defined, which never changes based on how they're later called. call() and apply() let you invoke a function immediately with an explicit 'this' (differing only in how they pass arguments); bind() instead returns a new function permanently locked to a given 'this'. The classic bug is passing `this.handleClick` as an event callback — by the time it's invoked, 'this' is no longer the original object; fixing it means using `this.handleClick.bind(this)` or defining handleClick as an arrow function class field."
+    },
+    "follow_up_hint": "Ask them to fix a broken example where a class method loses 'this' when passed as a callback."
+  },
+  {
+    "id": "js-0004",
+    "question": "Explain prototypal inheritance in JavaScript, and how the prototype chain is used to resolve property lookups.",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["javascript-internals", "oop-fundamentals"],
+    "tech_keywords": ["javascript", "prototype"],
+    "companies_common": ["Amazon", "Meta", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Every JavaScript object has an internal link (accessible via __proto__ or Object.getPrototypeOf) to another object, its prototype",
+        "Looking up a property checks the object itself first, then walks up the prototype chain until found or the chain ends at null",
+        "class syntax is largely syntactic sugar over this same prototype-based mechanism, not a separate classical inheritance system",
+        "Explains Object.create() as a way to explicitly set an object's prototype, and how 'new SomeConstructor()' sets the new object's prototype to SomeConstructor.prototype",
+        "Distinguishes this from classical (class-based) inheritance in languages like Java, where instances aren't directly linked to a shared object"
+      ],
+      "sample_answer": "Every object in JavaScript has an internal prototype reference to another object. When you access a property, the engine first checks the object itself, and if not found, walks up the prototype chain — checking the prototype's prototype, and so on — until it finds the property or reaches the end of the chain (null). The 'class' keyword introduced in ES6 is syntactic sugar over this same mechanism: under the hood, methods defined in a class body still end up on the prototype object shared by all instances. You can also set up this chain manually with Object.create(protoObject), or `new Constructor()` automatically sets the new instance's prototype to Constructor.prototype."
+    },
+    "follow_up_hint": "Ask them to explain why methods defined via class syntax are shared across instances but instance fields set in the constructor are not."
+  },
+  {
+    "id": "js-0005",
+    "question": "What is a closure in JavaScript? Give a practical example, like creating a private counter.",
+    "type": "coding",
+    "difficulty": 2,
+    "roles": ["frontend", "fullstack", "backend"],
+    "topics": ["closures", "javascript-fundamentals"],
+    "tech_keywords": ["javascript", "closures"],
+    "companies_common": ["Amazon", "Meta", "Microsoft", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A closure is a function that retains access to variables from its enclosing lexical scope even after that outer function has finished executing",
+        "This allows encapsulating private state that's only accessible through the closure's exposed functions",
+        "Gives a working example: a counter factory function returning increment/decrement/getValue functions that all close over the same private 'count' variable",
+        "Explains this is how JavaScript achieves data privacy before/without native private class fields",
+        "Notes closures are also the underlying mechanism behind things like React hooks and memoized/currying functions"
+      ],
+      "sample_answer": "A closure lets an inner function 'remember' variables from the scope it was defined in, even after that outer function has returned. Example: `function makeCounter() {\\n  let count = 0;\\n  return {\\n    increment: () => ++count,\\n    getValue: () => count\\n  };\\n}\\nconst counter = makeCounter();\\ncounter.increment();\\ncounter.getValue(); // 1`. The variable `count` isn't accessible from outside directly — it's only reachable through the returned functions, which both close over the same `count` binding, giving effectively private state without needing a class."
+    },
+    "follow_up_hint": "Ask them to explain the classic closure-in-a-loop bug and how let versus var affects it."
+  },
+  {
+    "id": "js-0006",
+    "question": "Explain the difference between shallow and deep equality checks in JavaScript, and why `{} === {}` is false.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["javascript-fundamentals"],
+    "tech_keywords": ["javascript"],
+    "companies_common": ["Amazon", "Meta", "Infosys"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "'===' for objects/arrays compares reference identity, not structural content",
+        "Two separately created object literals with identical content are still different objects in memory, so '===' returns false",
+        "Shallow equality compares only the top-level keys/values (useful and common in UI frameworks like React for cheap re-render checks)",
+        "Deep equality recursively compares nested structures for full content equality",
+        "Gives a concrete example relevant to frontend work, e.g. React re-rendering because a new object reference was passed as a prop even though its contents are 'the same'"
+      ],
+      "sample_answer": "'===' compares objects and arrays by reference, not content — two object literals `{}` created separately are two distinct objects in memory, so `{} === {}` is false even though they look identical. Shallow equality compares only the immediate top-level properties (useful for cheap checks, like React's default prop comparison in memoized components), while deep equality recursively compares all nested values for true content equality. A common real-world gotcha: passing a freshly created object or array as a prop every render (even with identical values) breaks reference-equality checks and causes unnecessary re-renders in frameworks that rely on shallow comparison."
+    },
+    "follow_up_hint": "Ask how they'd implement a simple deep-equality function themselves for two arbitrary objects."
+  },
+  {
+    "id": "js-0007",
+    "question": "Explain Promises in JavaScript: what are the three states, and how does Promise.all differ from Promise.allSettled and Promise.race?",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["frontend", "backend", "fullstack"],
+    "topics": ["promises", "async"],
+    "tech_keywords": ["javascript", "promises", "async"],
+    "companies_common": ["Amazon", "Meta", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A Promise is pending, then settles as either fulfilled (with a value) or rejected (with a reason) — settlement is final and irreversible",
+        "Promise.all waits for all promises to fulfill, but rejects immediately as soon as any one rejects, discarding the others' eventual results",
+        "Promise.allSettled waits for every promise to settle regardless of outcome, returning an array describing each one's fulfilled/rejected status",
+        "Promise.race settles as soon as the FIRST promise settles, whether fulfilled or rejected, ignoring the rest",
+        "Gives a concrete use case for each: Promise.all for 'all must succeed', allSettled for 'run all, report individually', race for a timeout pattern"
+      ],
+      "sample_answer": "A Promise starts pending and settles exactly once, either fulfilled with a value or rejected with a reason. Promise.all waits for every promise to fulfill and resolves with an array of their values, but rejects as soon as any single one rejects — even if others would have succeeded. Promise.allSettled instead always waits for all of them to finish, returning each one's individual status and value/reason, useful when you want to know the outcome of every operation even if some failed. Promise.race settles as soon as the first promise settles (win or lose), commonly used to implement a timeout by racing the real operation against a promise that rejects after a delay."
+    },
+    "follow_up_hint": "Ask them to implement a fetchWithTimeout function using Promise.race."
+  },
+  {
+    "id": "js-0008",
+    "question": "What is event delegation in the DOM, and why is it often preferred over attaching a listener to every individual element?",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["dom", "event-handling"],
+    "tech_keywords": ["javascript", "dom", "events"],
+    "companies_common": ["Amazon", "Meta", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "DOM events bubble up from the target element through its ancestors, so a single listener on a common ancestor can handle events for many descendant elements",
+        "Event delegation attaches one listener to a parent, then checks event.target inside the handler to determine which specific descendant triggered it",
+        "Benefits: fewer listeners (better memory/performance for large lists), and automatically works for dynamically added children without re-binding listeners",
+        "Gives a concrete example: a single click listener on a <ul> handling clicks on any of its <li> items, including ones added later",
+        "Notes the trade-off: not all events bubble (e.g. focus/blur don't by default, though focusin/focusout do), so delegation doesn't work universally"
+      ],
+      "sample_answer": "Because most DOM events bubble up from the target element through its ancestors, you can attach a single listener to a parent element instead of one per child, and inspect event.target inside the handler to figure out which specific child was actually interacted with. This is called event delegation. It's preferred for large lists (far fewer listeners, less memory) and it automatically works for children added to the DOM later, since the listener lives on the stable parent, not the dynamic children. The main limitation is that a few events, like focus and blur, don't bubble by default, so delegation doesn't apply to them directly (though focusin/focusout do bubble and can be used instead)."
+    },
+    "follow_up_hint": "Ask them to write event-delegation code for a list where clicking any item should log that item's text."
+  },
+  {
+    "id": "js-0009",
+    "question": "Explain the difference between synchronous and asynchronous JavaScript, and write a function using async/await that fetches data and handles errors.",
+    "type": "coding",
+    "difficulty": 2,
+    "roles": ["frontend", "backend", "fullstack"],
+    "topics": ["async", "javascript-fundamentals"],
+    "tech_keywords": ["javascript", "async", "await", "fetch"],
+    "companies_common": ["Amazon", "Meta", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Synchronous code executes line by line, blocking further execution until each statement completes",
+        "Asynchronous code (callbacks, Promises, async/await) lets long-running operations (network, timers, file I/O) happen without blocking the main thread",
+        "async/await is syntactic sugar over Promises, letting asynchronous code read like synchronous code",
+        "Error handling with async/await uses a standard try/catch block around the awaited call, unlike chaining .catch() on a raw Promise",
+        "Gives working, correct code, not just a description"
+      ],
+      "sample_answer": "Synchronous code runs to completion in order, blocking the thread; asynchronous code lets slow operations happen in the background without freezing everything else. Example: 'async function getUser(id) {\\n  try {\\n    const res = await fetch(`/api/users/${id}`);\\n    if (!res.ok) throw new Error(`HTTP ${res.status}`);\\n    return await res.json();\\n  } catch (err) {\\n    console.error(\"Failed to fetch user:\", err);\\n    throw err;\\n  }\\n}'. The try/catch here reads naturally, catching both network failures and the explicitly thrown error for a bad HTTP status, unlike a raw Promise chain needing .catch()."
+    },
+    "follow_up_hint": "Ask them to explain why 'fetch' resolving successfully doesn't automatically mean the HTTP request succeeded (e.g. a 404 still resolves, not rejects)."
+  },
+  {
+    "id": "js-0010",
+    "question": "What is debouncing and throttling in the context of handling frequent events like scroll or resize? Implement one of them.",
+    "type": "coding",
+    "difficulty": 2,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["performance", "event-handling"],
+    "tech_keywords": ["javascript", "performance", "debounce", "throttle"],
+    "companies_common": ["Amazon", "Meta", "Google", "Uber"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Debouncing delays invoking a function until a period of inactivity has passed, resetting the timer on every new call — good for 'wait until the user stops typing'",
+        "Throttling ensures a function runs at most once per fixed interval, regardless of how many times it's triggered — good for 'run at a steady rate during continuous scrolling'",
+        "Gives a correct, working implementation of at least one (debounce OR throttle) using closures and setTimeout",
+        "Explains a concrete use case for each: debounce for a search-as-you-type input, throttle for a scroll-position handler",
+        "Notes both trade off responsiveness for reduced call frequency, just with different guarantees"
+      ],
+      "sample_answer": "Debouncing waits for a pause in activity before running — useful for a search box that shouldn't fire an API call on every keystroke, only once typing stops. Throttling instead guarantees a function runs at most once per interval no matter how often it's triggered — useful for a scroll handler that shouldn't run on every single scroll event. Debounce implementation: 'function debounce(fn, delay) {\\n  let timer;\\n  return (...args) => {\\n    clearTimeout(timer);\\n    timer = setTimeout(() => fn(...args), delay);\\n  };\\n}'. Each call resets the timer, so fn only actually runs once calls stop coming in for `delay` milliseconds."
+    },
+    "follow_up_hint": "Ask them to now implement throttle as well, and explain the concrete behavioral difference between the two on a rapid-fire event stream."
+  },
+  {
+    "id": "js-0011",
+    "question": "Explain what the Virtual DOM is (as used by frameworks like React) and why diffing it can be faster than direct DOM manipulation.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["virtual-dom", "react"],
+    "tech_keywords": ["javascript", "react", "virtual-dom", "dom"],
+    "companies_common": ["Meta", "Amazon", "Netflix"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "The Virtual DOM is a lightweight, in-memory representation of the actual DOM tree, expressed as plain JavaScript objects",
+        "On a state change, the framework builds a new Virtual DOM tree and diffs it against the previous one to compute the minimal set of real DOM changes needed",
+        "Batches and applies only the minimal necessary real DOM mutations, since direct DOM operations (especially layout/reflow-triggering ones) are relatively expensive",
+        "Explains this isn't 'always faster than the DOM' in an absolute sense — it's about avoiding many small, naive, unbatched DOM writes across a complex UI update",
+        "Notes newer approaches (e.g. fine-grained reactivity in Solid.js, or React's compiler-based optimizations) aim to reduce reliance on diffing altogether"
+      ],
+      "sample_answer": "The Virtual DOM is a plain-JavaScript-object representation of what the UI should look like. When state changes, the framework builds a new Virtual DOM tree, diffs it against the previous version to figure out exactly what changed, and then applies only that minimal set of updates to the real DOM. This matters because real DOM operations — especially ones triggering layout recalculation or repaint — are relatively expensive, and naively re-rendering a whole complex UI by directly manipulating the DOM on every small state change would be slow and easy to get wrong. It's not that the Virtual DOM is inherently faster than the DOM itself — it's that diffing lets the framework batch and minimize the actual DOM writes needed."
+    },
+    "follow_up_hint": "Ask them what a 'key' prop does in a list rendered by React and why it matters for diffing correctness."
+  },
+  {
+    "id": "js-0012",
+    "question": "Explain the difference between `null`, `undefined`, and `NaN` in JavaScript, and how you'd correctly check for each.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["javascript-fundamentals"],
+    "tech_keywords": ["javascript"],
+    "companies_common": ["Infosys", "TCS", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "undefined means a variable has been declared but not assigned a value, or a function returned nothing, or a missing object property",
+        "null is an explicit, intentional 'no value', assigned deliberately by code",
+        "NaN ('Not a Number') results from an invalid numeric operation, e.g. parsing a non-numeric string or 0/0",
+        "Explains the famous quirk: NaN !== NaN, so checking for it requires Number.isNaN() (or the newer Object.is), not '=== NaN'",
+        "Distinguishes '== null' (loosely matches both null and undefined) from strict checks for each individually"
+      ],
+      "sample_answer": "undefined generally means 'nothing has been assigned here yet' — an uninitialized variable, a missing object property, or a function with no explicit return. null is an intentional, explicit absence of value that code assigns on purpose. NaN represents the result of an invalid numeric computation, like parsing a non-numeric string with parseInt, or 0 divided by 0. A well-known gotcha is that NaN is the only value in JavaScript that's not equal to itself — `NaN === NaN` is false — so checking for it requires `Number.isNaN(value)` rather than a direct equality comparison."
+    },
+    "follow_up_hint": "Ask why `typeof null === 'object'` even though null clearly isn't an object, and whether that's considered a language bug."
+  },
+  {
+    "id": "js-0013",
+    "question": "What is the difference between `Object.freeze()` and creating an immutable data structure, and what are its limitations?",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["frontend", "fullstack"],
+    "topics": ["immutability", "javascript-fundamentals"],
+    "tech_keywords": ["javascript"],
+    "companies_common": ["Amazon", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Object.freeze() prevents adding, removing, or reassigning an object's own top-level properties",
+        "It's shallow: a frozen object's nested objects/arrays are NOT automatically frozen and remain fully mutable",
+        "Explains this differs from a true deeply immutable data structure (like those from Immutable.js or Immer), which recursively enforces immutability",
+        "Notes freezing doesn't throw an error on a failed mutation attempt in non-strict mode — it silently fails; strict mode throws a TypeError",
+        "Gives a concrete example demonstrating the shallow limitation: freezing an object with a nested array, then successfully mutating that nested array"
+      ],
+      "sample_answer": "Object.freeze(obj) prevents adding, deleting, or reassigning obj's own top-level properties — but it's only shallow. If obj has a nested object or array as a property value, that nested structure is completely unaffected by the freeze and remains fully mutable: `const o = Object.freeze({ list: [1,2,3] }); o.list.push(4);` succeeds even though o itself is frozen. Achieving true deep immutability requires either manually freezing recursively, or using a library like Immer or Immutable.js designed for that. Also worth noting: in non-strict mode, a failed mutation attempt on a frozen object fails silently rather than throwing; strict mode throws a TypeError."
+    },
+    "follow_up_hint": "Ask them to write a recursive deepFreeze function that actually freezes an entire nested object graph."
+  },
+  {
+    "id": "js-0014",
+    "question": "Explain what CORS (Cross-Origin Resource Sharing) is and why a browser blocks a request even though the server actually responded successfully.",
+    "type": "scenario",
+    "difficulty": 2,
+    "roles": ["frontend", "backend", "fullstack"],
+    "topics": ["cors", "security"],
+    "tech_keywords": ["javascript", "cors", "http", "security"],
+    "companies_common": ["Amazon", "Meta", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "CORS is a browser-enforced security mechanism restricting whether a web page can read a cross-origin response, based on the Same-Origin Policy",
+        "The server always receives and can respond to the request; the browser is what blocks the JavaScript code from reading the response if the origin isn't allowed",
+        "The server must include an Access-Control-Allow-Origin header (and possibly others) matching the requesting origin for the browser to permit reading the response",
+        "Explains 'preflight' requests: for non-simple requests (e.g. custom headers, non-GET/POST methods), the browser first sends an OPTIONS request to check permission before the real request",
+        "Clarifies this is purely a browser-side protection — CORS does nothing to stop a non-browser client (like curl or a server) from making the same request freely"
+      ],
+      "sample_answer": "CORS is a browser security mechanism enforcing the Same-Origin Policy — a page from one origin can't freely read responses from a different origin unless that server explicitly allows it. Importantly, the server DOES receive and process the request and send back a real response; it's specifically the browser that blocks the calling JavaScript from reading that response if the server's headers don't authorize the requesting origin (via Access-Control-Allow-Origin). For 'non-simple' requests — like ones with custom headers or methods like PUT/DELETE — the browser first sends an automatic OPTIONS 'preflight' request to check permissions before sending the real one. This is purely a browser-enforced protection; a server-side client like curl or another backend service isn't restricted by CORS at all."
+    },
+    "follow_up_hint": "Ask them why a preflight OPTIONS request is triggered for a JSON POST request with a custom Content-Type header but not for a simple form POST."
+  },
+  {
+    "id": "js-0015",
+    "question": "What is memoization, and implement a simple memoize higher-order function in JavaScript.",
+    "type": "coding",
+    "difficulty": 2,
+    "roles": ["frontend", "backend", "fullstack"],
+    "topics": ["performance", "higher-order-functions"],
+    "tech_keywords": ["javascript", "performance", "caching"],
+    "companies_common": ["Amazon", "Meta", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Memoization caches a pure function's results keyed by its input arguments, avoiding recomputation for repeated calls with the same arguments",
+        "Requires the wrapped function to be pure (deterministic, no side effects) for the cache to remain correct",
+        "Uses a Map or plain object keyed by a serialized representation of the arguments (e.g. JSON.stringify for simple cases)",
+        "Discusses the trade-off: memory usage grows with the number of distinct argument combinations cached, so an unbounded cache can leak memory over time for high-cardinality inputs",
+        "Gives working, correct code, not just a description"
+      ],
+      "sample_answer": "Memoization caches the output of a pure function for a given set of inputs, so a repeated call with the same arguments returns the cached result instantly instead of recomputing. Implementation: 'function memoize(fn) {\\n  const cache = new Map();\\n  return (...args) => {\\n    const key = JSON.stringify(args);\\n    if (cache.has(key)) return cache.get(key);\\n    const result = fn(...args);\\n    cache.set(key, result);\\n    return result;\\n  };\\n}'. This only works correctly for pure functions — no reliance on external mutable state and no side effects — and for high-cardinality inputs, an unbounded cache can grow indefinitely, so a real implementation might need an eviction policy like LRU."
+    },
+    "follow_up_hint": "Ask them how they'd bound the cache size using an LRU eviction strategy instead of letting it grow unbounded."
+  }
+]

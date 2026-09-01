@@ -1,0 +1,28 @@
+# --- Core web framework ---
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+python-multipart==0.0.20
+pydantic==2.10.4
+pydantic-settings==2.7.0
+
+# --- Persistence ---
+sqlalchemy==2.0.36
+
+# --- HTTP client (used by local Ollama + generic cloud LLM providers) ---
+httpx==0.28.1
+
+# --- RAG: lightweight, CPU-friendly, no torch dependency (fits 8GB RAM / entry GPU) ---
+chromadb==0.5.23
+fastembed==0.5.1
+
+# --- Speech-to-text (local, CTranslate2-based — much lighter than openai-whisper) ---
+faster-whisper==1.1.0
+
+# --- Text-to-speech (Google Cloud TTS free tier, primary) ---
+google-cloud-texttospeech==2.21.1
+# --- Text-to-speech (offline fallback, no API key needed) ---
+pyttsx3==2.98
+
+# --- Utilities ---
+python-dotenv==1.0.1
+tenacity==9.0.0

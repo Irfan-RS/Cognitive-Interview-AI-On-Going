@@ -1,0 +1,332 @@
+[
+  {
+    "id": "ml-0001",
+    "question": "Explain the bias-variance trade-off in machine learning, and how it relates to underfitting and overfitting.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["ml", "general_sde"],
+    "topics": ["ml-fundamentals"],
+    "tech_keywords": ["machine-learning", "scikit-learn"],
+    "companies_common": ["Google", "Amazon", "Meta", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Bias: error from overly simplistic assumptions in the model, causing it to underfit and miss real patterns in the data",
+        "Variance: error from excessive sensitivity to the specific training data, causing the model to overfit and capture noise as if it were signal",
+        "High bias -> underfitting: poor performance on both training and test data",
+        "High variance -> overfitting: great performance on training data but poor generalization to unseen test data",
+        "Explains that model complexity generally trades one against the other, and the goal is finding the sweet spot minimizing total error (e.g. via cross-validation, regularization)"
+      ],
+      "sample_answer": "Bias is error from a model's assumptions being too simple to capture the real underlying pattern — a high-bias model underfits, performing poorly even on the training data. Variance is error from a model being too sensitive to the specific training data it saw, capturing noise as if it were a real pattern — a high-variance model overfits, doing great on training data but poorly on new, unseen data. Increasing model complexity typically reduces bias but increases variance, and vice versa, so the practical goal is finding the complexity level that minimizes total error on unseen data — commonly guided by cross-validation, and controlled via regularization to reduce variance without adding true complexity."
+    },
+    "follow_up_hint": "Ask them how they would diagnose, from a learning curve plot, whether a model is suffering from high bias or high variance."
+  },
+  {
+    "id": "ml-0002",
+    "question": "Explain the difference between supervised, unsupervised, and reinforcement learning, with an example use case for each.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["ml", "general_sde"],
+    "topics": ["ml-fundamentals"],
+    "tech_keywords": ["machine-learning"],
+    "companies_common": ["Google", "Amazon", "Infosys"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Supervised learning: trains on labeled data (input-output pairs), learning to predict the output for new inputs — e.g. spam email classification",
+        "Unsupervised learning: works with unlabeled data, finding structure/patterns on its own — e.g. customer segmentation via clustering",
+        "Reinforcement learning: an agent learns by taking actions in an environment and receiving rewards/penalties, optimizing for cumulative reward over time — e.g. a game-playing agent",
+        "Explains the key distinguishing factor: presence of labels (supervised vs unsupervised) versus a feedback-loop/reward-based learning process (reinforcement)",
+        "Gives a clear, distinct real-world example for each category"
+      ],
+      "sample_answer": "Supervised learning trains a model on labeled examples — input paired with the correct output — so it learns to predict outputs for new inputs, like classifying an email as spam or not based on many labeled examples. Unsupervised learning works with unlabeled data, trying to discover inherent structure on its own, like clustering customers into segments based on purchasing behavior without being told what the segments should be. Reinforcement learning is different in kind: an agent takes actions in an environment and receives rewards or penalties, learning a policy that maximizes cumulative reward over time, like an agent learning to play a game through trial and error rather than from a fixed labeled dataset."
+    },
+    "follow_up_hint": "Ask them to categorize a specific ambiguous scenario, like recommendation systems, and justify which category (or combination) it fits."
+  },
+  {
+    "id": "ml-0003",
+    "question": "Explain what overfitting is and describe at least three concrete techniques to reduce it.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["ml", "general_sde"],
+    "topics": ["overfitting", "regularization"],
+    "tech_keywords": ["machine-learning", "regularization", "scikit-learn"],
+    "companies_common": ["Google", "Amazon", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Overfitting: a model learns the training data's noise/specific quirks rather than the true underlying pattern, hurting generalization to new data",
+        "Regularization (L1/L2): penalizes large model weights in the loss function, discouraging the model from fitting noise too precisely",
+        "Cross-validation: helps detect overfitting by evaluating on held-out folds, and guides hyperparameter choices that generalize better",
+        "Reducing model complexity or gathering more training data, both of which reduce the model's ability/need to memorize noise",
+        "For neural networks specifically: dropout, early stopping, and data augmentation as additional overfitting countermeasures"
+      ],
+      "sample_answer": "Overfitting happens when a model captures noise and idiosyncrasies specific to the training set rather than the true, generalizable pattern, leading to great training performance but poor performance on new data. Concrete fixes: regularization (L1/L2), which penalizes large weights in the loss function, discouraging the model from fitting the data too precisely; gathering more training data, which makes it harder for the model to just memorize noise; and using cross-validation, both to detect overfitting reliably and to select hyperparameters that generalize well rather than just fitting one particular train/test split. For neural networks specifically, dropout, early stopping based on validation loss, and data augmentation are also standard techniques."
+    },
+    "follow_up_hint": "Ask them to explain exactly how dropout works mechanically during training and why it's disabled at inference time."
+  },
+  {
+    "id": "ml-0004",
+    "question": "Explain precision, recall, and F1 score, and describe a scenario where you'd optimize for recall over precision, and vice versa.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["ml", "general_sde"],
+    "topics": ["evaluation-metrics"],
+    "tech_keywords": ["machine-learning", "scikit-learn", "classification"],
+    "companies_common": ["Google", "Amazon", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Precision: of all items predicted positive, what fraction were actually positive — TP / (TP + FP)",
+        "Recall: of all actual positive items, what fraction did the model correctly identify — TP / (TP + FN)",
+        "F1 score: the harmonic mean of precision and recall, useful when you need a single balanced metric",
+        "Gives a concrete scenario prioritizing recall: cancer/disease screening, where missing a true positive (false negative) is far worse than a false alarm",
+        "Gives a concrete scenario prioritizing precision: spam filtering, where incorrectly flagging a legitimate email (false positive) is worse than letting a spam email through"
+      ],
+      "sample_answer": "Precision measures, of everything the model flagged as positive, how much was actually correct — false positives hurt precision. Recall measures, of everything that was actually positive, how much the model actually caught — false negatives hurt recall. F1 is the harmonic mean of the two, giving one balanced number when both matter. You'd prioritize recall in something like cancer screening, where missing an actual case (a false negative) could be fatal, so you'd rather over-flag and follow up with more tests than risk missing a real case. You'd prioritize precision in something like spam filtering, where wrongly flagging a legitimate, important email as spam (a false positive) is more costly to the user than letting an occasional spam email through."
+    },
+    "follow_up_hint": "Ask them how they'd tune a classification model's decision threshold specifically to shift the precision-recall balance."
+  },
+  {
+    "id": "ml-0005",
+    "question": "Explain how gradient descent works, and the difference between batch, stochastic, and mini-batch gradient descent.",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["ml"],
+    "topics": ["optimization", "neural-networks"],
+    "tech_keywords": ["machine-learning", "deep-learning", "pytorch", "tensorflow"],
+    "companies_common": ["Google", "Amazon", "Meta", "OpenAI"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Gradient descent iteratively updates model parameters in the direction that reduces the loss function, using the loss's gradient with respect to the parameters",
+        "Batch gradient descent computes the gradient using the entire training dataset per update step — accurate but slow and memory-heavy for large datasets",
+        "Stochastic gradient descent (SGD) updates using just one random example at a time — fast per step, but noisy/high-variance updates",
+        "Mini-batch gradient descent computes the gradient over a small batch (e.g. 32-256 examples), balancing update stability against computational efficiency, and is the standard approach in practice",
+        "Mentions the learning rate as a critical hyperparameter: too high causes divergence/oscillation, too low causes very slow convergence"
+      ],
+      "sample_answer": "Gradient descent updates model parameters step by step in the direction that reduces the loss function, computed via the gradient (partial derivatives) of the loss with respect to each parameter. Batch gradient descent computes that gradient using the entire training set for every single update, which is accurate but slow and memory-intensive for large datasets. Stochastic gradient descent updates using just one example at a time, which is fast per step but produces noisy, high-variance updates that bounce around. Mini-batch gradient descent, the standard in practice, computes the gradient over a small batch of examples (commonly 32 to 256), striking a practical balance between the stability of batch and the speed of stochastic gradient descent, and also mapping well onto GPU parallelism. The learning rate controls the step size — too large causes the loss to diverge or oscillate, too small makes training impractically slow."
+    },
+    "follow_up_hint": "Ask them to explain what momentum or Adam adds on top of plain mini-batch SGD, and why it usually converges faster."
+  },
+  {
+    "id": "ml-0006",
+    "question": "Explain how a Convolutional Neural Network (CNN) processes an image, and why convolutional layers are more parameter-efficient than fully connected layers for image data.",
+    "type": "theory",
+    "difficulty": 3,
+    "roles": ["ml"],
+    "topics": ["deep-learning", "computer-vision"],
+    "tech_keywords": ["deep-learning", "cnn", "computer-vision", "pytorch", "tensorflow", "opencv"],
+    "companies_common": ["Google", "Meta", "Nvidia", "Amazon"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A convolutional layer slides a small learnable filter/kernel across the image, computing a weighted sum (dot product) at each position, producing a feature map",
+        "This exploits two key properties of images: local spatial correlation (nearby pixels are related) and translation invariance (a useful pattern, like an edge, can appear anywhere)",
+        "Parameter efficiency: a filter's weights are shared across all spatial positions, drastically reducing parameters compared to a fully connected layer connecting every input pixel to every output unit",
+        "Pooling layers (e.g. max pooling) downsample feature maps, reducing spatial dimensions and providing some translation invariance/robustness",
+        "Explains that stacking convolutional layers builds up a hierarchy: early layers detect simple features (edges, colors), deeper layers detect increasingly complex/abstract features (shapes, object parts)"
+      ],
+      "sample_answer": "A convolutional layer slides a small learnable filter across the image, computing a dot product at each position to produce a feature map — this exploits the fact that nearby pixels in an image are correlated, and that a useful pattern like an edge can appear anywhere in the image (translation invariance). Because the same filter's weights are reused (shared) across every spatial position, a convolutional layer needs far fewer parameters than a fully connected layer that would need a separate weight for every single pixel-to-output connection. Pooling layers then downsample the feature maps, reducing spatial size and adding some robustness to small shifts. Stacking many convolutional layers builds a hierarchy: early layers learn to detect simple features like edges and colors, while deeper layers combine those into increasingly complex, abstract features like shapes and eventually object parts."
+    },
+    "follow_up_hint": "Ask them to explain what the receptive field of a neuron in a deep layer means, and how it grows as you stack more convolutional layers."
+  },
+  {
+    "id": "ml-0007",
+    "question": "You're using OpenCV to detect faces in a video stream in real time. Explain the pipeline: from reading a frame to drawing a bounding box around a detected face.",
+    "type": "scenario",
+    "difficulty": 2,
+    "roles": ["ml", "general_sde"],
+    "topics": ["computer-vision", "opencv"],
+    "tech_keywords": ["opencv", "computer-vision", "python"],
+    "companies_common": ["Amazon", "Google", "Nvidia"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Capture frames from the video source using cv2.VideoCapture, reading one frame at a time in a loop",
+        "Convert the frame to grayscale (cv2.cvtColor) since many classical face detectors (e.g. Haar cascades) operate on single-channel intensity data, reducing computation",
+        "Run a face detector (e.g. cv2.CascadeClassifier with a pretrained Haar cascade, or a more modern DNN-based detector) to get bounding box coordinates for detected faces",
+        "Draw the bounding box on the ORIGINAL color frame (cv2.rectangle) using the coordinates found from the grayscale detection pass, then display it (cv2.imshow)",
+        "Mentions performance considerations for real-time processing: downscaling frames before detection, and the trade-off between a fast classical detector (Haar cascades) and a more accurate but heavier DNN-based detector"
+      ],
+      "sample_answer": "The pipeline reads frames in a loop using cv2.VideoCapture, then converts each frame to grayscale with cv2.cvtColor since classical detectors like Haar cascades work on single-channel intensity data and it's cheaper to process. A cv2.CascadeClassifier loaded with a pretrained Haar cascade (or a modern DNN-based face detector for better accuracy) runs detectMultiScale on the grayscale frame, returning bounding box coordinates for each detected face. Those coordinates are then used to draw rectangles with cv2.rectangle on the original color frame (not the grayscale one, so the display still shows real colors), and the result is shown via cv2.imshow. For real-time performance, frames are often downscaled before detection, and there's a real trade-off between Haar cascades (fast but less accurate, more false positives) and DNN-based detectors (more accurate, slower unless GPU-accelerated)."
+    },
+    "follow_up_hint": "Ask them how they'd track a detected face across frames to avoid re-running full detection on every single frame for performance."
+  },
+  {
+    "id": "ml-0008",
+    "question": "Explain the difference between NumPy arrays and Python lists, and why NumPy operations are significantly faster for numerical computation.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["ml", "general_sde", "backend"],
+    "topics": ["numpy", "python-fundamentals"],
+    "tech_keywords": ["numpy", "python", "data-science"],
+    "companies_common": ["Amazon", "Google", "Infosys"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A Python list stores references to arbitrary, individually boxed Python objects scattered in memory; a NumPy array stores fixed-type numeric data in one contiguous block of memory",
+        "Contiguous memory layout gives much better CPU cache locality for numerical operations",
+        "NumPy operations are vectorized: implemented in compiled C code, applying an operation to an entire array at once rather than looping in interpreted Python",
+        "Explains this avoids Python-level loop overhead (bytecode interpretation, per-element type checking) entirely for bulk numeric operations",
+        "Gives a concrete example: summing a million numbers via a Python for loop versus numpy.sum(), highlighting the dramatic speed difference"
+      ],
+      "sample_answer": "A Python list holds references to individually allocated, boxed Python objects that can be scattered anywhere in memory and can be of any mixed type. A NumPy array stores homogeneous, fixed-type numeric data in one contiguous block of memory, which gives much better CPU cache locality. NumPy's operations are also vectorized — implemented in compiled C code that loops over the whole array internally — avoiding the overhead of Python's interpreted bytecode loop and per-element type-checking that a manual Python for loop would incur. Summing a million numbers with a plain Python for loop versus numpy.sum() can easily be 50-100x slower for the pure-Python version, purely from this combination of memory layout and vectorized, compiled execution."
+    },
+    "follow_up_hint": "Ask them to explain what 'broadcasting' means in NumPy and give an example of two differently-shaped arrays being combined."
+  },
+  {
+    "id": "ml-0009",
+    "question": "Explain the difference between `pandas.merge()`, `.join()`, and `.concat()` for combining DataFrames, and when you'd use each.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["ml", "general_sde", "backend"],
+    "topics": ["pandas", "data-manipulation"],
+    "tech_keywords": ["pandas", "python", "data-science"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "concat() stacks DataFrames along an axis (rows or columns), without matching on key columns — good for appending similarly-shaped datasets together",
+        "merge() combines DataFrames based on matching values in specified key column(s), similar to a SQL JOIN, supporting inner/left/right/outer joins",
+        "join() is a convenience method specifically for combining DataFrames based on their INDEX (or a column against the other's index), essentially a simplified merge for that common case",
+        "Explains merge() is the most general and flexible of the three; concat() is simplest for pure stacking; join() is a shorthand for index-based combination",
+        "Gives a concrete scenario for each: concat() for appending monthly sales files together; merge() for combining an orders table with a customers table on customer_id; join() for combining two DataFrames that share the same index"
+      ],
+      "sample_answer": "concat() stacks DataFrames along rows or columns without regard to matching keys — good for something like appending twelve months of sales data files that share the same columns into one DataFrame. merge() combines DataFrames based on matching values in one or more key columns, functioning like a SQL JOIN with inner/left/right/outer options — the right tool for combining an orders DataFrame with a customers DataFrame on a shared customer_id column. join() is essentially a convenience wrapper around merge() specifically for combining based on the DataFrame's index rather than an arbitrary column, which is common enough to deserve its own simpler method. In short: concat for stacking, merge for general key-based combination, join for the common index-based case."
+    },
+    "follow_up_hint": "Ask them to explain what happens to unmatched rows in a left join versus an inner join, with a concrete small example."
+  },
+  {
+    "id": "ml-0010",
+    "question": "Explain what feature scaling is, the difference between normalization and standardization, and why some ML algorithms need it while others don't.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["ml"],
+    "topics": ["feature-engineering", "preprocessing"],
+    "tech_keywords": ["machine-learning", "scikit-learn", "feature-engineering"],
+    "companies_common": ["Google", "Amazon", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Feature scaling transforms numeric features onto a comparable range/distribution so no single feature dominates purely due to its raw scale",
+        "Normalization (min-max scaling) rescales values into a fixed range, typically [0, 1]",
+        "Standardization rescales values to have mean 0 and standard deviation 1 (z-score), without bounding to a fixed range",
+        "Distance-based and gradient-based algorithms (k-NN, SVM, k-means, neural networks, gradient descent-based models) are sensitive to feature scale and need it",
+        "Tree-based algorithms (decision trees, random forests, gradient-boosted trees) are scale-invariant since they split on threshold comparisons per feature independently, so scaling doesn't affect their behavior"
+      ],
+      "sample_answer": "Feature scaling puts numeric features on a comparable scale so a feature with naturally large raw values, like income in dollars, doesn't dominate a feature like age just because of its magnitude, not its actual importance. Normalization (min-max scaling) squashes values into a fixed range, usually 0 to 1. Standardization instead rescales to have mean 0 and standard deviation 1, without a fixed bound, which is more robust to outliers than min-max scaling. Algorithms relying on distances or gradients — k-NN, SVM, k-means clustering, and gradient-descent-trained models like neural networks — are sensitive to feature scale and generally need this preprocessing. Tree-based models like decision trees and random forests are scale-invariant, since they just compare a feature against a threshold independently at each split, so the actual numeric scale doesn't affect how they split — scaling is unnecessary for them."
+    },
+    "follow_up_hint": "Ask them why standardization is generally preferred over min-max normalization when the data has significant outliers."
+  },
+  {
+    "id": "ml-0011",
+    "question": "Explain what a confusion matrix is, and derive precision and recall from its four cells for a binary classifier.",
+    "type": "theory",
+    "difficulty": 1,
+    "roles": ["ml", "general_sde"],
+    "topics": ["evaluation-metrics"],
+    "tech_keywords": ["machine-learning", "scikit-learn", "classification"],
+    "companies_common": ["Amazon", "Google", "Infosys"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A confusion matrix tabulates predicted versus actual class, with four cells for binary classification: true positive, false positive, true negative, false negative",
+        "True Positive (TP): correctly predicted positive; True Negative (TN): correctly predicted negative",
+        "False Positive (FP): incorrectly predicted positive (a 'false alarm'); False Negative (FN): incorrectly predicted negative (a 'miss')",
+        "Precision = TP / (TP + FP); Recall = TP / (TP + FN)",
+        "Explains accuracy = (TP + TN) / total, and why accuracy alone can be misleading on imbalanced datasets, motivating precision/recall"
+      ],
+      "sample_answer": "A confusion matrix breaks down a classifier's predictions into four cells: true positives (correctly predicted positive), true negatives (correctly predicted negative), false positives (predicted positive but actually negative), and false negatives (predicted negative but actually positive). From these, precision is TP divided by (TP + FP) — of everything predicted positive, how much was right — and recall is TP divided by (TP + FN) — of everything actually positive, how much was caught. Plain accuracy, (TP+TN)/total, can be misleading on an imbalanced dataset — a model that always predicts 'negative' on a dataset that's 99% negative gets 99% accuracy while being useless for detecting the positive class, which is exactly why precision and recall are needed for a fuller picture."
+    },
+    "follow_up_hint": "Ask them to compute precision and recall by hand given a specific small confusion matrix with actual numbers."
+  },
+  {
+    "id": "ml-0012",
+    "question": "Explain what a decision tree is, how a split is chosen at each node (e.g. via Gini impurity or entropy), and why a single deep tree tends to overfit.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["ml"],
+    "topics": ["decision-trees", "ml-algorithms"],
+    "tech_keywords": ["machine-learning", "scikit-learn", "decision-trees"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A decision tree recursively splits the data based on feature thresholds, aiming to create increasingly 'pure' subsets (dominated by one class) at each step",
+        "Split quality is measured by impurity metrics like Gini impurity or entropy; the algorithm picks the feature/threshold that most reduces impurity at each node",
+        "The tree keeps splitting until a stopping condition (max depth, minimum samples per leaf, or pure leaves)",
+        "A very deep, unconstrained tree can create a leaf for nearly every individual training example, perfectly memorizing the training set's noise and specific quirks — classic overfitting",
+        "Mentions pruning, max-depth limits, and minimum-samples-per-leaf as ways to control tree complexity, and ensembles (random forests, gradient boosting) as a more robust alternative to a single deep tree"
+      ],
+      "sample_answer": "A decision tree splits the data at each node by choosing the feature and threshold that best separates the classes, measured by an impurity metric like Gini impurity or entropy — the split that most reduces impurity (creates the 'purest' resulting subsets) is chosen. This process repeats recursively, growing branches until a stopping condition like max depth or minimum samples per leaf is hit, or until leaves become fully pure. An unconstrained, very deep tree can end up creating a distinct leaf for almost every individual training example, which perfectly fits the training data's noise and specific quirks rather than the true underlying pattern — a textbook overfitting case. This is controlled via pruning, limiting max depth, requiring a minimum number of samples per leaf, or by using ensemble methods like random forests or gradient boosting, which combine many weaker trees for more robust generalization."
+    },
+    "follow_up_hint": "Ask them to explain, at a high level, how a random forest reduces overfitting compared to a single decision tree."
+  },
+  {
+    "id": "ml-0013",
+    "question": "You trained a model that achieves 99% accuracy on a fraud detection dataset where only 1% of transactions are actually fraudulent. Is this a good model? Explain why or why not, and what you'd do instead.",
+    "type": "scenario",
+    "difficulty": 3,
+    "roles": ["ml"],
+    "topics": ["class-imbalance", "evaluation-metrics"],
+    "tech_keywords": ["machine-learning", "scikit-learn", "class-imbalance"],
+    "companies_common": ["Amazon", "Stripe", "Google", "PayPal"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Identifies this as a class imbalance problem: a naive model that always predicts 'not fraud' would already achieve 99% accuracy while catching zero actual fraud",
+        "Explains accuracy is a misleading metric here, and recommends precision, recall, F1, or the precision-recall curve/AUC-PR instead, which are more informative under imbalance",
+        "Suggests resampling techniques: oversampling the minority class (e.g. SMOTE), undersampling the majority class, or class-weighted loss functions that penalize misclassifying the rare class more heavily",
+        "Recommends checking the confusion matrix directly to see how many actual fraud cases were caught versus missed, not just the aggregate accuracy",
+        "Discusses that the acceptable precision/recall trade-off here depends on business context: cost of a missed fraud (false negative) versus cost of a false fraud alert (false positive)"
+      ],
+      "sample_answer": "99% accuracy on a dataset that's 99% non-fraud is not automatically good — a trivial model that always predicts 'not fraud' would already hit that number while catching zero actual fraud, so accuracy alone tells us almost nothing useful here. I'd instead look at precision, recall, and the confusion matrix directly to see how many actual fraud cases were caught (recall) versus how many flagged transactions were real fraud (precision), and likely evaluate using the precision-recall curve or AUC-PR rather than a plain accuracy or even a plain ROC-AUC, which can also look artificially good under heavy imbalance. To actually improve the model, I'd consider resampling techniques like oversampling the minority fraud class (e.g. SMOTE) or undersampling the majority class, or using a class-weighted loss function that penalizes missing fraud more heavily. The right precision/recall trade-off ultimately depends on the business cost of a missed fraud case versus the cost of a false alarm, which should guide the final decision threshold."
+    },
+    "follow_up_hint": "Ask them to explain what SMOTE actually does to generate synthetic minority-class examples, rather than just naively duplicating existing ones."
+  },
+  {
+    "id": "ml-0014",
+    "question": "Explain what transfer learning is in the context of deep learning, and why fine-tuning a pretrained model is often better than training from scratch.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["ml"],
+    "topics": ["transfer-learning", "deep-learning"],
+    "tech_keywords": ["deep-learning", "transfer-learning", "pytorch", "tensorflow"],
+    "companies_common": ["Google", "Meta", "Amazon", "Nvidia"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Transfer learning reuses a model already trained on a large, general dataset (e.g. ImageNet) as a starting point for a new, related but more specific task",
+        "Early/middle layers of a pretrained model have already learned generally useful features (e.g. edges, textures, shapes for vision models) that transfer well across many tasks",
+        "Fine-tuning typically freezes early layers and retrains later layers (or the whole network at a low learning rate) on the new, often much smaller dataset",
+        "Explains why this beats training from scratch on a small dataset: a small dataset alone often isn't enough to learn good low-level features from random initialization, leading to overfitting or poor generalization",
+        "Gives a concrete example: using a pretrained ImageNet model as a feature extractor for a specific medical image classification task with only a few thousand labeled images"
+      ],
+      "sample_answer": "Transfer learning starts from a model already trained on a large, general-purpose dataset — like an image model trained on ImageNet — and adapts it to a new, related task, rather than training a fresh model from random initialization. The insight is that a pretrained model's early and middle layers have already learned broadly useful, transferable features, like edges and textures for vision tasks, that don't need to be relearned from scratch. Fine-tuning typically freezes those early layers and retrains the later layers (or the whole network, but with a much smaller learning rate) on the new task's data. This is especially valuable when the new task's dataset is small — say, a few thousand labeled medical images — since training a deep network from scratch on that little data usually can't learn good low-level features on its own and tends to overfit badly."
+    },
+    "follow_up_hint": "Ask them how they'd decide how many layers to freeze versus fine-tune, and how that decision changes if the new dataset is very small versus moderately large."
+  },
+  {
+    "id": "ml-0015",
+    "question": "Explain what an embedding is in machine learning, and why representing words/items as dense vectors is more useful than one-hot encoding.",
+    "type": "theory",
+    "difficulty": 2,
+    "roles": ["ml"],
+    "topics": ["embeddings", "nlp"],
+    "tech_keywords": ["machine-learning", "nlp", "embeddings", "deep-learning"],
+    "companies_common": ["Google", "Meta", "Amazon", "OpenAI"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "One-hot encoding represents each category/word as a sparse, high-dimensional vector with a single 1 and the rest 0s, treating every category as equally different from every other",
+        "An embedding maps each category/word to a dense, lower-dimensional vector, typically learned so that semantically/functionally similar items end up close together in the vector space",
+        "This lets models capture meaningful relationships (e.g. 'king' - 'man' + 'woman' ≈ 'queen' in classic word embeddings) that one-hot encoding can't represent at all",
+        "Embeddings dramatically reduce dimensionality compared to one-hot for large vocabularies (millions of items), making downstream computation far more tractable",
+        "Mentions embeddings can be learned end-to-end as part of a larger model's training, or pretrained separately and reused (a form of transfer learning)"
+      ],
+      "sample_answer": "One-hot encoding represents each distinct word or category as a sparse vector with a single 1 in its own dimension and 0s everywhere else — every word ends up exactly equally 'different' from every other word, with no notion of similarity, and the vector size grows with vocabulary size, becoming huge for large vocabularies. An embedding instead maps each word/item to a dense, much lower-dimensional vector, typically learned so that semantically or functionally similar items land close together in that vector space — famously, learned word embeddings can capture relationships like 'king' minus 'man' plus 'woman' landing near 'queen'. Beyond capturing meaningful structure that one-hot simply can't represent, embeddings are also far more computationally efficient for large vocabularies, and can either be learned end-to-end within a larger model or reused from a pretrained embedding as a form of transfer learning."
+    },
+    "follow_up_hint": "Ask them to explain, at a high level, how word2vec or a similar model actually learns these embeddings from raw text without explicit labels."
+  }
+]
