@@ -23,5 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Claude Code local tooling config — not part of the app
+# Local editor/tooling config — not part of the app
 .claude/
