@@ -1,6 +1,6 @@
 # Cognitive Interview AI
 
-**A voice-driven, AI-powered mock & practice interview platform** that watches, listens, and adapts — combining live webcam-based eye-contact monitoring, adaptive difficulty, speech-to-text/text-to-speech, and an LLM-graded, RAG-backed question bank of 900+ interview questions to help candidates build real interview confidence.
+**A voice-driven, AI-powered mock & practice interview platform** that evaluates *how a candidate thinks*, not just whether their final answer is correct — combining cognitive, multi-dimensional LLM grading, live webcam-based eye-contact monitoring kept strictly separate from scoring, adaptive difficulty, speech-to-text/text-to-speech, and a RAG-backed question bank of 900+ interview questions to help candidates build real interview confidence.
 
 <p align="left">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" />
@@ -17,6 +17,7 @@
 
 - [Overview](#overview)
 - [Key Features](#key-features)
+- [Cognitive Evaluation](#cognitive-evaluation)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Workflow](#workflow)
@@ -34,9 +35,9 @@ Cognitive Interview AI simulates a real technical interview end-to-end:
 
 1. A candidate picks a **role, resume-based, or topic track**, plus an interview **duration** (5 / 10 / 30 min).
 2. A one-time **calibration** step maps where the candidate is actually looking on screen.
-3. During the interview, the candidate is **continuously monitored** for eye contact via the webcam — if they look away for too long, a gentle on-screen nudge reminds them to look back, without interrupting the flow.
-4. Each answer is **recorded, transcribed, and graded** by an LLM against an admin-authored rubric — difficulty adapts turn-by-turn based on performance, and the system decides whether to ask a grounded follow-up or move to the next question.
-5. Only **after** the interview ends does the candidate see their full report: per-question transcripts, scores, a readiness rating, and concrete action items.
+3. During the interview, the candidate is **continuously monitored** for eye contact via the webcam — if they look away for too long, a gentle on-screen nudge reminds them to look back, without interrupting the flow. This signal is tracked purely as **proctoring data** — it is never mixed into any score.
+4. Each answer is **recorded, transcribed, and cognitively graded** by an LLM across 8 weighted dimensions — technical correctness, problem-solving reasoning, depth of understanding, communication, problem approach, adaptability, trade-off analysis, and delivery clarity — not just a single right/wrong check. Difficulty adapts turn-by-turn based on performance, and the system decides whether to ask a grounded follow-up or move to the next question.
+5. Only **after** the interview ends does the candidate see their full report: per-question transcripts, cognitive dimension scores, a question-specific coaching breakdown on *how to think through* each question, a readiness rating, and concrete action items.
 
 The whole system is built as **swappable, layered components** — the LLM, speech-to-text, and text-to-speech providers are all configured via environment variables, so it runs entirely offline/local (sized for an 8GB-RAM laptop with an entry-level GPU) or against cloud APIs, with no code changes either way.
 
@@ -48,11 +49,78 @@ The whole system is built as **swappable, layered components** — the LLM, spee
 - 📈 **Adaptive difficulty engine** — each answer's score shifts the next question's difficulty up or down
 - 🔁 **Smart follow-up logic** — the system decides whether to probe deeper on the same topic or move to a new question, grounded in real related questions from the bank (RAG)
 - 🎙️ **Full voice pipeline** — questions are read aloud (TTS), answers are spoken and transcribed (STT)
-- 🗂️ **Centralized, many-to-many tagged question bank** — 900+ questions tagged by role, topic, skill, and concept (not siloed per-role banks), each with reference solutions, evaluation criteria, and scoring rubrics
-- 🧠 **LLM-graded answers** — scored against a real rubric (correctness, depth, reasoning, communication, trade-off awareness), producing a genuine `rubric_score`
-- 📊 **Post-interview report** — readiness score, pass/fail threshold, per-question breakdown, and LLM-synthesized summary + action items — generated only once the interview actually ends
+- 🗂️ **Centralized, many-to-many tagged question bank** — 900+ questions tagged by role, topic, skill, and concept (not siloed per-role banks), each with reference solutions and key points
+- 🧠 **Cognitive, multi-dimensional grading** — every answer is scored across 8 weighted dimensions (reasoning, depth, trade-off awareness, adaptability, and more — see [Cognitive Evaluation](#cognitive-evaluation)), judging *how* the candidate reasoned, not only whether the conclusion was right
+- 👁️‍🗨️ **Proctoring kept strictly separate from scoring** — eye contact is reported as its own observational block (on-screen %, look-away count) and never affects the readiness score or pass/fail outcome
+- 🧭 **Per-question coaching in the report** — for every question, the report explains how a strong answer should have been *approached* (problem understanding → reasoning → trade-offs → adaptability → communication), plus targeted tips for whichever dimensions came out weak
+- 📊 **Post-interview report** — readiness score, pass/fail threshold, Technical/Cognitive/Communication/Adaptability breakdown, and LLM-synthesized summary + action items — generated only once the interview actually ends
 - ⏱️ **Configurable session length** — 5 / 10 / 30 minute interviews, with a live countdown and a "Complete interview" early-exit option
 - 🔌 **Swappable providers** — local (Ollama / faster-whisper / OS voice) or cloud (any OpenAI-compatible LLM, Google Cloud TTS) via a single `.env` change
+
+## Cognitive Evaluation
+
+The core idea behind this project: an interview answer isn't just right or wrong — *how* a
+candidate got there matters. Asked "Why did you use MongoDB?", an answer of "because it's
+fast" and an answer of "our schemas are flexible and expected to evolve, and I'd prefer
+PostgreSQL for relational data" can both reach the same conclusion, but only one demonstrates
+real reasoning. This system is built to tell the two apart.
+
+### 8 weighted dimensions
+
+Every answer is scored 0–10 on each dimension below (7 by the LLM, `delivery_clarity`
+computed algorithmically from filler words/pauses), then combined into one weighted 0–100
+`overall_score`:
+
+| Dimension | Weight | What it judges |
+|---|---|---|
+| Technical correctness | 30% | Is the core answer factually/technically right? |
+| Problem-solving reasoning | 20% | Did they break the problem down and reason step by step, rather than jumping to a conclusion? |
+| Depth of understanding | 15% | Do they explain *why/how* from fundamentals, rather than reciting a memorized answer? |
+| Communication | 10% | Is the explanation clear and structured, not rambling? |
+| Problem approach | 10% | Did they move requirements → approach → validation in a sensible order? |
+| Adaptability | 5% | If the interviewer changes a requirement mid-question (e.g. "now assume 100M users"), does the answer adjust? |
+| Trade-off analysis | 5% | Do they show awareness of alternatives and pros/cons (SQL vs NoSQL, consistency vs availability), not just defend one option blindly? |
+| Delivery clarity | 5% | Hesitation/vagueness in *how* the answer was delivered verbally (fillers, pauses) |
+
+For the report, these 8 dimensions roll up into 4 categories the candidate actually sees —
+**Technical**, **Cognitive**, **Communication**, **Adaptability** — each a weighted average of
+its member dimensions.
+
+### Proctoring never touches the score
+
+Eye contact is tracked continuously during the interview, but it is reported as its own
+**Proctoring** block (`eye_contact_ratio`, `look_away_count`) — informational only. It is never
+blended into `overall_score`, `readiness_score`, or the pass/fail decision. A candidate who
+gives a technically excellent answer while looking nervous is never marked down for it.
+
+```mermaid
+graph LR
+    T[Transcript] --> LLM[LLM: 7 dimension scores]
+    T --> FIL[Filler words / pauses] --> DC[delivery_clarity]
+    LLM --> AGG[Weighted aggregation]
+    DC --> AGG
+    AGG --> CAT[Technical / Cognitive /<br/>Communication / Adaptability %]
+    CAT --> OVR[overall_score -> readiness_score]
+
+    EYE[Webcam gaze samples] --> PROC[Proctoring block<br/>eye_contact_ratio, look_away_count]
+    PROC -.->|shown separately, never merged| REPORT[Report]
+    OVR --> REPORT
+```
+
+### Per-question coaching, not just a score
+
+For every answered question, the report also generates — specific to that exact question, not
+generic advice — a 6-point framework for **how to think through it** (problem understanding,
+approach, reasoning, trade-offs, adaptability, communication), and targeted **improvement
+tips** for whichever dimensions actually scored weak on that answer. For "How would you design
+a URL shortener?", a weak answer gets feedback like:
+
+> **Trade-off analysis:** Discuss the pros and cons of different design choices and how they
+> impact the system's performance and scalability.
+> **Adaptability:** Consider how the design can be adjusted for different load scenarios and
+> future growth.
+
+rather than a flat "7/10, good job."
 
 ## Tech Stack
 
@@ -192,8 +260,8 @@ sequenceDiagram
         U->>API: POST /questions/{id}/answer (recorded audio)
         API->>STT: transcribe(audio)
         STT-->>API: transcript
-        API->>LLM: analyze(transcript, key points, rubric)
-        LLM-->>API: score, grammar/relevance feedback, rubric_score
+        API->>LLM: analyze(transcript, key points)
+        LLM-->>API: 8 dimension scores, coaching framework, improvement tips
         API->>API: difficulty_service adjusts next question's difficulty
         API-->>U: analysis result
         alt Follow-up warranted
@@ -353,6 +421,6 @@ See `backend/README.md` for the full request/response flow through each layer.
 The question bank is **centralized, not siloed per-role** — every question is tagged through a many-to-many relational schema (`Role` ↔ `Topic` ↔ `Skill` ↔ `Concept`), so adding a new role or technology never requires a new bank, just new tag associations.
 
 - **900+ questions** across DSA, OOP, OS, CN, DBMS, System Design, languages (Java/Python/JS/TypeScript/C++), frontend/backend/DevOps/cloud, ML/statistics, security, testing, distributed systems, and behavioral/leadership.
-- Each question carries: type, difficulty (1–5), tagged roles/topics/skills, a reference solution (key points + sample answer), a follow-up hint, evaluation criteria, and a scoring rubric.
+- Each question carries: type, difficulty (1–5), tagged roles/topics/skills, a reference solution (key points + sample answer), and a follow-up hint.
 - Retrieval uses a **weighted ranking function** combining semantic similarity (via Chroma) with role/topic/skill relevance and difficulty fit — with fuzzy tag matching, so entering "backend", "Backend Engineer", or "back-end" all resolve correctly.
-- Answers are graded by the LLM against the question's own rubric, producing a genuine `rubric_score`, not just a generic pass/fail.
+- Every answer is graded against the same universal [8-dimension cognitive rubric](#cognitive-evaluation), not a per-question scoring scale — see that section for the full breakdown.
