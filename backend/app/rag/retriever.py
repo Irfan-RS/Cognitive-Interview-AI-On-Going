@@ -39,12 +39,58 @@ W_DIFFICULTY = 0.10
 W_NOVELTY = 0.25
 
 
+# Candidates type the abbreviations they learned the subject by ("cn", "os",
+# "dbms", "oops"), but the bank is tagged with the full names. Worse, the
+# MIN_PARTIAL_MATCH_LEN guard below deliberately blocks 2-letter terms from
+# substring-matching, so "cn" could never match "computer-networks" on its own —
+# it silently fell through to semantic search, which returned behavioural
+# questions. Expanding the query to the real tags fixes both the tag match and
+# the embedding used for semantic ranking.
+TOPIC_ALIASES: dict[str, list[str]] = {
+    "cn": ["computer-networks", "networking", "networking-fundamentals"],
+    "computer networks": ["computer-networks", "networking", "networking-fundamentals"],
+    "networks": ["computer-networks", "networking", "networking-fundamentals"],
+    "os": ["operating-systems", "processes-threads", "scheduling", "concurrency", "deadlock"],
+    "operating system": ["operating-systems", "processes-threads", "scheduling"],
+    "dbms": ["dbms", "databases", "sql", "indexing", "transactions", "normalization"],
+    "database": ["dbms", "databases", "sql", "indexing"],
+    "databases": ["dbms", "databases", "sql", "indexing"],
+    "oops": ["oop", "oop-fundamentals", "design-principles", "design-patterns"],
+    "oop": ["oop", "oop-fundamentals", "design-principles"],
+    "object oriented programming": ["oop", "oop-fundamentals", "design-principles"],
+    "sd": ["system-design", "distributed-systems", "scalability"],
+    "system design": ["system-design", "distributed-systems", "scalability"],
+    "hld": ["system-design", "distributed-systems", "scalability"],
+    "lld": ["oop", "design-patterns", "design-principles"],
+    "dsa": ["dsa", "algorithms", "data-structures", "arrays", "graphs"],
+    "ds": ["dsa", "data-structures", "algorithms"],
+    "algo": ["algorithms", "dsa", "data-structures"],
+    "ml": ["machine-learning", "ml-fundamentals", "deep-learning"],
+    "ai": ["machine-learning", "ml-fundamentals", "deep-learning"],
+    "js": ["javascript"],
+    "ts": ["typescript"],
+    "api": ["api-design", "rest", "graphql"],
+    "auth": ["authentication", "security", "oauth2"],
+}
+
+
+def expand_topic(topic: str | None) -> list[str]:
+    """Resolve an abbreviation to the tags actually used in the bank. Always
+    keeps the original term too, so an exact tag match still works."""
+    if not topic:
+        return []
+    key = " ".join(topic.lower().replace("-", " ").replace("_", " ").split())
+    return [topic, *TOPIC_ALIASES.get(key, [])]
+
+
 def _track_query_text(track: str, role: str | None, resume_keywords: list[str], topic: str | None) -> str:
     if track == "role":
         return f"Interview questions commonly asked for a {role} software engineering role"
     if track == "resume":
         return "Interview questions relevant to a resume mentioning: " + ", ".join(resume_keywords)
-    return f"Interview questions about the topic: {topic}"
+    # Include the expanded tags so the embedding reflects the real subject —
+    # "cn" alone embeds to nothing useful.
+    return "Interview questions about the topic: " + ", ".join(expand_topic(topic))
 
 
 def _normalize_tag(s: str) -> set[str]:
@@ -95,7 +141,11 @@ def _role_relevance(q: Question, role: str | None) -> float:
 def _topic_relevance(q: Question, topic: str | None) -> float:
     if not topic:
         return 0.0
-    return 1.0 if (_any_tag_match(topic, q.topics) or _any_tag_match(topic, q.tech_keywords)) else 0.0
+    # Try the typed term AND its expansions — "cn" only ever matches via the alias.
+    for term in expand_topic(topic):
+        if _any_tag_match(term, q.topics) or _any_tag_match(term, q.tech_keywords):
+            return 1.0
+    return 0.0
 
 
 def _skill_relevance(q: Question, resume_keywords: list[str]) -> float:
