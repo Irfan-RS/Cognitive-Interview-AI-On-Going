@@ -129,24 +129,34 @@ function QuestionFeedback({ report }) {
               <audio controls src={api.recordingUrl(turn.session_question_id)} className="mt-3 w-full" />
             )}
 
-            <div className="mt-4 grid grid-cols-2 gap-2 text-center text-xs sm:grid-cols-4">
-              <div className="rounded-lg border border-brand-500/20 bg-brand-500/10 py-2">
-                <p className="font-semibold text-brand-300">{a.relevance_score}%</p>
-                <p className="text-mist-400">Relevance</p>
-              </div>
+            <div className="mt-4 rounded-lg border border-brand-500/20 bg-brand-500/10 py-2 text-center">
+              <p className="text-lg font-semibold text-brand-300">{a.overall_score}/100</p>
+              <p className="text-xs text-mist-400">Overall score</p>
+            </div>
+
+            <div className="mt-2 grid grid-cols-2 gap-2 text-center text-xs sm:grid-cols-4">
               <div className="rounded-lg border border-amber-400/20 bg-amber-400/10 py-2">
-                <p className="text-amber-400 font-semibold">{a.rubric_score}/10</p>
-                <p className="text-mist-400">Rubric</p>
+                <p className="text-amber-400 font-semibold">{a.category_scores.technical}%</p>
+                <p className="text-mist-400">Technical</p>
               </div>
               <div className="rounded-lg border border-glow-400/20 bg-glow-400/10 py-2">
-                <p className="text-glow-400 font-semibold">{a.confidence_score}</p>
-                <p className="text-mist-400">Confidence</p>
+                <p className="text-glow-400 font-semibold">{a.category_scores.cognitive}%</p>
+                <p className="text-mist-400">Cognitive</p>
               </div>
               <div className="rounded-lg border border-practice-500/20 bg-practice-500/10 py-2">
-                <p className="font-semibold text-practice-500">{Math.round(a.eye_contact_ratio * 100)}%</p>
-                <p className="text-mist-400">Eye contact</p>
+                <p className="font-semibold text-practice-500">{a.category_scores.communication}%</p>
+                <p className="text-mist-400">Communication</p>
+              </div>
+              <div className="rounded-lg border border-brand-500/20 bg-brand-500/10 py-2">
+                <p className="font-semibold text-brand-300">{a.category_scores.adaptability}%</p>
+                <p className="text-mist-400">Adaptability</p>
               </div>
             </div>
+
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-mist-500">
+              <Eye size={12} />
+              Eye contact (not part of the score) · {Math.round(a.eye_contact_ratio * 100)}% on screen · relevance {a.relevance_score}%
+            </p>
 
             {a.grammar_issues?.length > 0 && (
               <p className="mt-3 text-xs text-mist-400">
@@ -323,28 +333,53 @@ export default function SessionDetail() {
             <div className="mt-6">
               {tab === "summary" && (
                 <div className="flex flex-col gap-6">
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     <StatTile
                       icon={Target}
-                      label="Avg relevance"
-                      value={report.average_relevance}
+                      label="Technical"
+                      value={report.technical_pct}
                       suffix="%"
-                      tone={{ bg: "border-brand-500/20 bg-brand-500/10", text: "text-brand-300" }}
+                      tone={{ bg: "border-amber-400/20 bg-amber-400/10", text: "text-amber-400" }}
                     />
                     <StatTile
                       icon={Gauge}
-                      label="Avg confidence"
-                      value={report.average_confidence}
+                      label="Cognitive"
+                      value={report.cognitive_pct}
+                      suffix="%"
                       tone={{ bg: "border-glow-400/20 bg-glow-400/10", text: "text-glow-400" }}
                     />
                     <StatTile
-                      icon={Eye}
-                      label="Avg eye contact"
-                      value={report.average_eye_contact}
+                      icon={MessageCircleQuestion}
+                      label="Communication"
+                      value={report.communication_pct}
                       suffix="%"
                       tone={{ bg: "border-practice-500/20 bg-practice-500/10", text: "text-practice-500" }}
                     />
+                    <StatTile
+                      icon={ListChecks}
+                      label="Adaptability"
+                      value={report.adaptability_pct}
+                      suffix="%"
+                      tone={{ bg: "border-brand-500/20 bg-brand-500/10", text: "text-brand-300" }}
+                    />
                   </div>
+
+                  <Card className="border-dashed">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-mist-400">
+                      Proctoring — observational only, not part of the score
+                    </p>
+                    <div className="mt-3 flex items-center gap-6 text-sm text-mist-300">
+                      <span className="flex items-center gap-1.5">
+                        <Eye size={14} className="text-mist-500" />
+                        {report.proctoring.eye_contact_ratio}% on screen
+                      </span>
+                      <span>
+                        Looked away{" "}
+                        <span className="font-semibold text-mist-100">{report.proctoring.look_away_count}</span>{" "}
+                        time{report.proctoring.look_away_count === 1 ? "" : "s"}
+                      </span>
+                    </div>
+                  </Card>
 
                   <Card>
                     <p className="text-xs font-semibold uppercase tracking-wide text-mist-400">All questions</p>

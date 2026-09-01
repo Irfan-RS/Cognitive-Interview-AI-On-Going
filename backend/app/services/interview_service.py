@@ -112,14 +112,21 @@ async def submit_answer(
     key_points = bank_question.key_points if bank_question else []
     eye_contact_ratio = monitoring_repo.eye_contact_ratio_for_question(db, session_question_id)
 
+    previous_question = previous_answer_transcript = None
+    if turn.is_follow_up and turn.parent_id:
+        parent_turn = session_repo.get_turn(db, turn.parent_id)
+        if parent_turn is not None and parent_turn.answer is not None:
+            previous_question = parent_turn.question_text
+            previous_answer_transcript = parent_turn.answer.transcript
+
     analysis = await analysis_service.analyze_answer(
         llm,
         question_text=turn.question_text,
         key_points=key_points,
         transcription=transcription,
         eye_contact_ratio=eye_contact_ratio,
-        evaluation_criteria=bank_question.evaluation_criteria if bank_question else None,
-        scoring_rubric=bank_question.scoring_rubric if bank_question else None,
+        previous_question=previous_question,
+        previous_answer_transcript=previous_answer_transcript,
     )
 
     next_difficulty = difficulty_service.next_difficulty(session.current_difficulty, analysis["relevance_score"])
@@ -134,11 +141,12 @@ async def submit_answer(
         filler_words=analysis["filler_words"],
         pause_count=analysis["pause_count"],
         relevance_score=analysis["relevance_score"],
-        rubric_score=analysis["rubric_score"],
+        dimension_scores=analysis["dimension_scores"],
+        overall_score=analysis["overall_score"],
+        category_scores=analysis["category_scores"],
         covered_key_points=analysis["covered_key_points"],
         missed_key_points=analysis["missed_key_points"],
         eye_contact_ratio=analysis["eye_contact_ratio"],
-        confidence_score=analysis["confidence_score"],
         llm_model_solution=analysis["llm_model_solution"],
         next_difficulty=next_difficulty,
     )

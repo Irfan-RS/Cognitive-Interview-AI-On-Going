@@ -21,7 +21,7 @@ def _session_out(session, turn) -> SessionOut:
 
 def _session_summary_out(session) -> SessionSummaryOut:
     scores = [t.answer.relevance_score for t in session.turns if t.answer is not None]
-    confidences = [t.answer.confidence_score for t in session.turns if t.answer is not None]
+    overall_scores = [t.answer.overall_score for t in session.turns if t.answer is not None]
     return SessionSummaryOut(
         id=session.id,
         mode=session.mode,
@@ -33,7 +33,7 @@ def _session_summary_out(session) -> SessionSummaryOut:
         completed_at=session.completed_at,
         question_count=len(session.turns),
         average_relevance=round(sum(scores) / len(scores), 1) if scores else None,
-        average_confidence=round(sum(confidences) / len(confidences), 1) if confidences else None,
+        average_overall_score=round(sum(overall_scores) / len(overall_scores), 1) if overall_scores else None,
     )
 
 

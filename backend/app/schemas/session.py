@@ -75,4 +75,4 @@ class SessionSummaryOut(BaseModel):
     completed_at: datetime | None
     question_count: int
     average_relevance: float | None = None
-    average_confidence: float | None = None
+    average_overall_score: float | None = None

@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.models.session import InterviewSession
 from app.providers.llm.base import LLMProvider
+from app.repositories import monitoring_repo
 from app.schemas.answer import AnswerAnalysisOut
-from app.schemas.report import ReportTurn, SessionReport
+from app.schemas.report import ProctoringSummary, ReportTurn, SessionReport
 from app.services.llm_json import parse_llm_json
 
 _SYSTEM_PROMPT = """You are an interview coach reviewing a candidate's full mock/practice
@@ -36,7 +37,8 @@ def _format_breakdown(session: InterviewSession) -> str:
         a = turn.answer
         blocks.append(
             f"Q{i}: {turn.question_text}\n"
-            f"  Relevance: {a.relevance_score}% | Confidence: {a.confidence_score}\n"
+            f"  Relevance: {a.relevance_score}% | Overall score: {a.overall_score}/100\n"
+            f"  Category scores: {a.category_scores}\n"
             f"  Grammar issues: {'; '.join(a.grammar_issues) or 'none'}\n"
             f"  Filler words: {', '.join(a.filler_words.keys()) or 'none'}\n"
             f"  Missed key points: {'; '.join(a.missed_key_points) or 'none'}"
@@ -66,7 +68,8 @@ async def _generate_summary_and_actions(llm: LLMProvider, session: InterviewSess
 async def build_report(db: Session, llm: LLMProvider, session: InterviewSession) -> SessionReport:
     turns: list[ReportTurn] = []
     relevance_scores: list[float] = []
-    confidence_scores: list[float] = []
+    overall_scores: list[float] = []
+    category_totals: dict[str, list[float]] = {"technical": [], "cognitive": [], "communication": [], "adaptability": []}
     eye_contact_ratios: list[float] = []
 
     for turn in session.turns:
@@ -74,8 +77,11 @@ async def build_report(db: Session, llm: LLMProvider, session: InterviewSession)
         if turn.answer is not None:
             answer_out = AnswerAnalysisOut.model_validate(turn.answer)
             relevance_scores.append(turn.answer.relevance_score)
-            confidence_scores.append(turn.answer.confidence_score)
+            overall_scores.append(turn.answer.overall_score)
             eye_contact_ratios.append(turn.answer.eye_contact_ratio)
+            for category, values in category_totals.items():
+                if category in turn.answer.category_scores:
+                    values.append(turn.answer.category_scores[category])
 
         turns.append(
             ReportTurn(
@@ -95,13 +101,16 @@ async def build_report(db: Session, llm: LLMProvider, session: InterviewSession)
         return round(sum(values) / len(values), 1) if values else 0.0
 
     average_relevance = avg(relevance_scores)
-    average_confidence = avg(confidence_scores)
-    average_eye_contact = avg([r * 100 for r in eye_contact_ratios])
 
-    # Weighted composite favoring answer quality over delivery — matches the same
-    # relevance-led weighting difficulty_service uses to judge answer strength.
-    readiness_score = round(0.5 * average_relevance + 0.3 * average_confidence + 0.2 * average_eye_contact, 1)
-    passed = bool(relevance_scores) and readiness_score >= get_settings().readiness_pass_threshold
+    # readiness_score is the purely cognitive/technical composite — proctoring
+    # (eye contact) is deliberately never part of this or of "passed".
+    readiness_score = avg(overall_scores)
+    passed = bool(overall_scores) and readiness_score >= get_settings().readiness_pass_threshold
+
+    proctoring = ProctoringSummary(
+        eye_contact_ratio=avg([r * 100 for r in eye_contact_ratios]),
+        look_away_count=monitoring_repo.look_away_count_for_session(db, session.id),
+    )
 
     narrative = await _generate_summary_and_actions(llm, session)
 
@@ -116,8 +125,11 @@ async def build_report(db: Session, llm: LLMProvider, session: InterviewSession)
         completed_at=session.completed_at,
         turns=turns,
         average_relevance=average_relevance,
-        average_confidence=average_confidence,
-        average_eye_contact=average_eye_contact,
+        technical_pct=avg(category_totals["technical"]),
+        cognitive_pct=avg(category_totals["cognitive"]),
+        communication_pct=avg(category_totals["communication"]),
+        adaptability_pct=avg(category_totals["adaptability"]),
+        proctoring=proctoring,
         readiness_score=readiness_score,
         passed=passed,
         summary=narrative["summary"],

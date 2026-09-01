@@ -390,26 +390,34 @@ export default function InterviewScreen({
 
         {analysis && (
           <Card className="animate-rise-in flex flex-col gap-4">
+            <div className="rounded-xl border border-brand-500/20 bg-brand-500/10 py-3 text-center">
+              <p className="text-2xl font-semibold text-brand-300">{analysis.overall_score}/100</p>
+              <p className="mt-0.5 text-xs text-mist-400">Overall score</p>
+            </div>
+
             <div className="grid grid-cols-2 gap-2 text-center text-xs sm:grid-cols-4">
-              <div className="rounded-xl border border-brand-500/20 bg-brand-500/10 py-3">
-                <p className="text-lg font-semibold text-brand-300">{analysis.relevance_score}%</p>
-                <p className="mt-0.5 text-mist-400">Relevance</p>
-              </div>
               <div className="rounded-xl border border-amber-400/20 bg-amber-400/10 py-3">
-                <p className="text-amber-400 text-lg font-semibold">{analysis.rubric_score}/10</p>
-                <p className="mt-0.5 text-mist-400">Rubric</p>
+                <p className="text-amber-400 text-lg font-semibold">{analysis.category_scores.technical}%</p>
+                <p className="mt-0.5 text-mist-400">Technical</p>
               </div>
               <div className="rounded-xl border border-glow-400/20 bg-glow-400/10 py-3">
-                <p className="text-glow-400 text-lg font-semibold">{analysis.confidence_score}</p>
-                <p className="mt-0.5 text-mist-400">Confidence</p>
+                <p className="text-glow-400 text-lg font-semibold">{analysis.category_scores.cognitive}%</p>
+                <p className="mt-0.5 text-mist-400">Cognitive</p>
               </div>
               <div className="rounded-xl border border-practice-500/20 bg-practice-500/10 py-3">
-                <p className="text-lg font-semibold text-practice-500">
-                  {Math.round(analysis.eye_contact_ratio * 100)}%
-                </p>
-                <p className="mt-0.5 text-mist-400">Eye contact</p>
+                <p className="text-lg font-semibold text-practice-500">{analysis.category_scores.communication}%</p>
+                <p className="mt-0.5 text-mist-400">Communication</p>
+              </div>
+              <div className="rounded-xl border border-brand-500/20 bg-brand-500/10 py-3">
+                <p className="text-lg font-semibold text-brand-300">{analysis.category_scores.adaptability}%</p>
+                <p className="mt-0.5 text-mist-400">Adaptability</p>
               </div>
             </div>
+
+            <p className="flex items-center gap-1.5 text-xs text-mist-500">
+              <Eye size={12} />
+              Eye contact (not part of your score) · {Math.round(analysis.eye_contact_ratio * 100)}% on screen
+            </p>
 
             {analysis.grammar_issues?.length > 0 && (
               <div>

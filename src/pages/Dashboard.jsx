@@ -106,8 +106,8 @@ export default function Dashboard() {
 
                 <div className="flex items-center gap-4">
                   <StatusBadge status={s.status} />
-                  {s.average_relevance != null && (
-                    <span className="text-sm font-semibold text-brand-300">{s.average_relevance}% relevance</span>
+                  {s.average_overall_score != null && (
+                    <span className="text-sm font-semibold text-brand-300">{s.average_overall_score}/100</span>
                   )}
                   <ArrowRight size={16} className="text-mist-500" />
                 </div>

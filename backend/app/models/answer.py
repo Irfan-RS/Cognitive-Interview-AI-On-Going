@@ -32,12 +32,14 @@ class Answer(Base):
     pause_count: Mapped[int] = mapped_column(Integer, default=0)
 
     relevance_score: Mapped[float] = mapped_column(Float, default=0.0)  # 0-100
-    rubric_score: Mapped[float] = mapped_column(Float, default=0.0)  # 0-10, per the question's/default scoring rubric
+    dimension_scores: Mapped[dict] = mapped_column(JSON, default=dict)  # {dimension: 0-10}, the 8-dimension cognitive rubric
+    overall_score: Mapped[float] = mapped_column(Float, default=0.0)  # 0-100, weighted composite of dimension_scores
+    category_scores: Mapped[dict] = mapped_column(JSON, default=dict)  # {technical/cognitive/communication/adaptability: 0-100}
     covered_key_points: Mapped[list[str]] = mapped_column(JSON, default=list)
     missed_key_points: Mapped[list[str]] = mapped_column(JSON, default=list)
 
+    # Proctoring signal only — deliberately never blended into any score above.
     eye_contact_ratio: Mapped[float] = mapped_column(Float, default=1.0)  # 0-1, from monitoring events
-    confidence_score: Mapped[float] = mapped_column(Float, default=0.0)  # 0-100 composite
 
     llm_model_solution: Mapped[str] = mapped_column(Text, default="")
     next_difficulty: Mapped[int] = mapped_column(Integer, default=2)

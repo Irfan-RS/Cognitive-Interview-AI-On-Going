@@ -13,11 +13,12 @@ class AnswerAnalysisOut(BaseModel):
     filler_words: dict[str, int]
     pause_count: int
     relevance_score: float
-    rubric_score: float
+    dimension_scores: dict[str, float]
+    overall_score: float
+    category_scores: dict[str, float]
     covered_key_points: list[str]
     missed_key_points: list[str]
     eye_contact_ratio: float
-    confidence_score: float
     llm_model_solution: str
     next_difficulty: int
     submitted_at: datetime
