@@ -1,12 +1,493 @@
 [
-  {"id":"test-0001","question":"What is the testing pyramid, and why should unit tests outnumber end-to-end tests?","type":"conceptual","difficulty":1,"roles":["general_sde","backend","frontend"],"topics":["testing"],"tech_keywords":["testing","unit-testing"],"companies_common":["Amazon","Google","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["Pyramid shape: many fast unit tests at the base, fewer integration tests in the middle, fewest slow end-to-end tests at the top","Unit tests are fast, cheap, and isolate failures precisely to one unit","End-to-end tests are slow, flaky, and expensive to maintain but catch real cross-system issues","Over-investing in E2E tests leads to slow, brittle test suites that developers start ignoring","Each layer catches different classes of bugs, so none should be skipped entirely"],"sample_answer":"The testing pyramid describes an ideal ratio: many fast, cheap unit tests forming the base, a moderate number of integration tests in the middle, and few slow, expensive end-to-end tests at the top. Unit tests isolate failures precisely and run in milliseconds, so they should catch most logic bugs early. E2E tests are valuable for catching real cross-system issues but are slow and flaky, so an inverted pyramid (mostly E2E) leads to a slow, unreliable suite that teams eventually stop trusting."},"follow_up_hint":"Ask them to identify where a specific bug (e.g. a broken API contract between two services) would be best caught in this pyramid."},
-  {"id":"test-0002","question":"Explain the difference between unit tests, integration tests, and end-to-end tests with an example of each.","type":"conceptual","difficulty":1,"roles":["general_sde"],"topics":["testing"],"tech_keywords":["testing"],"companies_common":["Amazon","Infosys","TCS"],"source_style":"common-interview","reference_solution":{"key_points":["Unit tests verify a single function/class in isolation, mocking its dependencies","Integration tests verify multiple components working together, e.g. a service talking to a real test database","End-to-end tests verify a full user flow through the actual running system, e.g. via a browser","Gives a concrete, distinct example for each","Explains the trade-off of speed and confidence increasing/decreasing inversely across the three"],"sample_answer":"A unit test verifies one function in isolation, e.g. testing a calculateDiscount() function with mocked inputs. An integration test verifies components working together, e.g. testing that a repository layer correctly reads and writes to a real (test) database. An end-to-end test verifies an entire user flow through the real running system, e.g. a browser automation test that logs in, adds an item to a cart, and checks out. Each layer trades speed for realism — unit tests are fastest but least realistic, E2E tests are slowest but most realistic."},"follow_up_hint":"Ask what a 'test double' is and the difference between a mock, stub, and fake."},
-  {"id":"test-0003","question":"What is Test-Driven Development (TDD), and what is the red-green-refactor cycle?","type":"conceptual","difficulty":2,"roles":["general_sde"],"topics":["testing","tdd"],"tech_keywords":["tdd","testing"],"companies_common":["ThoughtWorks","Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["Write a failing test first (red) for behavior that doesn't exist yet","Write the minimal code to make that test pass (green)","Refactor the code for quality while keeping tests passing","Explains this drives design from the perspective of how the code will be used, since the test is written first","Notes the discipline requires writing only enough code to pass the current test, not anticipating future requirements"],"sample_answer":"TDD is writing a failing test before writing the implementation. The cycle is: red — write a test for behavior that doesn't exist yet, and watch it fail; green — write the minimal code needed to make that test pass, without over-engineering; refactor — clean up the implementation (and test) while keeping all tests green. This forces you to think about the API/interface from the caller's perspective first, since you write the test before the implementation exists."},"follow_up_hint":"Ask them to walk through TDD for implementing a simple function, like FizzBuzz, step by step."},
-  {"id":"test-0004","question":"What is the difference between a mock, a stub, and a fake in unit testing?","type":"conceptual","difficulty":2,"roles":["general_sde"],"topics":["testing"],"tech_keywords":["testing","mocking"],"companies_common":["Amazon","Microsoft","Google"],"source_style":"common-interview","reference_solution":{"key_points":["A stub returns canned/predetermined responses to calls, with no verification of how it was called","A mock additionally verifies interactions — that specific methods were called with specific arguments, a specific number of times","A fake is a lightweight but genuinely working implementation, e.g. an in-memory database instead of a real one","Explains overuse of mocks (verifying implementation details) can make tests brittle to refactoring","Gives a concrete example distinguishing all three"],"sample_answer":"A stub just returns a fixed, predetermined response when called, with no assertions on how it was invoked — useful for controlling test inputs. A mock goes further, actually verifying interactions, like asserting a specific method was called exactly once with specific arguments. A fake is a real, working but simplified implementation, like an in-memory list-based repository standing in for a real database. Over-relying on mocks that assert internal implementation details can make tests brittle — they break on refactors that don't actually change behavior."},"follow_up_hint":"Ask when they'd prefer a fake over a mock for testing a repository layer."},
-  {"id":"test-0005","question":"How would you test a function that depends on the current time or random number generation?","type":"practical_implementation","difficulty":2,"roles":["general_sde","backend"],"topics":["testing"],"tech_keywords":["testing"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["Inject the time/randomness source as a dependency (a clock or RNG interface) rather than calling system time/random directly inside the function","In tests, substitute a fixed/deterministic clock or seeded RNG","This makes the function's behavior fully deterministic and reproducible in tests","Mentions this is an application of dependency injection specifically for testability","Notes some languages/frameworks provide time-mocking utilities as an alternative when refactoring isn't feasible"],"sample_answer":"The key is to not call the system clock or random number generator directly inside the function — instead, inject a clock or RNG as a dependency (a parameter or injected interface). In production, you pass the real system clock; in tests, you pass a fixed, controllable fake clock or a seeded random generator, making the function's output fully deterministic and reproducible. This is really just dependency injection applied specifically to make time/randomness testable, rather than reaching for a time-mocking library to patch global state, which is more fragile."},"follow_up_hint":"Ask how they'd test code that was NOT originally written with this injectable design, without a large refactor."},
-  {"id":"test-0006","question":"What is code coverage, and why is 100% coverage not the same as a bug-free codebase?","type":"conceptual","difficulty":1,"roles":["general_sde"],"topics":["testing"],"tech_keywords":["testing","code-coverage"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["Code coverage measures what percentage of code lines/branches were executed by the test suite","100% line coverage only means every line ran at least once — it says nothing about whether the right assertions were made","A test can execute a line without actually verifying its output is correct","Coverage doesn't measure edge cases, ordering issues, or concurrency bugs not exercised by the test's specific inputs","Coverage is a useful signal for finding untested code, not a proof of correctness"],"sample_answer":"Code coverage measures what fraction of the codebase's lines or branches were executed while running the test suite. The catch is that a test can execute a line of code without actually asserting anything meaningful about its behavior — a test with no assertions at all can still achieve 100% coverage while verifying nothing. Coverage also doesn't tell you about untested edge cases, unusual input combinations, or concurrency bugs that just happen not to be triggered by the existing tests' specific inputs. It's a useful tool for spotting completely untested code, not proof that tested code is correct."},"follow_up_hint":"Ask them to give an example of a test with 100% line coverage that still fails to catch a real bug."},
-  {"id":"test-0007","question":"Explain what a flaky test is, common causes, and how you'd approach fixing one.","type":"troubleshooting","difficulty":2,"roles":["general_sde"],"topics":["testing"],"tech_keywords":["testing"],"companies_common":["Amazon","Google","Meta"],"source_style":"common-interview","reference_solution":{"key_points":["A flaky test sometimes passes and sometimes fails with no code changes between runs","Common causes: race conditions/timing assumptions, shared mutable state between tests, reliance on real time/network/external services, test execution order dependency","Approach: reproduce reliably (run repeatedly, isolate), identify the non-determinism source, then either fix the root cause or properly isolate/mock it","Explains why simply retrying flaky tests until they pass is a dangerous anti-pattern that hides real bugs","Mentions test isolation (no shared state, fresh fixtures) as a preventive practice"],"sample_answer":"A flaky test passes or fails inconsistently without any code changes, usually due to timing assumptions (waiting a fixed delay instead of waiting for a real condition), shared mutable state leaking between tests, reliance on real network calls or wall-clock time, or dependence on test execution order. I'd first try to reproduce it reliably, often by running it repeatedly or in isolation versus the full suite, to narrow down whether it's timing, ordering, or external dependency related, then fix the actual root cause — replacing a fixed sleep with a proper wait condition, or mocking the external dependency — rather than just retrying failed runs, which just hides a real bug under statistical noise."},"follow_up_hint":"Ask them to describe a specific flaky test scenario involving async code and how they'd fix it."},
-  {"id":"test-0008","question":"What is snapshot testing, and what are its pitfalls?","type":"conceptual","difficulty":2,"roles":["frontend"],"topics":["testing"],"tech_keywords":["testing","react","snapshot-testing"],"companies_common":["Meta","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["Snapshot testing captures a component's rendered output and compares future runs against that saved snapshot","Fails when the output legitimately changes, requiring a review-and-update step ('snapshot update')","Pitfall: developers can blindly approve/update snapshots without reviewing the actual diff, defeating the test's purpose","Pitfall: large, monolithic snapshots make it hard to tell what specifically changed or why it matters","Best suited for catching unintended changes, not for verifying specific behavior — should be paired with targeted assertions"],"sample_answer":"Snapshot testing captures a component's rendered output the first time and saves it; future test runs compare against that saved snapshot and fail if it changed. It's good for catching unintended visual/structural regressions, but its biggest pitfall is that when a snapshot test fails, developers can just blindly run 'update snapshots' without actually reviewing whether the change was intentional, which defeats the whole purpose. Large snapshots also make it hard to tell exactly what changed and why it matters. It works best as a supplement to specific, targeted assertions, not a replacement for them."},"follow_up_hint":"Ask how they'd prevent teammates from blindly approving snapshot updates in code review."},
-  {"id":"test-0009","question":"How would you design integration tests for a service that depends on a third-party payment API?","type":"scenario_based","difficulty":3,"roles":["backend"],"topics":["testing"],"tech_keywords":["testing","api"],"companies_common":["Stripe","Amazon","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["Avoid calling the real third-party API in automated tests — it's slow, costs money/rate limits, and depends on external availability","Use the provider's official sandbox/test-mode API if available, which mimics real behavior without real transactions","For unit/most integration tests, mock the API client at the boundary, testing your own code's handling of various responses (success, decline, timeout, malformed response)","Reserve a small number of true end-to-end tests against the sandbox for critical paths, run less frequently (e.g. not on every commit)","Explains testing failure/edge cases (timeouts, 5xx responses, malformed webhooks) is often more valuable than testing the happy path alone"],"sample_answer":"I'd avoid hitting the real third-party API in the regular test suite — it's slow, can incur real costs, and depends on external uptime. Instead, for most unit and integration tests, I'd mock the API client at the boundary and test how my own code handles various responses: success, a card decline, a timeout, a malformed response, a webhook retry. If the provider offers an official sandbox/test mode, I'd reserve a small number of true end-to-end tests against it for critical paths like checkout, but run those less frequently — e.g. in a nightly job rather than on every commit — to avoid slowing down the main pipeline. Testing failure modes tends to be more valuable than just the happy path, since that's where real production incidents happen."},"follow_up_hint":"Ask how they'd test webhook handling specifically, including duplicate/out-of-order delivery."},
-  {"id":"test-0010","question":"What is contract testing, and what problem does it solve in a microservices architecture?","type":"conceptual","difficulty":3,"roles":["backend"],"topics":["testing","microservices"],"tech_keywords":["testing","microservices","contract-testing"],"companies_common":["Amazon","Netflix","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["Contract testing verifies that a service's API matches the expectations of its consumers, without needing to spin up the full dependency chain","A consumer defines a 'contract' (expected requests/responses); the provider's tests verify it still satisfies that contract","Solves the problem of full end-to-end integration tests across many microservices being slow, flaky, and hard to run in isolation","Catches breaking API changes before deployment, without needing every consumer service running simultaneously","Names a common tool (e.g. Pact) as an example of this pattern"],"sample_answer":"Contract testing verifies that a service's API actually matches what its consumers expect, without needing to run the full chain of dependent services together. A consumer team defines a contract — the specific requests it makes and responses it expects — and the provider service runs tests against that same contract to verify it still satisfies it, independently of the consumer actually running. This solves the problem of full end-to-end tests across many microservices being slow and flaky, while still catching breaking API changes before they reach production. Pact is a common tool implementing this pattern."},"follow_up_hint":"Ask how contract testing differs from just versioning the API and documenting breaking changes."}
+  {
+    "id": "test-0001",
+    "question": "What is the testing pyramid, and why should unit tests outnumber end-to-end tests?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "general_sde",
+      "backend",
+      "frontend"
+    ],
+    "topics": [
+      "testing"
+    ],
+    "tech_keywords": [
+      "testing",
+      "unit-testing"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Pyramid shape: many fast unit tests at the base, fewer integration tests in the middle, fewest slow end-to-end tests at the top",
+        "Unit tests are fast, cheap, and isolate failures precisely to one unit",
+        "End-to-end tests are slow, flaky, and expensive to maintain but catch real cross-system issues",
+        "Over-investing in E2E tests leads to slow, brittle test suites that developers start ignoring",
+        "Each layer catches different classes of bugs, so none should be skipped entirely"
+      ],
+      "sample_answer": "The testing pyramid describes an ideal ratio: many fast, cheap unit tests forming the base, a moderate number of integration tests in the middle, and few slow, expensive end-to-end tests at the top. Unit tests isolate failures precisely and run in milliseconds, so they should catch most logic bugs early. E2E tests are valuable for catching real cross-system issues but are slow and flaky, so an inverted pyramid (mostly E2E) leads to a slow, unreliable suite that teams eventually stop trusting."
+    },
+    "follow_up_hint": "Ask them to identify where a specific bug (e.g. a broken API contract between two services) would be best caught in this pyramid.",
+    "concept": "Testing Pyramid",
+    "sub_concept": "Test Suite Architecture and Trade-offs",
+    "expected_reasoning": "A strong candidate begins by visualizing the structural distribution of tests across a typical software application. They analyze the operational characteristics of each layer, contrasting the speed and precision of isolated tests with the realism and fragility of system-wide tests. They weigh the cost of execution, maintenance burden, and feedback latency against the confidence each layer provides. Finally, they synthesize these factors to explain why a broad base and a narrow peak optimize both development velocity and regression coverage.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying unit tests are cheaper without explaining why.",
+      "Claims end-to-end tests should be avoided entirely rather than recognized as necessary in smaller quantities.",
+      "Focuses solely on code coverage percentage without addressing test execution speed or flakiness.",
+      "Confuses the definition of a unit test with an integration test.",
+      "Argues that modern hardware eliminates the performance penalty of end-to-end testing."
+    ],
+    "progressive_hints": [
+      "What are the primary differences in scope, speed, and execution cost between a test that runs in-memory and one that boots up a full browser and database?",
+      "Consider what happens to a development team's feedback loop and trust in the suite when a majority of tests take hours to run and frequently fail due to network blips.",
+      "Think about how the shape of a pyramid represents the proportion of tests and why having a wide base of fast tests and a narrow peak of slow tests optimizes overall confidence and speed."
+    ],
+    "learning_objective": "Understand how to balance test types across speed, cost, and confidence to build a maintainable and effective test suite."
+  },
+  {
+    "id": "test-0002",
+    "question": "Explain the difference between unit tests, integration tests, and end-to-end tests with an example of each.",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "testing"
+    ],
+    "tech_keywords": [
+      "testing"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys",
+      "TCS"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Unit tests verify a single function/class in isolation, mocking its dependencies",
+        "Integration tests verify multiple components working together, e.g. a service talking to a real test database",
+        "End-to-end tests verify a full user flow through the actual running system, e.g. via a browser",
+        "Gives a concrete, distinct example for each",
+        "Explains the trade-off of speed and confidence increasing/decreasing inversely across the three"
+      ],
+      "sample_answer": "A unit test verifies one function in isolation, e.g. testing a calculateDiscount() function with mocked inputs. An integration test verifies components working together, e.g. testing that a repository layer correctly reads and writes to a real (test) database. An end-to-end test verifies an entire user flow through the real running system, e.g. a browser automation test that logs in, adds an item to a cart, and checks out. Each layer trades speed for realism — unit tests are fastest but least realistic, E2E tests are slowest but most realistic."
+    },
+    "follow_up_hint": "Ask what a 'test double' is and the difference between a mock, stub, and fake.",
+    "concept": "Software Testing Pyramid",
+    "sub_concept": "Test Scope and Granularity",
+    "expected_reasoning": "A strong candidate begins by establishing a baseline definition for test scope, moving from the most isolated components to the entire integrated system. They naturally reason about the pyramid structure, identifying that scope dictates execution speed and fidelity. Rather than just listing definitions, they anchor each level with a clear, realistic code or architectural example to illustrate the boundary. Finally, they synthesize the trade-offs, explaining how the pyramid balances fast, cheap, isolated feedback against slow, expensive, high-confidence user simulations.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely saying 'unit tests are small and e2e tests are big'",
+      "Provides examples that overlap or contradict the definitions, such as calling a browser test a unit test",
+      "Fails to mention mocking dependencies for unit tests",
+      "Ignores the trade-offs between execution speed, maintenance cost, and confidence",
+      "Confuses integration tests with end-to-end tests by including user interfaces in integration tests"
+    ],
+    "progressive_hints": [
+      "Consider the boundaries of what is being tested, starting from the smallest piece of code up to the complete running application.",
+      "Think about what external systems or dependencies are mocked versus kept real at each level of testing.",
+      "Compare how execution speed and confidence levels change as you move from testing a single function to testing a complete user journey in a browser."
+    ],
+    "learning_objective": "Understand how to balance test scope, execution speed, and confidence across unit, integration, and end-to-end testing layers."
+  },
+  {
+    "id": "test-0003",
+    "question": "What is Test-Driven Development (TDD), and what is the red-green-refactor cycle?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "testing",
+      "tdd"
+    ],
+    "tech_keywords": [
+      "tdd",
+      "testing"
+    ],
+    "companies_common": [
+      "ThoughtWorks",
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Write a failing test first (red) for behavior that doesn't exist yet",
+        "Write the minimal code to make that test pass (green)",
+        "Refactor the code for quality while keeping tests passing",
+        "Explains this drives design from the perspective of how the code will be used, since the test is written first",
+        "Notes the discipline requires writing only enough code to pass the current test, not anticipating future requirements"
+      ],
+      "sample_answer": "TDD is writing a failing test before writing the implementation. The cycle is: red — write a test for behavior that doesn't exist yet, and watch it fail; green — write the minimal code needed to make that test pass, without over-engineering; refactor — clean up the implementation (and test) while keeping all tests green. This forces you to think about the API/interface from the caller's perspective first, since you write the test before the implementation exists."
+    },
+    "follow_up_hint": "Ask them to walk through TDD for implementing a simple function, like FizzBuzz, step by step.",
+    "concept": "Test-Driven Development",
+    "sub_concept": "Red-Green-Refactor Cycle",
+    "expected_reasoning": "A strong candidate begins by framing TDD as a design technique rather than purely a testing mechanism. They explain the psychological and structural shift of writing expectations before implementation, moving from abstract requirements to concrete behavior. They then break down the iterative cycle, emphasizing why each phase has strict constraints: writing only enough code to fail, then only enough code to pass, before addressing cleanliness. Finally, they highlight how this forces decoupled, modular architecture by prioritizing the caller's perspective first.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply listing red, green, and refactor without explaining why the order matters.",
+      "Confuses TDD with traditional QA testing done after the implementation is complete.",
+      "Claims TDD is primarily about achieving high test coverage rather than driving software design.",
+      "Misses the constraint of writing minimal code, suggesting developers should implement the full feature during the green phase.",
+      "Fails to explain the purpose of the refactor phase or treats it as optional."
+    ],
+    "progressive_hints": [
+      "Think about the chronological order of writing code versus tests in conventional workflows, and what changes if you invert that timeline.",
+      "Consider what state your test suite must be in before you are allowed to touch the production code, and what the immediate goal of writing code is once that test fails.",
+      "If your workflow consists of three distinct phases named after colors and a cleanup action, how does the constraint of writing 'the minimum code necessary' shape your code's design?"
+    ],
+    "learning_objective": "The candidate should understand that Test-Driven Development is fundamentally a software design practice that uses automated tests to drive decoupled architecture and incremental progress through strict constraints."
+  },
+  {
+    "id": "test-0004",
+    "question": "What is the difference between a mock, a stub, and a fake in unit testing?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "testing"
+    ],
+    "tech_keywords": [
+      "testing",
+      "mocking"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A stub returns canned/predetermined responses to calls, with no verification of how it was called",
+        "A mock additionally verifies interactions — that specific methods were called with specific arguments, a specific number of times",
+        "A fake is a lightweight but genuinely working implementation, e.g. an in-memory database instead of a real one",
+        "Explains overuse of mocks (verifying implementation details) can make tests brittle to refactoring",
+        "Gives a concrete example distinguishing all three"
+      ],
+      "sample_answer": "A stub just returns a fixed, predetermined response when called, with no assertions on how it was invoked — useful for controlling test inputs. A mock goes further, actually verifying interactions, like asserting a specific method was called exactly once with specific arguments. A fake is a real, working but simplified implementation, like an in-memory list-based repository standing in for a real database. Over-relying on mocks that assert internal implementation details can make tests brittle — they break on refactors that don't actually change behavior."
+    },
+    "follow_up_hint": "Ask when they'd prefer a fake over a mock for testing a repository layer.",
+    "concept": "Test Doubles",
+    "sub_concept": "Distinction between mocks, stubs, and fakes",
+    "expected_reasoning": "A strong candidate begins by categorizing test doubles under the broader umbrella of substituting dependencies in unit tests. They proceed to differentiate them based on behavioral verification versus state verification and the complexity of their internal logic. They systematically explain how stubs provide fixed data, mocks assert interactions, and fakes offer working lightweight implementations like in-memory alternatives. Finally, they weigh the trade-offs of using overly rigid mocks, recognizing how tight coupling to implementation details leads to brittle test suites.",
+    "common_mistakes": [
+      "Treating 'mock', 'stub', and 'fake' as interchangeable synonyms for any test double",
+      "Stating definitions with no justification or concrete examples to distinguish them",
+      "Failing to mention that mocks actively verify interactions while stubs do not",
+      "Confusing a fake with a mock because both can hold state",
+      "Ignoring the negative consequences of overusing mocks, such as test brittleness during refactoring"
+    ],
+    "progressive_hints": [
+      "Think about what happens to the test execution when a dependency is replaced with something that just hands back a hardcoded value versus something that records how it was used.",
+      "Consider the difference between a test double that cares only about the output it gives you, one that tracks the exact method calls made to it, and one that actually executes working logic in memory.",
+      "Ask yourself which of the three test doubles actually contains working business logic or state manipulation under the hood, rather than just returning canned data or asserting arguments."
+    ],
+    "learning_objective": "Candidates should walk away understanding how to choose the appropriate test double based on whether they need to stub data, verify interactions, or use a working lightweight substitute."
+  },
+  {
+    "id": "test-0005",
+    "question": "How would you test a function that depends on the current time or random number generation?",
+    "type": "practical_implementation",
+    "difficulty": 2,
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "testing"
+    ],
+    "tech_keywords": [
+      "testing"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Inject the time/randomness source as a dependency (a clock or RNG interface) rather than calling system time/random directly inside the function",
+        "In tests, substitute a fixed/deterministic clock or seeded RNG",
+        "This makes the function's behavior fully deterministic and reproducible in tests",
+        "Mentions this is an application of dependency injection specifically for testability",
+        "Notes some languages/frameworks provide time-mocking utilities as an alternative when refactoring isn't feasible"
+      ],
+      "sample_answer": "The key is to not call the system clock or random number generator directly inside the function — instead, inject a clock or RNG as a dependency (a parameter or injected interface). In production, you pass the real system clock; in tests, you pass a fixed, controllable fake clock or a seeded random generator, making the function's output fully deterministic and reproducible. This is really just dependency injection applied specifically to make time/randomness testable, rather than reaching for a time-mocking library to patch global state, which is more fragile."
+    },
+    "follow_up_hint": "Ask how they'd test code that was NOT originally written with this injectable design, without a large refactor.",
+    "concept": "Testability and Dependency Injection",
+    "sub_concept": "Mocking Non-Deterministic Sources",
+    "expected_reasoning": "A strong candidate begins by identifying why relying on global system time or direct random number generation causes flaky, non-deterministic tests. They then analyze how the function acquires these values, recognizing that tight coupling to system APIs prevents isolated unit testing. To solve this, they derive a design pattern where the time or randomness source is decoupled from the business logic. They weigh the trade-offs between refactoring the code to accept a dependency versus using language-level patching or mocking frameworks, ultimately preferring explicit dependency injection for long-term maintainability.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'use a mock' without explaining why direct calls are problematic",
+      "Suggests sleeping the test thread or using retry loops to handle time-dependent assertions",
+      "Believes that non-deterministic functions cannot be tested and must be excluded from unit tests entirely",
+      "Relies solely on monkey-patching globals without considering architectural improvements like dependency injection",
+      "Conflates integration testing with unit testing, assuming environment-level time manipulation is always sufficient"
+    ],
+    "progressive_hints": [
+      "What makes testing a function that depends on the current time or a random number generator notoriously difficult or flaky?",
+      "Look closely at where your function gets its time or random values from. Can you change how the function receives that data?",
+      "If you pass a small interface or function wrapper representing 'the current time' or 'the next random number' into your function, how does that change what you can pass during a unit test?"
+    ],
+    "learning_objective": "Candidates should understand that designing functions to accept non-deterministic sources like time and randomness as explicit dependencies is fundamental to writing reliable, reproducible unit tests."
+  },
+  {
+    "id": "test-0006",
+    "question": "What is code coverage, and why is 100% coverage not the same as a bug-free codebase?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "testing"
+    ],
+    "tech_keywords": [
+      "testing",
+      "code-coverage"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Code coverage measures what percentage of code lines/branches were executed by the test suite",
+        "100% line coverage only means every line ran at least once — it says nothing about whether the right assertions were made",
+        "A test can execute a line without actually verifying its output is correct",
+        "Coverage doesn't measure edge cases, ordering issues, or concurrency bugs not exercised by the test's specific inputs",
+        "Coverage is a useful signal for finding untested code, not a proof of correctness"
+      ],
+      "sample_answer": "Code coverage measures what fraction of the codebase's lines or branches were executed while running the test suite. The catch is that a test can execute a line of code without actually asserting anything meaningful about its behavior — a test with no assertions at all can still achieve 100% coverage while verifying nothing. Coverage also doesn't tell you about untested edge cases, unusual input combinations, or concurrency bugs that just happen not to be triggered by the existing tests' specific inputs. It's a useful tool for spotting completely untested code, not proof that tested code is correct."
+    },
+    "follow_up_hint": "Ask them to give an example of a test with 100% line coverage that still fails to catch a real bug.",
+    "concept": "Code Coverage",
+    "sub_concept": "Limitations of 100% coverage as a proxy for software correctness",
+    "expected_reasoning": "A strong candidate begins by defining code coverage quantitatively, noting what it actually tracks—the execution of lines or branches during testing. They then deconstruct why running a line of code is distinct from verifying its behavior. They identify that tests can execute statements without containing assertions about the correct output. Finally, they weigh the utility of coverage as a negative indicator for missing tests rather than a positive proof of correctness.",
+    "common_mistakes": [
+      "States that 100% coverage guarantees a bug-free application with no justification",
+      "Confuses code coverage with assertion thoroughness or test quality",
+      "Assumes all edge cases and inputs are automatically tested if lines are covered",
+      "Dismisses code coverage entirely as a useless metric instead of understanding its bounded purpose",
+      "Equates line coverage with branch or path coverage"
+    ],
+    "progressive_hints": [
+      "What does a test runner actually track when it calculates that a line of code has been 'covered'?",
+      "Consider a test that runs a line of code successfully, but never checks what value that line produced. Did that test verify correctness?",
+      "If every single line of code executes at least once during a test suite, what kinds of logic bugs, invalid inputs, or unexercised branches might still exist?"
+    ],
+    "learning_objective": "Code coverage is a tool to identify dead or untested code paths, but it measures execution rather than correctness."
+  },
+  {
+    "id": "test-0007",
+    "question": "Explain what a flaky test is, common causes, and how you'd approach fixing one.",
+    "type": "troubleshooting",
+    "difficulty": 2,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "testing"
+    ],
+    "tech_keywords": [
+      "testing"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Meta"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A flaky test sometimes passes and sometimes fails with no code changes between runs",
+        "Common causes: race conditions/timing assumptions, shared mutable state between tests, reliance on real time/network/external services, test execution order dependency",
+        "Approach: reproduce reliably (run repeatedly, isolate), identify the non-determinism source, then either fix the root cause or properly isolate/mock it",
+        "Explains why simply retrying flaky tests until they pass is a dangerous anti-pattern that hides real bugs",
+        "Mentions test isolation (no shared state, fresh fixtures) as a preventive practice"
+      ],
+      "sample_answer": "A flaky test passes or fails inconsistently without any code changes, usually due to timing assumptions (waiting a fixed delay instead of waiting for a real condition), shared mutable state leaking between tests, reliance on real network calls or wall-clock time, or dependence on test execution order. I'd first try to reproduce it reliably, often by running it repeatedly or in isolation versus the full suite, to narrow down whether it's timing, ordering, or external dependency related, then fix the actual root cause — replacing a fixed sleep with a proper wait condition, or mocking the external dependency — rather than just retrying failed runs, which just hides a real bug under statistical noise."
+    },
+    "follow_up_hint": "Ask them to describe a specific flaky test scenario involving async code and how they'd fix it.",
+    "concept": "Flaky Test Remediation",
+    "sub_concept": "Identifying and fixing non-deterministic test behavior",
+    "expected_reasoning": "A strong candidate begins by defining the core problem: a test that alternates between passing and failing without code changes, undermining trust in the test suite. They then systematically break down the common categories of non-determinism, such as timing issues, shared state, or external dependency calls, rather than listing random guesses. Next, they outline a methodical debugging strategy focusing on reproduction and isolation before applying a fix. Finally, they address systemic prevention, noting why treating the symptom via retries is harmful and how better test architecture prevents recurrence.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as just saying 'it's a timing issue' without explaining how or why.",
+      "Suggests adding automatic retries as the primary solution without addressing the underlying root cause.",
+      "Confuses flaky tests with broken tests that fail consistently due to a bug in the code.",
+      "Fails to mention test isolation or shared state, focusing entirely on network or external API factors.",
+      "Proposes a fix without first explaining how to reliably reproduce or isolate the flakiness."
+    ],
+    "progressive_hints": [
+      "What makes a test particularly difficult to debug compared to one that fails consistently every single time?",
+      "Think about what might change between two identical test runs if the source code itself hasn't changed at all.",
+      "If a test fails only when run alongside other tests, what assumption about test execution order or state is likely being violated?"
+    ],
+    "learning_objective": "Understand how to systematically diagnose, isolate, and eliminate non-determinism in test suites rather than masking flaky failures with retries."
+  },
+  {
+    "id": "test-0008",
+    "question": "What is snapshot testing, and what are its pitfalls?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "testing"
+    ],
+    "tech_keywords": [
+      "testing",
+      "react",
+      "snapshot-testing"
+    ],
+    "companies_common": [
+      "Meta",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Snapshot testing captures a component's rendered output and compares future runs against that saved snapshot",
+        "Fails when the output legitimately changes, requiring a review-and-update step ('snapshot update')",
+        "Pitfall: developers can blindly approve/update snapshots without reviewing the actual diff, defeating the test's purpose",
+        "Pitfall: large, monolithic snapshots make it hard to tell what specifically changed or why it matters",
+        "Best suited for catching unintended changes, not for verifying specific behavior — should be paired with targeted assertions"
+      ],
+      "sample_answer": "Snapshot testing captures a component's rendered output the first time and saves it; future test runs compare against that saved snapshot and fail if it changed. It's good for catching unintended visual/structural regressions, but its biggest pitfall is that when a snapshot test fails, developers can just blindly run 'update snapshots' without actually reviewing whether the change was intentional, which defeats the whole purpose. Large snapshots also make it hard to tell exactly what changed and why it matters. It works best as a supplement to specific, targeted assertions, not a replacement for them."
+    },
+    "follow_up_hint": "Ask how they'd prevent teammates from blindly approving snapshot updates in code review.",
+    "concept": "Snapshot Testing",
+    "sub_concept": "Benefits, mechanics, and maintenance anti-patterns of output regression testing",
+    "expected_reasoning": "A strong candidate begins by defining the core mechanism of capturing and persisting rendered output to serve as a baseline for future comparisons. They then analyze the operational workflow, noting how legitimate UI evolution triggers test failures and requires intentional updates. Next, they critically evaluate the human element, weighing the convenience of automated assertions against the risk of fatigue-driven maintenance. Finally, they synthesize best practices by distinguishing between catching unintended regressions and validating explicit functional requirements.",
+    "common_mistakes": [
+      "States the conclusion with no justification by just saying 'it tests UI components' without explaining the compare-against-baseline mechanism.",
+      "Claims snapshot tests are a complete replacement for unit and integration tests.",
+      "Fails to mention the 'snapshot update' workflow or how developers interact with diffs when code changes.",
+      "Ignores the pitfall of 'rubber-stamping' or blindly running `-u` without actually reviewing what changed.",
+      "Treats snapshot tests as a way to verify specific business logic rather than catching unintended structural drift."
+    ],
+    "progressive_hints": [
+      "How does a snapshot test know whether a component's recent code change broke its visual or structural output?",
+      "Consider what happens when a component legitimately needs to change its markup, and how developers typically handle the failing test result.",
+      "Think about what happens when a snapshot file becomes hundreds of lines long and a test fails; how does human fatigue impact the trustworthiness of these tests over time?"
+    ],
+    "learning_objective": "The candidate should understand that snapshot testing is an automated regression tool for catching unintended output changes, but it requires disciplined review habits and targeted assertions to avoid becoming a rubber-stamping exercise."
+  },
+  {
+    "id": "test-0009",
+    "question": "How would you design integration tests for a service that depends on a third-party payment API?",
+    "type": "scenario_based",
+    "difficulty": 3,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "testing"
+    ],
+    "tech_keywords": [
+      "testing",
+      "api"
+    ],
+    "companies_common": [
+      "Stripe",
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Avoid calling the real third-party API in automated tests — it's slow, costs money/rate limits, and depends on external availability",
+        "Use the provider's official sandbox/test-mode API if available, which mimics real behavior without real transactions",
+        "For unit/most integration tests, mock the API client at the boundary, testing your own code's handling of various responses (success, decline, timeout, malformed response)",
+        "Reserve a small number of true end-to-end tests against the sandbox for critical paths, run less frequently (e.g. not on every commit)",
+        "Explains testing failure/edge cases (timeouts, 5xx responses, malformed webhooks) is often more valuable than testing the happy path alone"
+      ],
+      "sample_answer": "I'd avoid hitting the real third-party API in the regular test suite — it's slow, can incur real costs, and depends on external uptime. Instead, for most unit and integration tests, I'd mock the API client at the boundary and test how my own code handles various responses: success, a card decline, a timeout, a malformed response, a webhook retry. If the provider offers an official sandbox/test mode, I'd reserve a small number of true end-to-end tests against it for critical paths like checkout, but run those less frequently — e.g. in a nightly job rather than on every commit — to avoid slowing down the main pipeline. Testing failure modes tends to be more valuable than just the happy path, since that's where real production incidents happen."
+    },
+    "follow_up_hint": "Ask how they'd test webhook handling specifically, including duplicate/out-of-order delivery.",
+    "concept": "External Dependency Testing",
+    "sub_concept": "Third-Party Payment API Integration",
+    "expected_reasoning": "A strong candidate begins by evaluating the reliability, cost, and latency risks of hitting an external payment gateway during automated test runs. They weigh the fidelity of using a real sandbox environment against the speed and determinism of using mocks or contract tests. They focus heavily on boundary isolation, ensuring their own service gracefully handles various edge cases like timeouts, network partitions, and unexpected payloads. Finally, they design a tiered strategy that places heavy reliance on mocks for standard CI runs while reserving minimal end-to-end sandbox checks for periodic smoke testing.",
+    "common_mistakes": [
+      "States they will just call the production payment API with test credit card numbers.",
+      "Assumes the happy path is sufficient and forgets to discuss network timeouts or error codes.",
+      "Relies entirely on real sandbox calls for every single unit test, causing slow and flaky test suites.",
+      "Fails to mention contract testing or maintaining mock parity with the actual API schema.",
+      "Does not address how asynchronous webhooks or callbacks from the payment provider are tested."
+    ],
+    "progressive_hints": [
+      "What are the operational and financial downsides of hitting a real external payment service during every code commit?",
+      "You want fast, reliable feedback in your CI pipeline, but you also need to ensure your code matches the external API contract. How can you split your testing strategy across different environments?",
+      "Think about how you would test difficult edge cases—like a sudden network timeout or a 500 server error from the payment provider—using only sandbox accounts vs. internal test doubles."
+    ],
+    "learning_objective": "The candidate should understand how to balance test speed, cost, and fidelity by using localized mocks for edge cases and tiered sandbox environments for critical integration verification."
+  },
+  {
+    "id": "test-0010",
+    "question": "What is contract testing, and what problem does it solve in a microservices architecture?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "testing",
+      "microservices"
+    ],
+    "tech_keywords": [
+      "testing",
+      "microservices",
+      "contract-testing"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Netflix",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Contract testing verifies that a service's API matches the expectations of its consumers, without needing to spin up the full dependency chain",
+        "A consumer defines a 'contract' (expected requests/responses); the provider's tests verify it still satisfies that contract",
+        "Solves the problem of full end-to-end integration tests across many microservices being slow, flaky, and hard to run in isolation",
+        "Catches breaking API changes before deployment, without needing every consumer service running simultaneously",
+        "Names a common tool (e.g. Pact) as an example of this pattern"
+      ],
+      "sample_answer": "Contract testing verifies that a service's API actually matches what its consumers expect, without needing to run the full chain of dependent services together. A consumer team defines a contract — the specific requests it makes and responses it expects — and the provider service runs tests against that same contract to verify it still satisfies it, independently of the consumer actually running. This solves the problem of full end-to-end tests across many microservices being slow and flaky, while still catching breaking API changes before they reach production. Pact is a common tool implementing this pattern."
+    },
+    "follow_up_hint": "Ask how contract testing differs from just versioning the API and documenting breaking changes.",
+    "concept": "Contract Testing",
+    "sub_concept": "API Consumer-Provider Decoupling in Microservices",
+    "expected_reasoning": "A strong candidate begins by identifying the scalability bottleneck of traditional integration testing in microservices, where spinning up every dependent service becomes brittle and slow. They then reason about what constitutes an API dependency—that consumers care only about specific request formats and expected responses, not the entire internal state of the provider. By establishing that these expectations can be serialized into an independent contract, they derive how both consumer and provider can test their code in isolation against that shared artifact. Finally, they weigh this approach against end-to-end tests, emphasizing that contract testing shifts integration verification left to catch breaking changes at the pipeline level without deployment orchestration overhead.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'it tests contracts between services' without explaining what problem it solves.",
+      "Confuses contract testing with end-to-end integration testing, missing the core benefit of service isolation.",
+      "Confuses contract testing with API schema validation (like OpenAPI/Swagger), forgetting that contract tests verify specific consumer interactions rather than static documentation.",
+      "Assumes contract testing replaces all testing types, rather than serving as a targeted middle ground between unit tests and heavy integration tests.",
+      "Fails to explain the consumer-driven aspect, incorrectly implying the provider unilaterally defines the contract without consumer input."
+    ],
+    "progressive_hints": [
+      "Consider the challenges that arise when you have dozens of microservices and try to run a full integration test suite before every deployment.",
+      "Think about what a consumer service actually cares about when it calls a dependency API, and how you might capture those specific expectations independently of the provider's codebase.",
+      "If a consumer writes down its exact expected request and response payload, how could the provider verify its API still satisfies that exact record without spinning up the consumer service?"
+    ],
+    "learning_objective": "Understand how contract testing decouples microservices testing by verifying API expectations independently of full-system integration environments."
+  }
 ]

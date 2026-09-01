@@ -1,5 +1,142 @@
 [
-  {"id":"css-0001","question":"Explain the CSS box model and the difference between content-box and border-box sizing.","type":"conceptual","difficulty":1,"roles":["frontend"],"topics":["css","frontend"],"tech_keywords":["css"],"companies_common":["Amazon","Meta"],"source_style":"common-interview","reference_solution":{"key_points":["The box model: content, padding, border, margin — each layer wraps around the previous one","content-box (default): width/height apply only to the content area; padding and border are added on top, making the total rendered size larger than the specified width","border-box: width/height include content, padding, and border — the specified width IS the final rendered size, with content shrinking to fit","Explains why border-box is generally preferred/commonly set globally (`* { box-sizing: border-box }`) since it makes sizing calculations much more predictable"],"sample_answer":"The CSS box model describes an element as nested boxes: content in the center, then padding around it, then a border around that, then margin outside the border. With the default content-box sizing, the width and height you set apply only to the content area, and padding and border get added on top of that, so the actual rendered size ends up larger than the width you specified. With border-box sizing, the width and height instead include the content, padding, and border all together, so the value you set IS the final rendered size, and the content area just shrinks to accommodate the padding and border. Because content-box makes sizing calculations unintuitive — adding padding changes the total rendered size unexpectedly — most projects globally set box-sizing: border-box on everything, since it makes layout math far more predictable."},"follow_up_hint":"Ask them what happens to a fixed-width element's content area if you add padding without box-sizing: border-box set."},
-  {"id":"css-0002","question":"Explain how Flexbox's main-axis and cross-axis alignment properties work.","type":"conceptual","difficulty":2,"roles":["frontend"],"topics":["css"],"tech_keywords":["css","flexbox"],"companies_common":["Amazon","Meta"],"source_style":"common-interview","reference_solution":{"key_points":["flex-direction determines the main axis (row = horizontal, column = vertical); the cross axis is perpendicular to it","justify-content aligns items along the main axis (space-between, center, flex-start/end, etc.)","align-items aligns items along the cross axis for a single line; align-content aligns multiple lines/rows of wrapped flex items along the cross axis","Explains this differs from Grid, which handles two dimensions natively rather than a single primary axis with a perpendicular cross-axis"],"sample_answer":"In Flexbox, flex-direction determines which axis is the 'main axis' — row makes it horizontal, column makes it vertical — and the cross axis is always perpendicular to whichever the main axis is. justify-content controls alignment and spacing of items along the main axis, with values like center, space-between, or flex-start. align-items controls alignment along the cross axis for items within a single line — so for a row-direction flex container, align-items controls vertical alignment. If items wrap onto multiple lines, align-content additionally controls how those multiple lines are distributed along the cross axis, similar to how justify-content works for the main axis but for whole lines instead of individual items. This is a bit different conceptually from CSS Grid, which manages both dimensions natively as rows and columns, rather than thinking in terms of one primary axis and a perpendicular cross axis."},"follow_up_hint":"Ask them the difference between align-items and align-content, and when align-content actually has a visible effect."},
-  {"id":"css-0003","question":"What is CSS specificity, and how is it calculated when multiple rules apply to the same element?","type":"conceptual","difficulty":2,"roles":["frontend"],"topics":["css"],"tech_keywords":["css"],"companies_common":["Amazon","Meta"],"source_style":"common-interview","reference_solution":{"key_points":["Specificity determines which CSS rule 'wins' when multiple conflicting rules target the same element and property","Roughly calculated as a tuple/score: inline styles > ID selectors > class/attribute/pseudo-class selectors > element/pseudo-element selectors, compared in that priority order (not simply added as a single number)","!important overrides normal specificity rules entirely (highest priority short of browser user-agent overrides), and should be used sparingly since it makes overriding styles later much harder","When specificity is equal, the rule that appears later in the source order (or is loaded later) wins"],"sample_answer":"Specificity determines which CSS rule takes precedence when multiple rules with conflicting values target the same element and property. It's calculated as a sort of tiered score, roughly: inline styles beat ID selectors, which beat class, attribute, and pseudo-class selectors, which beat plain element and pseudo-element selectors — and these tiers are compared in that priority order, not just summed into one flat number, so ten class selectors still lose to a single ID selector. The !important flag overrides normal specificity comparison almost entirely, so it should be used very sparingly, since once something is marked !important, overriding it later requires either another !important or came from a source of even higher priority, which quickly becomes hard to maintain. When two rules have exactly equal specificity, the one that appears later in the source, or that's loaded later, wins."},"follow_up_hint":"Ask them to compare the specificity of `.btn.primary` versus `#submit-button` and explain which wins."}
+  {
+    "id": "css-0001",
+    "question": "Explain the CSS box model and the difference between content-box and border-box sizing.",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "css",
+      "frontend"
+    ],
+    "tech_keywords": [
+      "css"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "The box model: content, padding, border, margin — each layer wraps around the previous one",
+        "content-box (default): width/height apply only to the content area; padding and border are added on top, making the total rendered size larger than the specified width",
+        "border-box: width/height include content, padding, and border — the specified width IS the final rendered size, with content shrinking to fit",
+        "Explains why border-box is generally preferred/commonly set globally (`* { box-sizing: border-box }`) since it makes sizing calculations much more predictable"
+      ],
+      "sample_answer": "The CSS box model describes an element as nested boxes: content in the center, then padding around it, then a border around that, then margin outside the border. With the default content-box sizing, the width and height you set apply only to the content area, and padding and border get added on top of that, so the actual rendered size ends up larger than the width you specified. With border-box sizing, the width and height instead include the content, padding, and border all together, so the value you set IS the final rendered size, and the content area just shrinks to accommodate the padding and border. Because content-box makes sizing calculations unintuitive — adding padding changes the total rendered size unexpectedly — most projects globally set box-sizing: border-box on everything, since it makes layout math far more predictable."
+    },
+    "follow_up_hint": "Ask them what happens to a fixed-width element's content area if you add padding without box-sizing: border-box set.",
+    "concept": "CSS Box Model",
+    "sub_concept": "Box Sizing and Layout Calculations",
+    "expected_reasoning": "A strong candidate begins by breaking down the standard architectural layers of an element, moving from the innermost content outward through padding, border, and margin. They then analyze how the browser calculates total dimensions under different sizing modes. By contrasting the default behavior with an alternative approach, they derive why layout math changes when padding and borders are included within the specified dimensions. Finally, they evaluate the practical ergonomics of these models in modern UI development, explaining why a universal reset improves layout predictability.",
+    "common_mistakes": [
+      "States the definition of content-box or border-box without explaining how it changes element sizing math",
+      "Confuses margins as part of the element's background or width calculation",
+      "Claims that border-box includes margins in the width and height calculations",
+      "Fails to explain why one sizing model is preferred over the other in practice",
+      "Provides a shallow definition by just naming the layers without describing their structural relationship"
+    ],
+    "progressive_hints": [
+      "What are the distinct layers that make up every rendered element in CSS, from inside out?",
+      "Consider what happens to an element's total width on the page when you add padding or a border to a width of 200px under default settings.",
+      "If you want the specified width of an element to strictly match its final bounding box on the screen including padding and borders, which box-sizing property achieves that and how does it adjust the content area?"
+    ],
+    "learning_objective": "The candidate should understand how the CSS box model structures elements and why switching to border-box sizing makes layout math intuitive and predictable."
+  },
+  {
+    "id": "css-0002",
+    "question": "Explain how Flexbox's main-axis and cross-axis alignment properties work.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "css"
+    ],
+    "tech_keywords": [
+      "css",
+      "flexbox"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "flex-direction determines the main axis (row = horizontal, column = vertical); the cross axis is perpendicular to it",
+        "justify-content aligns items along the main axis (space-between, center, flex-start/end, etc.)",
+        "align-items aligns items along the cross axis for a single line; align-content aligns multiple lines/rows of wrapped flex items along the cross axis",
+        "Explains this differs from Grid, which handles two dimensions natively rather than a single primary axis with a perpendicular cross-axis"
+      ],
+      "sample_answer": "In Flexbox, flex-direction determines which axis is the 'main axis' — row makes it horizontal, column makes it vertical — and the cross axis is always perpendicular to whichever the main axis is. justify-content controls alignment and spacing of items along the main axis, with values like center, space-between, or flex-start. align-items controls alignment along the cross axis for items within a single line — so for a row-direction flex container, align-items controls vertical alignment. If items wrap onto multiple lines, align-content additionally controls how those multiple lines are distributed along the cross axis, similar to how justify-content works for the main axis but for whole lines instead of individual items. This is a bit different conceptually from CSS Grid, which manages both dimensions natively as rows and columns, rather than thinking in terms of one primary axis and a perpendicular cross axis."
+    },
+    "follow_up_hint": "Ask them the difference between align-items and align-content, and when align-content actually has a visible effect.",
+    "concept": "CSS Flexbox Layout",
+    "sub_concept": "Axis-Based Alignment and Multi-Axis Management",
+    "expected_reasoning": "A strong candidate begins by defining the core architecture of Flexbox as a single-axis layout model. They clarify how the `flex-direction` property dictates whether the main axis runs horizontally or vertically, establishing that the cross axis is always perpendicular. Next, they explain the distinct roles of alignment properties, separating main-axis distribution via `justify-content` from cross-axis alignment using `align-items`. Finally, they distinguish single-line alignment from multi-line wrapping behavior handled by `align-content`, optionally contrasting this with CSS Grid's native two-dimensional approach.",
+    "common_mistakes": [
+      "Confusing the main axis and cross axis when `flex-direction` is changed from row to column.",
+      "Treating `justify-content` and `align-items` as interchangeable properties for vertical and horizontal centering.",
+      "Failing to explain the difference between `align-items` (for single lines) and `align-content` (for wrapped multi-line containers).",
+      "Stating definitions or property lists with no conceptual justification of how the axes relate.",
+      "Claiming Flexbox is a true two-dimensional layout engine without mentioning its primary-axis limitation."
+    ],
+    "progressive_hints": [
+      "What property fundamentally sets the direction in which items flow in a flex container?",
+      "You've mentioned how items align horizontally and vertically, but how do those directions change if the container is switched to a column layout?",
+      "Consider how a single line of items aligns versus how multiple wrapped rows align along the axis perpendicular to the flow."
+    ],
+    "learning_objective": "The candidate should understand how Flexbox uses a primary main axis and a perpendicular cross axis to distribute space, and how distinct properties govern single versus multi-line alignment."
+  },
+  {
+    "id": "css-0003",
+    "question": "What is CSS specificity, and how is it calculated when multiple rules apply to the same element?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "css"
+    ],
+    "tech_keywords": [
+      "css"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Specificity determines which CSS rule 'wins' when multiple conflicting rules target the same element and property",
+        "Roughly calculated as a tuple/score: inline styles > ID selectors > class/attribute/pseudo-class selectors > element/pseudo-element selectors, compared in that priority order (not simply added as a single number)",
+        "!important overrides normal specificity rules entirely (highest priority short of browser user-agent overrides), and should be used sparingly since it makes overriding styles later much harder",
+        "When specificity is equal, the rule that appears later in the source order (or is loaded later) wins"
+      ],
+      "sample_answer": "Specificity determines which CSS rule takes precedence when multiple rules with conflicting values target the same element and property. It's calculated as a sort of tiered score, roughly: inline styles beat ID selectors, which beat class, attribute, and pseudo-class selectors, which beat plain element and pseudo-element selectors — and these tiers are compared in that priority order, not just summed into one flat number, so ten class selectors still lose to a single ID selector. The !important flag overrides normal specificity comparison almost entirely, so it should be used very sparingly, since once something is marked !important, overriding it later requires either another !important or came from a source of even higher priority, which quickly becomes hard to maintain. When two rules have exactly equal specificity, the one that appears later in the source, or that's loaded later, wins."
+    },
+    "follow_up_hint": "Ask them to compare the specificity of `.btn.primary` versus `#submit-button` and explain which wins.",
+    "concept": "CSS Specificity",
+    "sub_concept": "Selector weight hierarchy and conflict resolution",
+    "expected_reasoning": "A strong candidate begins by defining the core purpose of specificity as a tie-breaking mechanism when multiple rules target the same element. They then explain the hierarchical nature of the calculation rather than treating it like a simple base-10 addition, clarifying the weight categories from IDs down to element selectors. Next, they address the disruption caused by the '!important' declaration, noting how it breaks normal rules and introduces maintainability concerns. Finally, they incorporate the fallback rule of source order when specificities match.",
+    "common_mistakes": [
+      "Treating the specificity score like a standard decimal number where 11 class selectors (0,0,11) beat one ID selector (0,1,0)",
+      "Forgetting to mention the role of source order as the ultimate tie-breaker when specificities are identical",
+      "Stating that '!important' is just a high-weight selector rather than an override mechanism that alters the cascade entirely",
+      "Omitting inline styles from the hierarchy or misplacing their weight relative to IDs",
+      "Giving a vague definition like 'it means more specific rules win' without explaining how that specificity is actually weighed or calculated"
+    ],
+    "progressive_hints": [
+      "Consider what happens when two different CSS rules try to style the exact same property on a single element. How does the browser decide which rule takes effect?",
+      "Think about how different types of selectors—like IDs, classes, and HTML tags—are categorized and compared. Does a rule with ten class selectors beat a rule with a single ID selector?",
+      "Break down the comparison into distinct weight columns or categories from highest to lowest, and remember how ties are broken when rules carry the exact same weight."
+    ],
+    "learning_objective": "The candidate should understand how the browser resolves style conflicts deterministically through the specificity hierarchy and source order, rather than relying on trial-and-error."
+  }
 ]

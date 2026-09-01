@@ -4,10 +4,27 @@
     "question": "Given an array of integers and a target sum, find two numbers that add up to the target and return their indices.",
     "type": "coding",
     "difficulty": 1,
-    "roles": ["general_sde", "frontend", "backend", "fullstack"],
-    "topics": ["arrays", "hashing"],
-    "tech_keywords": ["algorithms", "data-structures"],
-    "companies_common": ["Amazon", "Google", "Microsoft", "Adobe", "Meta"],
+    "roles": [
+      "general_sde",
+      "frontend",
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "arrays",
+      "hashing"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft",
+      "Adobe",
+      "Meta"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -19,17 +36,47 @@
       ],
       "sample_answer": "Iterate once, keeping a hash map of value to index seen so far. For each element x, check if target - x is already in the map; if so, return the two indices. Otherwise insert x. This gives O(n) time and O(n) space, versus O(n^2) for the brute-force nested loop."
     },
-    "follow_up_hint": "Ask what changes if the array is sorted, or if all pairs summing to target are needed instead of just one."
+    "follow_up_hint": "Ask what changes if the array is sorted, or if all pairs summing to target are needed instead of just one.",
+    "concept": "Hash Table Lookup",
+    "sub_concept": "One-Pass Complement Matching",
+    "expected_reasoning": "The candidate begins by clarifying input constraints, such as whether elements can be negative, if indices must be unique, and if a solution is guaranteed. They identify the naive $O(n^2)$ solution of checking every pair with nested loops and recognize that the bottleneck is the repeated linear search for a matching pair. They reframe the search condition: for any element $x$, the required matching value is $target - x$. Finally, they deduce that using a hash map to store previously seen values alongside their original indices allows $O(1)$ average-time complement checks, achieving an optimal $O(n)$ time and $O(n)$ space solution in a single pass.",
+    "common_mistakes": [
+      "Sorting the array to use a two-pointer approach without preserving or tracking original indices",
+      "Populating the entire hash map first, which causes bugs when an element matches itself (e.g., target is 6 and element is 3)",
+      "Assuming array values are positive or bounded, leading to flawed index-as-value array lookup strategies",
+      "Stating 'use a hash map' immediately without explaining how it reduces time complexity compared to brute force",
+      "Failing to handle duplicate values correctly when inserting key-value pairs into the hash map"
+    ],
+    "progressive_hints": [
+      "When you are looking at a specific number $x$ during iteration, what exact value do you need to find to reach the target?",
+      "Scanning the rest of the array to find that missing value takes $O(n)$ time. What data structure would let you check if you have already encountered that value in $O(1)$ time?",
+      "Consider iterating through the array while checking if `target - current_value` exists in a hash map, adding the current value and its index to the map as you go."
+    ],
+    "learning_objective": "Understand how to optimize search efficiency from $O(n^2)$ to $O(n)$ by trading space for time using hash map complement lookups."
   },
   {
     "id": "dsa-0002",
     "question": "Reverse a singly linked list, both iteratively and recursively.",
     "type": "coding",
     "difficulty": 1,
-    "roles": ["general_sde", "backend", "fullstack"],
-    "topics": ["linked-lists"],
-    "tech_keywords": ["algorithms", "data-structures"],
-    "companies_common": ["Amazon", "Microsoft", "Google", "Flipkart"],
+    "roles": [
+      "general_sde",
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "linked-lists"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google",
+      "Flipkart"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -41,17 +88,46 @@
       ],
       "sample_answer": "Iteratively, walk the list keeping three pointers: previous, current, and next. At each step save next, point current's next to previous, then advance previous and current. Recursively, reverse the sublist after the head, then set head.next.next = head and head.next = null. Both are O(n) time; iterative is O(1) space, recursive is O(n) due to the call stack."
     },
-    "follow_up_hint": "Ask about reversing only a sub-portion of the list (positions m to n), or reversing in groups of k."
+    "follow_up_hint": "Ask about reversing only a sub-portion of the list (positions m to n), or reversing in groups of k.",
+    "concept": "Linked Lists",
+    "sub_concept": "In-Place Pointer Reversal",
+    "expected_reasoning": "A strong candidate visualizes node pointer updates and recognizes that changing a node's pointer severs access to the remainder of the list, requiring temporary variable storage. For the iterative approach, they step through a dynamic tracking mechanism using previous, current, and next pointers to systematically rewrite references in a single pass. For the recursive approach, they break down the problem by assuming the tail of the list is reversed first and reason through how to redirect `head.next` back to `head` while nullifying `head.next`. Finally, they compare both approaches by evaluating time vs. space trade-offs, explicitly pointing out the stack space overhead inherent in the recursive solution.",
+    "common_mistakes": [
+      "Overwriting the next pointer before saving a reference to the remaining list, losing the rest of the nodes.",
+      "Forgetting to clear `head.next` on the original head node, creating a two-node cycle at the end of the list.",
+      "Failing to handle edge cases such as an empty list (`null`) or a single-node list.",
+      "Claiming the recursive solution runs in $O(1)$ space, ignoring the implicit $O(n)$ call stack.",
+      "Returning the original head or a stale pointer instead of the newly established head node."
+    ],
+    "progressive_hints": [
+      "Before changing where a node's pointer points, what information do you risk losing, and how can you preserve it during the traversal?",
+      "Consider the state at any middle step: what three node references do you need to hold to safely update a link and move forward?",
+      "In the recursive approach, once the subproblem reverses everything after `head`, `head.next` still points to the node right after it. How can you use `head.next` to set up the backward link?"
+    ],
+    "learning_objective": "Understand how to safely manipulate pointer references both iteratively and recursively, while correctly accounting for implicit call stack space complexity."
   },
   {
     "id": "dsa-0003",
     "question": "Given a string, determine if it's a valid palindrome after removing non-alphanumeric characters and ignoring case.",
     "type": "coding",
     "difficulty": 1,
-    "roles": ["general_sde", "frontend", "fullstack"],
-    "topics": ["strings", "two-pointers"],
-    "tech_keywords": ["algorithms"],
-    "companies_common": ["Amazon", "Microsoft", "Facebook"],
+    "roles": [
+      "general_sde",
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "strings",
+      "two-pointers"
+    ],
+    "tech_keywords": [
+      "algorithms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Facebook"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -63,17 +139,46 @@
       ],
       "sample_answer": "Use two pointers at the start and end of the string. Advance each pointer past non-alphanumeric characters, then compare the characters case-insensitively; mismatch means not a palindrome. Continue until the pointers cross. This is O(n) time and O(1) space, avoiding the need to allocate a cleaned copy of the string."
     },
-    "follow_up_hint": "Ask what happens if at most one character can be deleted to make it a palindrome (Valid Palindrome II)."
+    "follow_up_hint": "Ask what happens if at most one character can be deleted to make it a palindrome (Valid Palindrome II).",
+    "concept": "Two Pointers",
+    "sub_concept": "In-place String Processing",
+    "expected_reasoning": "A strong candidate begins by clarifying how to handle edge cases like punctuation, spaces, and mixed casing. Instead of allocating extra memory to create a filtered lowercase string, they consider converging indices from both ends. They derive an approach where pointers advance inward, actively skipping non-alphanumeric characters on-the-fly and performing case-insensitive comparisons at each valid pair. They weigh the trade-off between readability (using built-in regex and string filtering for O(n) space) versus optimal efficiency (in-place scanning for O(1) space). Finally, they trace boundary conditions such as empty strings, single characters, and strings with only special characters to ensure robust execution.",
+    "common_mistakes": [
+      "Allocating a new filtered and lowercased string, resulting in O(n) auxiliary space instead of O(1).",
+      "Forgetting to advance both pointers when skipping non-alphanumeric characters, causing infinite loops.",
+      "Failing to check that the left pointer remains strictly less than the right pointer during the inward scan.",
+      "Comparing characters case-sensitively without normalizing them to lowercase or uppercase first.",
+      "Not handling edge cases like empty strings, strings of length one, or strings containing exclusively special characters."
+    ],
+    "progressive_hints": [
+      "Consider how you might check the string from both ends simultaneously without creating a modified copy in memory.",
+      "Think about how your pointers should react when they encounter a character that is neither a letter nor a number.",
+      "If your left and right pointers both land on valid alphanumeric characters, how do you compare them while ignoring case, and what must you do with the pointers immediately afterward?"
+    ],
+    "learning_objective": "The candidate should understand how to optimize spatial complexity by using converging pointers to scan and filter data in-place."
   },
   {
     "id": "dsa-0004",
     "question": "Given a binary tree, write a function to check whether it is height-balanced.",
     "type": "coding",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["trees", "recursion"],
-    "tech_keywords": ["algorithms", "data-structures"],
-    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "trees",
+      "recursion"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -85,17 +190,51 @@
       ],
       "sample_answer": "Write a recursive helper that returns the height of a subtree, or -1 if it discovers an imbalance anywhere below. At each node, compute left and right heights; if either is -1 or they differ by more than 1, propagate -1 upward. This does the check in a single O(n) pass instead of the naive O(n^2) approach that recomputes height per node."
     },
-    "follow_up_hint": "Ask them to also return the diameter of the tree in the same traversal."
+    "follow_up_hint": "Ask them to also return the diameter of the tree in the same traversal.",
+    "concept": "Binary Tree Recursion",
+    "sub_concept": "Bottom-Up Height Verification",
+    "expected_reasoning": "The candidate begins by recalling the formal definition of a height-balanced binary tree and immediately recognizes that checking each node's subtrees independently leads to redundant height calculations and O(n^2) time. They then deduce that computing heights bottom-up allows them to check balance and gather height data simultaneously in a single pass. To optimize further, they realize they need a mechanism to propagate an imbalance discovered deep in the tree without continuing unnecessary work. They structure a helper function to return either the actual height or a sentinel value representing an invalid balanced state, ultimately achieving O(n) time and O(h) space complexity.",
+    "common_mistakes": [
+      "Using the naive O(n^2) approach by calling a separate height function at every single node without recognizing the redundant recalculations",
+      "Returning only a boolean from the recursive function, which forces the code to recalculate heights separately from checking balance",
+      "Failing to handle base cases properly, leading to null pointer exceptions on leaf nodes or empty trees",
+      "Forgetting to check whether the left or right subtree is already unbalanced before computing the absolute height difference of the current node",
+      "Confusing tree height definitions with tree depth or node count"
+    ],
+    "progressive_hints": [
+      "What is the time complexity of your current approach if you compute the height of the left and right subtrees at every single node?",
+      "Think about how you can return more than just a boolean from your recursive function so that height and balance state are computed together in one pass.",
+      "If your helper function needs to signal that an imbalance was already found deeper in the tree, what special return value could it use instead of a valid height?"
+    ],
+    "learning_objective": "The candidate should understand how to optimize tree algorithms from O(n^2) to O(n) by combining independent recursive checks into a single bottom-up traversal that propagates state."
   },
   {
     "id": "dsa-0005",
     "question": "Design and implement an LRU (Least Recently Used) cache with O(1) get and put operations.",
     "type": "coding",
     "difficulty": 3,
-    "roles": ["general_sde", "backend", "fullstack"],
-    "topics": ["hashing", "linked-lists", "design"],
-    "tech_keywords": ["algorithms", "data-structures", "caching"],
-    "companies_common": ["Amazon", "Google", "Microsoft", "Uber", "Bloomberg"],
+    "roles": [
+      "general_sde",
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "hashing",
+      "linked-lists",
+      "design"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures",
+      "caching"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft",
+      "Uber",
+      "Bloomberg"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -107,17 +246,47 @@
       ],
       "sample_answer": "Maintain a hash map from key to a doubly linked list node, and a doubly linked list ordered from most- to least-recently-used. get() looks up the node in O(1), then unlinks and re-inserts it at the front. put() does the same, evicting the tail node when over capacity. Sentinel head and tail nodes avoid null checks when linking/unlinking."
     },
-    "follow_up_hint": "Ask how they'd make it thread-safe, or extend it to an LFU cache instead."
+    "follow_up_hint": "Ask how they'd make it thread-safe, or extend it to an LFU cache instead.",
+    "concept": "Data Structure Design",
+    "sub_concept": "Combining Hash Maps and Doubly Linked Lists for O(1) Operations",
+    "expected_reasoning": "A strong candidate begins by analyzing the time complexity constraints for both get and put operations, recognizing that arrays or standard lists fail because searching or shifting takes O(N) time. They deduce that a hash map provides O(1) lookups but lacks any inherent sense of recency or ordering. To solve this, they explore pairing the hash map with a list to maintain recency, ultimately selecting a doubly linked list so that node insertions and deletions can occur in O(1) time without traversal. Finally, they consider edge cases around capacity limits and pointer management, often introducing sentinel head and tail nodes to keep boundary logic clean.",
+    "common_mistakes": [
+      "Using a singly linked list instead of a doubly linked list, leading to O(N) time complexity for node removal.",
+      "Using a standard array or vector for tracking recency, resulting in O(N) shifts on updates.",
+      "Forgetting to update the hash map reference when elements are evicted or moved.",
+      "Failing to handle boundary conditions properly when the cache is empty, has a capacity of one, or when accessing existing keys.",
+      "Implementing O(N) search or eviction by omitting the bidirectional pointers or tail reference."
+    ],
+    "progressive_hints": [
+      "Look at your two primary requirements: you need O(1) lookup times like a hash map, but also a strict ordering of elements by recency. Which data structure naturally maintains insertion order and allows quick reordering?",
+      "A standard list allows reordering, but finding a specific element to update or delete within it takes O(N) time. How can you combine a hash map with your list to bypass linear searches?",
+      "If your hash map stores keys mapped directly to nodes in a doubly linked list, what operations do you need to perform on those nodes during a 'get' or 'put', and how can sentinel head and tail pointers simplify those pointer updates?"
+    ],
+    "learning_objective": "Understand how to combine disparate data structures—specifically hash maps and doubly linked lists—to achieve optimal O(1) time complexity for competing requirements like random access and ordered eviction."
   },
   {
     "id": "dsa-0006",
     "question": "Given a collection of intervals, merge all overlapping intervals.",
     "type": "coding",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["arrays", "sorting", "intervals"],
-    "tech_keywords": ["algorithms"],
-    "companies_common": ["Amazon", "Facebook", "Google", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "arrays",
+      "sorting",
+      "intervals"
+    ],
+    "tech_keywords": [
+      "algorithms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Facebook",
+      "Google",
+      "Microsoft"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -129,17 +298,46 @@
       ],
       "sample_answer": "Sort the intervals by start time. Walk through them, keeping a running merged interval; if the next interval's start is less than or equal to the current merged end, extend the end to the max of the two; otherwise close off the current merged interval and start a new one. This runs in O(n log n) due to sorting."
     },
-    "follow_up_hint": "Ask about inserting a new interval into an already-sorted, non-overlapping list efficiently."
+    "follow_up_hint": "Ask about inserting a new interval into an already-sorted, non-overlapping list efficiently.",
+    "concept": "Interval Scheduling",
+    "sub_concept": "Merging Overlapping Intervals",
+    "expected_reasoning": "A strong candidate begins by visualizing how intervals relate to one another spatially and notes that unordered data makes overlap detection difficult. They recognize that sorting the intervals by their start times brings potential overlaps adjacent to each other. By maintaining a running reference of the currently tracked interval, they compare it against subsequent items, merging when a start time falls within or at the boundary of the previous end time. They weigh the time complexity trade-offs, confirming that an initial sort dominates the runtime while linear scanning keeps space complexity optimal.",
+    "common_mistakes": [
+      "Jumping straight into writing code without sorting the intervals first, leading to missed overlaps.",
+      "Failing to handle fully nested intervals where one interval is completely consumed inside another.",
+      "Modifying the output list or tracking array in place incorrectly, causing reference bugs.",
+      "Comparing adjacent intervals using only start times instead of keeping track of the running maximum end time.",
+      "Stating the O(n log n) complexity without being able to justify why sorting is necessary."
+    ],
+    "progressive_hints": [
+      "Consider what property of the input collection would make it easier to determine if two intervals touch or overlap.",
+      "If you have already processed and potentially merged a few intervals, what is the minimum information you need to keep track of for the next comparison?",
+      "Think about what happens when a new interval's start time is less than or equal to the end time of the interval you are currently building, versus when it starts strictly after."
+    ],
+    "learning_objective": "Understand how sorting can transform a disorganized spatial problem into a linear scan by establishing a deterministic processing order."
   },
   {
     "id": "dsa-0007",
     "question": "Find the length of the longest substring without repeating characters.",
     "type": "coding",
     "difficulty": 2,
-    "roles": ["general_sde", "frontend"],
-    "topics": ["strings", "sliding-window", "hashing"],
-    "tech_keywords": ["algorithms"],
-    "companies_common": ["Amazon", "Microsoft", "Bloomberg"],
+    "roles": [
+      "general_sde",
+      "frontend"
+    ],
+    "topics": [
+      "strings",
+      "sliding-window",
+      "hashing"
+    ],
+    "tech_keywords": [
+      "algorithms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Bloomberg"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -151,17 +349,48 @@
       ],
       "sample_answer": "Maintain a window [left, right] and a set of characters currently inside it. Expand right one character at a time; if that character is already in the set, shrink from the left until it's removed. Track the max window length throughout. Each character enters and leaves the window at most once, so this is O(n)."
     },
-    "follow_up_hint": "Ask for the longest substring with at most K distinct characters as a generalization."
+    "follow_up_hint": "Ask for the longest substring with at most K distinct characters as a generalization.",
+    "concept": "Sliding Window",
+    "sub_concept": "Dynamic Window Optimization",
+    "expected_reasoning": "A strong candidate starts by considering a brute-force approach of checking all substrings, recognizing that it leads to an inefficient O(n^3) or O(n^2) time complexity. They then realize they need a way to track uniqueness as they scan through the string linearly. By conceptualizing the problem as a contiguous range or window of characters, they deduce that two pointers (left and right) can bound this valid range. They weigh how to efficiently check for duplicates upon expanding the right pointer, opting for a hash map or set to achieve O(1) lookups, and design the mechanism to adjust the left pointer when a duplicate is encountered.",
+    "common_mistakes": [
+      "States the conclusion to use a sliding window with no justification for why brute force fails",
+      "Fails to maintain the window correctly by restarting the left pointer from scratch on every duplicate",
+      "Uses a data structure that results in O(n^2) behavior due to inefficient duplicate checking",
+      "Forgets to track and update the maximum length seen across different window states",
+      "Off-by-one errors when calculating the window length using the left and right pointers"
+    ],
+    "progressive_hints": [
+      "What is the bottleneck of checking every possible substring, and what redundant work are you repeating?",
+      "Think about how you can maintain a dynamic boundary of unique characters that expands to the right and contracts from the left when a duplicate appears.",
+      "If your right pointer lands on a character you've already seen inside your current window, how far forward must your left pointer jump to ensure all characters in the window remain unique?"
+    ],
+    "learning_objective": "The candidate should understand how to use a sliding window with state tracking to solve contiguous substring optimization problems in linear time."
   },
   {
     "id": "dsa-0008",
     "question": "Given a matrix representing a grid of 1s (land) and 0s (water), count the number of islands.",
     "type": "coding",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["graphs", "dfs-bfs", "matrix"],
-    "tech_keywords": ["algorithms", "data-structures"],
-    "companies_common": ["Amazon", "Google", "Microsoft", "Facebook"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "graphs",
+      "dfs-bfs",
+      "matrix"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft",
+      "Facebook"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -173,17 +402,44 @@
       ],
       "sample_answer": "Scan every cell; whenever an unvisited land cell is found, increment the island count and run DFS or BFS from it, marking every reachable land cell as visited so it isn't recounted. This visits each cell a constant number of times, giving O(rows x cols) time."
     },
-    "follow_up_hint": "Ask how the approach changes for counting islands in a stream of land-cell updates (Number of Islands II)."
+    "follow_up_hint": "Ask how the approach changes for counting islands in a stream of land-cell updates (Number of Islands II).",
+    "concept": "Graph Traversal",
+    "sub_concept": "Connected Components in a Grid",
+    "expected_reasoning": "A strong candidate begins by translating the 2D grid into an implicit graph problem where each land cell acts as a node connected to its orthogonal neighbors. They recognize that finding the total number of islands is equivalent to counting the connected components of land. They propose a traversal algorithm like Depth-First Search or Breadth-First Search to systematically explore and mark all reachable land cells from any unvisited starting point. Finally, they analyze the time complexity as linear with respect to the number of cells, while considering edge cases like out-of-bounds checks and input mutation constraints.",
+    "common_mistakes": [
+      "Treating each cell independently without realizing that adjacent land cells belong to the same island",
+      "Failing to track visited cells, resulting in infinite recursion loops during traversal",
+      "Double-counting islands by resetting visited states or incorrectly iterating through the grid",
+      "Forgetting to check boundary conditions (row and column limits) during neighbor expansion",
+      "Mutating the input grid directly without considering whether side-effects are acceptable in the interviewer's context"
+    ],
+    "progressive_hints": [
+      "How can you represent the grid as a graph where traversal helps you group connected elements?",
+      "When you find a piece of land, what strategy can you use to find all the other connected land pieces belonging to that same island?",
+      "If you mutate the land cells you've already seen into water (or track them in a visited structure), how does that prevent you from counting the same island multiple times?"
+    ],
+    "learning_objective": "Understand how to model 2D matrices as implicit graphs and apply traversal algorithms to identify connected components."
   },
   {
     "id": "dsa-0009",
     "question": "Given a set of non-negative integers and a target sum, determine if there is a subset that sums to exactly the target.",
     "type": "coding",
     "difficulty": 3,
-    "roles": ["general_sde"],
-    "topics": ["dynamic-programming", "recursion"],
-    "tech_keywords": ["algorithms"],
-    "companies_common": ["Amazon", "Microsoft", "Adobe"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "dynamic-programming",
+      "recursion"
+    ],
+    "tech_keywords": [
+      "algorithms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Adobe"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -195,17 +451,46 @@
       ],
       "sample_answer": "Build a boolean DP table where dp[s] means some subset sums to s. Initialize dp[0] = true. For each number, iterate sums from target down to that number, setting dp[s] |= dp[s - num]. Iterating downward with a 1D array avoids reusing the same element twice. This runs in O(n * target) time and O(target) space."
     },
-    "follow_up_hint": "Ask about the related 'partition into two equal-sum subsets' problem, or reconstructing the actual subset."
+    "follow_up_hint": "Ask about the related 'partition into two equal-sum subsets' problem, or reconstructing the actual subset.",
+    "concept": "Dynamic Programming",
+    "sub_concept": "Subset Sum Optimization",
+    "expected_reasoning": "A strong candidate begins by analyzing why a naive brute-force or recursive approach with memoization leads to exponential time complexity due to overlapping subproblems. They identify the optimal substructure, noting that for each element, they face a binary choice: either include it in the subset or exclude it. They formalize this by defining a state representation, typically a boolean table tracking whether a specific sum can be formed using a prefix of the array. Finally, they consider space optimization, realizing that computing the current row only requires values from the previous row, which allows them to compress the 2D table into a 1D array.",
+    "common_mistakes": [
+      "Jumps straight to implementing recursion without memoization, leading to exponential time complexity",
+      "Fails to define the DP state clearly, confusing array indices with the subset elements versus the target sum values",
+      "Iterates the 1D space-optimized array in the wrong direction (forward instead of backward), causing values to be reused and invalidating the 0/1 knapsack constraints",
+      "States the conclusion or writes code with no justification of the transition relation",
+      "Forgets to handle edge cases like zero targets, empty arrays, or negative numbers if applicable",
+      "Incorrectly analyzes the time and space complexity, missing the dependency on the magnitude of the target sum"
+    ],
+    "progressive_hints": [
+      "What subproblems do you repeatedly encounter if you try every combination recursively?",
+      "Think about how deciding to include or exclude the current element affects the remaining target sum you need to form.",
+      "If you are optimizing space using a single array, in which direction must you update your values to avoid using the same element multiple times in the same step?"
+    ],
+    "learning_objective": "The candidate should understand how to transform a combinatorial choice problem into a dynamic programming recurrence and optimize its space complexity by analyzing state dependencies."
   },
   {
     "id": "dsa-0010",
     "question": "Given a list of stock prices over time, find the maximum profit from at most one buy and one sell.",
     "type": "coding",
     "difficulty": 1,
-    "roles": ["general_sde", "backend"],
-    "topics": ["arrays", "greedy"],
-    "tech_keywords": ["algorithms"],
-    "companies_common": ["Amazon", "Facebook", "Bloomberg"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "arrays",
+      "greedy"
+    ],
+    "tech_keywords": [
+      "algorithms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Facebook",
+      "Bloomberg"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -217,17 +502,46 @@
       ],
       "sample_answer": "Scan the prices once, tracking the minimum price seen so far and the best profit found. At each price, compute the profit if selling today (current price minus running minimum) and update the best profit; then update the running minimum. This is O(n) time, O(1) space."
     },
-    "follow_up_hint": "Ask about the version allowing unlimited buy/sell transactions, or at most two transactions."
+    "follow_up_hint": "Ask about the version allowing unlimited buy/sell transactions, or at most two transactions.",
+    "concept": "Array Scanning",
+    "sub_concept": "Greedy Min-Max Tracking",
+    "expected_reasoning": "A strong candidate begins by acknowledging the naive O(n^2) approach of checking every possible buy and sell pair and immediately identifies that redundant work is being done. They realize that to maximize profit at any given selling day, they must have bought at the absolute lowest price seen prior to that day. By scanning the array from left to right in a single pass, they maintain a running minimum price and continuously calculate the potential profit for the current price. This allows them to update the maximum profit dynamically in O(n) time and O(1) space while cleanly handling edge cases like monotonically decreasing prices.",
+    "common_mistakes": [
+      "Using a nested loop to check all pairs, resulting in O(n^2) time complexity",
+      "Finding the absolute global minimum and global maximum and assuming the min must always precede the max in index",
+      "Failing to handle monotonically decreasing arrays, returning negative numbers instead of zero",
+      "Forgetting to track the minimum price dynamically and instead resetting it incorrectly",
+      "States the conclusion with no justification regarding why a single pass is sufficient"
+    ],
+    "progressive_hints": [
+      "What is the bottleneck of checking every possible pair of buy and sell days?",
+      "If you are deciding to sell on a particular day, what do you need to know about all the days preceding it?",
+      "As you scan through the array from left to right, what single piece of historical information could you update on the fly to calculate today's potential profit instantly?"
+    ],
+    "learning_objective": "The candidate should walk away understanding how to optimize redundant pair-wise comparisons in an array down to a single pass by maintaining running state."
   },
   {
     "id": "dsa-0011",
     "question": "Implement a function to detect a cycle in a linked list, and find the node where the cycle begins.",
     "type": "coding",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["linked-lists", "two-pointers"],
-    "tech_keywords": ["algorithms", "data-structures"],
-    "companies_common": ["Amazon", "Microsoft", "Google"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "linked-lists",
+      "two-pointers"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -239,17 +553,46 @@
       ],
       "sample_answer": "Move a slow pointer one step and a fast pointer two steps at a time; if they meet, a cycle exists. To find the cycle's start, reset one pointer to the head and advance both one step at a time — they meet exactly at the cycle's start node, due to the distance relationship between the meeting point and the head. This is O(n) time and O(1) space."
     },
-    "follow_up_hint": "Ask them to prove why resetting one pointer to head works mathematically."
+    "follow_up_hint": "Ask them to prove why resetting one pointer to head works mathematically.",
+    "concept": "Two Pointers",
+    "sub_concept": "Cycle Detection and Start Node Identification in Linked Lists",
+    "expected_reasoning": "A strong candidate starts by exploring space-time tradeoffs, recognizing that a hash-set can track visited nodes in O(n) space, but immediately looks for an O(1) space alternative using pointer manipulation. They propose Floyd's Tortoise and Hare algorithm to detect the presence of a cycle through differing traversal speeds. Rather than stopping at cycle detection, they analyze the mathematical distances traveled by both pointers from the head and the meeting point. By deriving the relationship between these distances, they realize resetting one pointer to the head allows both to intersect precisely at the node where the cycle begins.",
+    "common_mistakes": [
+      "Jumps straight to Floyd's algorithm without discussing the simpler O(n) space hash-set approach or justifying the O(1) space constraint.",
+      "Correctly detects the cycle using slow and fast pointers but fails to find the actual start node, returning boolean true instead.",
+      "Resets both pointers to the head after detection instead of leaving one at the meeting point.",
+      "Attempts to count the length of the cycle manually to find the start node, leading to overly complex and error-prone index math.",
+      "States the pointer reset algorithm for finding the start node as a memorized trick without providing any mathematical justification or proof."
+    ],
+    "progressive_hints": [
+      "Think about how you could track visited nodes without using extra memory like a hash set.",
+      "If you have two pointers moving at different speeds inside a loop, what does their meeting point tell you about the cycle's geometry relative to the head?",
+      "Set one pointer back to the head while leaving the other at the meeting point. If you move both at the exact same speed of one step per iteration, where will they collide?"
+    ],
+    "learning_objective": "Master how pointer speed differentials can be leveraged mathematically to solve topological problems in constant space."
   },
   {
     "id": "dsa-0012",
     "question": "Given a binary search tree, find the lowest common ancestor (LCA) of two given nodes.",
     "type": "coding",
     "difficulty": 2,
-    "roles": ["general_sde"],
-    "topics": ["trees", "recursion", "binary-search-tree"],
-    "tech_keywords": ["algorithms", "data-structures"],
-    "companies_common": ["Amazon", "Microsoft", "LinkedIn"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "trees",
+      "recursion",
+      "binary-search-tree"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "LinkedIn"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -261,17 +604,44 @@
       ],
       "sample_answer": "Starting at the root, if both target values are less than the current node, go left; if both are greater, go right; otherwise the current node is the split point and thus the LCA. This works because of the BST ordering property, and runs in O(h) time where h is the tree's height."
     },
-    "follow_up_hint": "Ask how the solution changes for a general binary tree without the BST ordering property."
+    "follow_up_hint": "Ask how the solution changes for a general binary tree without the BST ordering property.",
+    "concept": "Binary Search Tree",
+    "sub_concept": "Lowest Common Ancestor traversal",
+    "expected_reasoning": "A strong candidate begins by contrasting this problem with the general binary tree LCA, noting that the BST property provides ordering guarantees we can exploit. They analyze how the relative values of the two target nodes compared to the current node determine which subtree the LCA must inhabit. By checking if both nodes lie strictly to the left or strictly to the right, they establish a deterministic traversal path. They recognize that the first node encountered where the two targets split—or where one matches the current node—must be the lowest common ancestor, eliminating the need to search both branches.",
+    "common_mistakes": [
+      "Treating the input as a general binary tree and applying an O(n) post-order traversal without using BST properties",
+      "Writing a recursive solution that unnecessarily searches both left and right subtrees",
+      "Failing to handle edge cases where one of the target nodes is the ancestor of the other",
+      "Forgetting to check the base case where the root is null or improperly handling equal values",
+      "States the conclusion with no justification regarding why the split point guarantees the LCA"
+    ],
+    "progressive_hints": [
+      "How does the structure of a Binary Search Tree differ from a normal binary tree in terms of node values?",
+      "If both target nodes are smaller than your current node, which direction must their lowest common ancestor be?",
+      "At what point in your descent from the root do you know for certain that the current node is the lowest common ancestor where the paths diverge?"
+    ],
+    "learning_objective": "Understand how to leverage ordering invariants in data structures to reduce search time complexity from linear to proportional to the height of the tree."
   },
   {
     "id": "dsa-0013",
     "question": "Given a rotated sorted array with no duplicates, search for a target value in O(log n) time.",
     "type": "coding",
     "difficulty": 2,
-    "roles": ["general_sde"],
-    "topics": ["arrays", "binary-search"],
-    "tech_keywords": ["algorithms"],
-    "companies_common": ["Amazon", "Microsoft", "Google"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "arrays",
+      "binary-search"
+    ],
+    "tech_keywords": [
+      "algorithms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -283,17 +653,47 @@
       ],
       "sample_answer": "Run binary search, but at each step first determine which half of the current range is sorted (comparing nums[left], nums[mid], nums[right]). If the target falls within that sorted half's value range, recurse there; otherwise recurse into the other half. This stays O(log n) despite the rotation."
     },
-    "follow_up_hint": "Ask what happens to the time complexity if the array can contain duplicate values."
+    "follow_up_hint": "Ask what happens to the time complexity if the array can contain duplicate values.",
+    "concept": "Binary Search",
+    "sub_concept": "Modified Binary Search on Rotated Arrays",
+    "expected_reasoning": "A strong candidate begins by analyzing how the rotation property affects the standard binary search halves. Instead of wasting time finding the rotation pivot first, they realize that dividing a rotated sorted array in half always leaves at least one of the two sub-halves strictly sorted. By checking which side is monotonically ordered, they can determine if the target falls within that sorted half's boundaries. If it does, they narrow their search there; otherwise, they search the other half. They trace this logic through edge cases like single-element arrays and pivot boundaries to ensure the boundaries are handled without infinite loops.",
+    "common_mistakes": [
+      "First writing an O(n) linear scan because the rotation complicates standard binary search logic",
+      "Writing separate logic to find the minimum/pivot element and then trying to run two separate binary searches, missing a cleaner single-pass solution",
+      "Failing to handle equality conditions correctly between mid, low, and high pointers, leading to infinite loops or missed targets",
+      "Checking bounds incorrectly when determining if the target falls inside the sorted half, such as confusing strict and non-strict inequalities",
+      "Forgetting to discuss how allowing duplicate values in the array breaks O(log n) performance by making it impossible to determine which half is sorted when nums[low] == nums[mid] == nums[high]"
+    ],
+    "progressive_hints": [
+      "Think about what happens when you split a rotated sorted array down the middle. What can you guarantee about at least one of the resulting halves?",
+      "If you know that one half of your array is strictly sorted, how can you test whether your target could possibly live in that half?",
+      "When your mid-point doesn't land on the target, check the relative values of your low and mid pointers to identify the sorted half, then use those boundaries to decide which pointer to move."
+    ],
+    "learning_objective": "Understand how to adapt binary search invariants to handle data structures with localized ordering disruptions without degrading time complexity."
   },
   {
     "id": "dsa-0014",
     "question": "Implement a trie (prefix tree) supporting insert, search, and startsWith operations.",
     "type": "coding",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["trees", "strings", "design"],
-    "tech_keywords": ["algorithms", "data-structures"],
-    "companies_common": ["Google", "Amazon", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "trees",
+      "strings",
+      "design"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -305,17 +705,46 @@
       ],
       "sample_answer": "Each trie node has a fixed-size or hash-map array of child pointers (one per possible character) and a boolean marking whether a word ends there. Insert and search both walk character by character creating or following child links; search additionally checks the end-of-word flag, while startsWith just checks the path exists. Each operation is O(L) for a word of length L."
     },
-    "follow_up_hint": "Ask how they'd extend the trie to support wildcard search (e.g. '.' matching any character)."
+    "follow_up_hint": "Ask how they'd extend the trie to support wildcard search (e.g. '.' matching any character).",
+    "concept": "Trie Data Structure",
+    "sub_concept": "Prefix Tree Design and Operations",
+    "expected_reasoning": "A strong candidate begins by visualizing how shared prefixes can be stored efficiently using a tree structure where each node represents a character. They design a Node class or structure containing a collection of children pointers—either a fixed-size array for lowercase English letters or a hash map for arbitrary characters—and a boolean flag to mark word termination. Next, they methodically map out the three required methods: insertion traverses and instantiates missing nodes character-by-character; search follows the path and checks the terminal flag; and startsWith simply verifies that the traversal completes without hitting a missing child. Finally, they analyze the time and space complexity, noting that operations scale linearly with the length of the string rather than the dictionary size.",
+    "common_mistakes": [
+      "Failing to distinguish between search and startsWith by forgetting to check the end-of-word flag in search.",
+      "Using an inefficient data structure for children storage, or failing to initialize child pointers properly.",
+      "Forgetting to set the end-of-word flag on the final node during insertion.",
+      "Writing recursive solutions that add unnecessary call stack overhead for straightforward iterative traversals.",
+      "Stating time complexities as O(N) where N is the total number of words, rather than O(L) where L is the word length."
+    ],
+    "progressive_hints": [
+      "Think about how words that share a common prefix, like 'cat' and 'car', can overlap in a tree structure.",
+      "Consider what data structure a single node needs to store references to its possible following characters, and how you will distinguish a complete word from an intermediate prefix.",
+      "When implementing search versus startsWith, what is the exact difference in validation required at the final node of your traversal?"
+    ],
+    "learning_objective": "Understand how to design and traverse a prefix tree to optimize string lookup and prefix matching operations."
   },
   {
     "id": "dsa-0015",
     "question": "Given a directed graph, determine if it contains a cycle (used to detect circular dependencies).",
     "type": "coding",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["graphs", "dfs-bfs", "topological-sort"],
-    "tech_keywords": ["algorithms"],
-    "companies_common": ["Amazon", "Google", "Uber"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "graphs",
+      "dfs-bfs",
+      "topological-sort"
+    ],
+    "tech_keywords": [
+      "algorithms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Uber"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -327,17 +756,44 @@
       ],
       "sample_answer": "Run DFS tracking three states per node: unvisited, currently in the recursion stack, and done. If DFS ever visits a node already in the recursion stack, a cycle exists. Alternatively, Kahn's algorithm repeatedly removes nodes with in-degree zero; if any nodes remain unremoved at the end, there's a cycle. Both run in O(V + E)."
     },
-    "follow_up_hint": "Ask them to also produce a valid topological order when no cycle exists."
+    "follow_up_hint": "Ask them to also produce a valid topological order when no cycle exists.",
+    "concept": "Graph Cycle Detection",
+    "sub_concept": "Directed Graph Cycle Detection using State Tracking or In-Degree Counting",
+    "expected_reasoning": "A strong candidate starts by clarifying whether the graph is directed or undirected, as cycle detection differs fundamentally between them. They recognize that a simple visited set is insufficient in a directed graph because cross-edges to previously processed nodes do not necessarily indicate a cycle. They then derive the need for a three-state coloring approach (or recursion stack tracking) during DFS to correctly distinguish back-edges from cross-edges. Alternatively, they consider a topological sort approach using in-degrees, weighing the trade-offs of space and implementation clarity between the two methods.",
+    "common_mistakes": [
+      "Using a simple boolean 'visited' set that causes false positives on valid directed acyclic graphs (DAGs) with multiple paths to the same node.",
+      "Applying an undirected graph cycle detection approach (just checking parent pointers) to a directed graph.",
+      "Forgetting to reset or correctly manage state when backtracking during DFS.",
+      "Stating the time complexity incorrectly or omitting the dependency on both vertices and edges O(V + E).",
+      "Failing to articulate how cycle detection maps to real-world problems like circular dependencies."
+    ],
+    "progressive_hints": [
+      "Consider what happens in a directed graph if two different paths both lead to the same unvisited node. Does visiting it twice mean there's a cycle?",
+      "Think about how you can distinguish between a node that is currently part of the active exploration path versus one that was fully explored in a completely different branch.",
+      "What if you explicitly track three states for every node: unvisited, currently in progress on the current path, and completely finished?"
+    ],
+    "learning_objective": "The candidate should understand how to accurately detect cycles in directed graphs by distinguishing active recursion paths from fully processed nodes."
   },
   {
     "id": "dsa-0016",
     "question": "Given an array, find the maximum sum of any contiguous subarray (Kadane's algorithm).",
     "type": "coding",
     "difficulty": 1,
-    "roles": ["general_sde"],
-    "topics": ["arrays", "dynamic-programming"],
-    "tech_keywords": ["algorithms"],
-    "companies_common": ["Amazon", "Microsoft", "LinkedIn"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "arrays",
+      "dynamic-programming"
+    ],
+    "tech_keywords": [
+      "algorithms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "LinkedIn"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -349,17 +805,44 @@
       ],
       "sample_answer": "Keep a running sum representing the best subarray ending at the current index; at each step it's either just the current element, or the current element plus the previous running sum, whichever is larger. Track the overall maximum across all positions. This is O(n) time and O(1) space."
     },
-    "follow_up_hint": "Ask for the actual subarray (indices), not just the sum, or the maximum product subarray variant."
+    "follow_up_hint": "Ask for the actual subarray (indices), not just the sum, or the maximum product subarray variant.",
+    "concept": "Dynamic Programming",
+    "sub_concept": "State Reduction and Optimal Substructure in Arrays",
+    "expected_reasoning": "A strong candidate begins by analyzing why a brute-force check of all subarrays is too slow and looks for overlapping subproblems. They realize that the maximum subarray ending at any given index depends entirely on the maximum subarray ending at the previous index. By evaluating whether to extend the previous subarray or start a fresh one at the current element, they derive the local recurrence relation. They then track this rolling maximum against a global best value, ensuring the solution runs in linear time with constant extra space while correctly handling edge cases like all-negative inputs.",
+    "common_mistakes": [
+      "Jumps straight to the code without explaining the dynamic programming state or recurrence relation.",
+      "Fails to handle arrays with all negative numbers, returning zero instead of the maximum single element.",
+      "Uses a nested loop approach with O(n^2) or O(n^3) time complexity without optimizing.",
+      "Resets the running sum to zero when it drops below zero instead of keeping track of negative numbers properly.",
+      "Confuses the global maximum with the running current maximum, losing track of the historical best."
+    ],
+    "progressive_hints": [
+      "What information about the previous subarrays could help you make a decision at the current element without looking back at all prior elements?",
+      "If you know the best subarray sum that ends right before your current position, what conditions would make you decide to drop it and start a new subarray?",
+      "Think about maintaining two values as you iterate: one for the best sum that must end at the current index, and another for the absolute best sum seen so far."
+    ],
+    "learning_objective": "The candidate should understand how to optimize subarray problems from cubic or quadratic time down to linear time by recognizing overlapping subproblems and maintaining state transitions."
   },
   {
     "id": "dsa-0017",
     "question": "Given two strings, determine the minimum number of edit operations (insert, delete, replace) to convert one into the other.",
     "type": "coding",
     "difficulty": 3,
-    "roles": ["general_sde"],
-    "topics": ["dynamic-programming", "strings"],
-    "tech_keywords": ["algorithms"],
-    "companies_common": ["Google", "Amazon", "Microsoft"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "dynamic-programming",
+      "strings"
+    ],
+    "tech_keywords": [
+      "algorithms"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -371,17 +854,47 @@
       ],
       "sample_answer": "Build a 2D DP table where dp[i][j] is the edit distance between the first i characters of one string and the first j of the other. If the current characters match, dp[i][j] = dp[i-1][j-1]; otherwise it's 1 plus the minimum of the insert, delete, and replace options (dp[i][j-1], dp[i-1][j], dp[i-1][j-1]). This is O(m*n) time and space, reducible to O(min(m,n)) space."
     },
-    "follow_up_hint": "Ask them to reconstruct the actual sequence of operations, not just the count."
+    "follow_up_hint": "Ask them to reconstruct the actual sequence of operations, not just the count.",
+    "concept": "Dynamic Programming",
+    "sub_concept": "String Edit Distance",
+    "expected_reasoning": "A strong candidate begins by identifying that choices at each character position depend on previous choices, making it a candidate for dynamic programming. They define the state explicitly, typically as the minimum operations needed to transform prefixes of both strings. They derive the base cases for when one string is empty and establish the recurrence relation by evaluating insert, delete, and replace operations. Finally, they analyze the time and space complexity, noting how the memory footprint can be optimized since each row only depends on the previous one.",
+    "common_mistakes": [
+      "States the conclusion or algorithm name with no justification for how the state transitions work.",
+      "Attempts a greedy approach by matching characters from left to right without looking ahead.",
+      "Confuses the base cases, leading to out-of-bounds errors or incorrect costs for empty strings.",
+      "Fails to account for all three edit operations (insert, delete, replace) in the transition step.",
+      "Bogs down in implementing the full matrix without clearly explaining the recurrence relation first."
+    ],
+    "progressive_hints": [
+      "How can you break this problem down by looking at prefixes of the two strings?",
+      "If you know the minimum edit distance for all smaller prefixes, how do the last characters of the current prefixes affect your choices?",
+      "When the last characters don't match, what are the three operations you can apply, and how do they map to states in a 2D grid?"
+    ],
+    "learning_objective": "Understand how to model string transformation problems as overlapping subproblems using a 2D dynamic programming table and optimize its space complexity."
   },
   {
     "id": "dsa-0018",
     "question": "Design a data structure that supports insert, delete, and getRandom, each in average O(1) time.",
     "type": "coding",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["arrays", "hashing", "design"],
-    "tech_keywords": ["algorithms", "data-structures"],
-    "companies_common": ["Amazon", "Google", "Uber"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "arrays",
+      "hashing",
+      "design"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Uber"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -393,17 +906,45 @@
       ],
       "sample_answer": "Store elements in a resizable array and keep a hash map from value to its current array index. Insert appends and records the index. Delete looks up the index, swaps that element with the last one in the array, updates the swapped element's index in the map, then removes the last element — avoiding a costly shift. getRandom just picks a random valid array index. All three operations are O(1) average time."
     },
-    "follow_up_hint": "Ask how they'd handle duplicate values being allowed in the structure."
+    "follow_up_hint": "Ask how they'd handle duplicate values being allowed in the structure.",
+    "concept": "Data Structure Design",
+    "sub_concept": "Combining Hash Maps and Dynamic Arrays for O(1) Operations",
+    "expected_reasoning": "A strong candidate starts by evaluating standard data structures against the conflicting requirements of O(1) insert, delete, and random access. They realize hash maps provide O(1) insert and delete but lack O(1) random index selection, while arrays offer O(1) random access but require O(N) time for arbitrary deletions. By combining both—using a hash map to track value-to-index mappings and a dynamic array to store the elements—they achieve constant-time lookups. Finally, they address the tricky deletion case by swapping the target element with the last element in the array before popping, preserving the O(1) time bound.",
+    "common_mistakes": [
+      "Using only a hash map, which makes getRandom inefficient or impossible in O(1) time.",
+      "Using only a dynamic array, which causes delete and search operations to take O(N) time.",
+      "Forgetting to update the hash map index when elements are shifted or swapped during deletion.",
+      "Shifting elements to the left upon deletion, violating the O(1) time complexity requirement.",
+      "Failing to handle edge cases such as deleting the last element or handling duplicate values without proper index tracking.",
+      "Stating the solution using both data structures with no justification for why the swap trick is necessary for deletion."
+    ],
+    "progressive_hints": [
+      "Consider which standard data structure gives you O(1) random access, and which gives you O(1) search and insert.",
+      "You have an array for fast random access, but deleting from the middle of an array takes O(N). How can you remove an element in O(1) if its relative order doesn't matter?",
+      "If you swap the element you want to delete with the very last element in your array before popping it off, how does that affect your index tracking in the hash map?"
+    ],
+    "learning_objective": "Understand how to combine multiple complementary data structures to achieve optimal time complexities for conflicting requirements."
   },
   {
     "id": "dsa-0019",
     "question": "Given a binary tree, print its nodes in level order (breadth-first, level by level).",
     "type": "coding",
     "difficulty": 1,
-    "roles": ["general_sde"],
-    "topics": ["trees", "dfs-bfs"],
-    "tech_keywords": ["algorithms", "data-structures"],
-    "companies_common": ["Amazon", "Microsoft"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "trees",
+      "dfs-bfs"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -415,17 +956,48 @@
       ],
       "sample_answer": "Use a queue seeded with the root. At each iteration, record the current queue size (the number of nodes in this level), then dequeue exactly that many nodes, collecting their values and enqueuing their children — that batch becomes one level in the output. Continue until the queue is empty. O(n) time and space."
     },
-    "follow_up_hint": "Ask for a zigzag level-order traversal (alternating left-to-right and right-to-left) as a variant."
+    "follow_up_hint": "Ask for a zigzag level-order traversal (alternating left-to-right and right-to-left) as a variant.",
+    "concept": "Breadth-First Search",
+    "sub_concept": "Level-Order Tree Traversal",
+    "expected_reasoning": "A strong candidate first clarifies whether the output needs to group nodes by level or simply list them sequentially. Recognizing that depth-first search naturally goes deep rather than wide, they decide a queue-based iterative approach is necessary to explore nodes level by level. They derive the need to capture the queue size at the start of each level's iteration to properly demarcate level boundaries. Finally, they consider edge cases like an empty tree and analyze that the time and space complexity will both scale linearly with the total number of nodes.",
+    "common_mistakes": [
+      "Attempts to use standard recursion without a level-tracking mechanism, losing the structural boundaries between levels",
+      "Uses a stack instead of a queue, inadvertently implementing a depth-first or iterative pre-order traversal instead of breadth-first",
+      "Fails to capture the queue size at the start of the level loop, causing nodes from subsequent levels to bleed into the current level's processing",
+      "Does not handle an empty tree edge case, resulting in null pointer exceptions when peeking or popping",
+      "States the solution uses O(1) space without accounting for the memory used by the queue or the result list"
+    ],
+    "progressive_hints": [
+      "What traversal strategy naturally explores nodes closer to the root before moving to deeper nodes?",
+      "When iterating through a queue in a standard BFS, how can you know where one level ends and the next begins?",
+      "If you record the exact number of items currently in the queue before processing a level, what does that tell you about how many nodes to dequeue for that level?"
+    ],
+    "learning_objective": "Understand how to use a queue and level-size tracking to separate hierarchical tiers during a breadth-first tree traversal."
   },
   {
     "id": "dsa-0020",
     "question": "Given k sorted linked lists, merge them into one sorted linked list.",
     "type": "coding",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["linked-lists", "heaps", "divide-and-conquer"],
-    "tech_keywords": ["algorithms", "data-structures"],
-    "companies_common": ["Amazon", "Google", "Microsoft", "Adobe"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "linked-lists",
+      "heaps",
+      "divide-and-conquer"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft",
+      "Adobe"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -437,17 +1009,44 @@
       ],
       "sample_answer": "Put the head of each of the k lists into a min-heap keyed by value. Repeatedly pop the smallest node, append it to the result, and push its successor (if any) into the heap. This runs in O(N log k) time where N is the total number of nodes. A divide-and-conquer approach pairwise-merging the lists achieves the same complexity with different constants."
     },
-    "follow_up_hint": "Ask them to compare the heap approach against pairwise divide-and-conquer merging in practice."
+    "follow_up_hint": "Ask them to compare the heap approach against pairwise divide-and-conquer merging in practice.",
+    "concept": "Priority Queues and Divide and Conquer",
+    "sub_concept": "Merging K Sorted Streams Efficiently",
+    "expected_reasoning": "A strong candidate begins by analyzing the naive approach of repeatedly merging lists two at a time, quickly identifying that it leads to redundant comparisons and poor time complexity as k grows. They then explore two optimal paradigms: maintaining a sliding window of candidate nodes using a min-heap to always grab the global minimum in logarithmic time, or recursively merging the lists in pairs using a divide-and-conquer strategy similar to merge sort. They evaluate the time and space trade-offs of both approaches, noting that the heap approach gives O(N log k) time and O(k) extra space, while the divide-and-conquer approach achieves the same time complexity with O(log k) call stack space.",
+    "common_mistakes": [
+      "States the conclusion to use a min-heap or merge sort with no justification for why the naive linear merge is too slow.",
+      "Fails to analyze or completely misstates the time complexity with respect to both N (total nodes) and k (number of lists).",
+      "Attempts a brute-force solution that concatenates all lists first and then sorts them, ignoring the pre-sorted property of the inputs.",
+      "Forgets to handle edge cases such as empty lists, k equals zero, or lists of varying lengths.",
+      "Neglects to discuss auxiliary space complexity for either the heap or the recursion stack."
+    ],
+    "progressive_hints": [
+      "At any given moment, what is the set of candidate nodes you actually need to compare to find the absolute smallest next element?",
+      "You are repeatedly looking for the minimum among the current heads of the remaining lists. What data structure maintains dynamic minimums efficiently in logarithmic time?",
+      "If you maintain a min-heap of size k containing the head node of each active list, what operations do you perform when you extract the minimum to keep the heap populated with the next node from that same list?"
+    ],
+    "learning_objective": "The candidate should understand how to leverage min-heaps and divide-and-conquer strategies to efficiently merge multiple sorted streams from polynomial to logarithmic time relative to the number of streams."
   },
   {
     "id": "dsa-0021",
     "question": "Given a non-negative integer array representing elevation, compute how much rainwater it can trap.",
     "type": "coding",
     "difficulty": 3,
-    "roles": ["general_sde"],
-    "topics": ["arrays", "two-pointers"],
-    "tech_keywords": ["algorithms"],
-    "companies_common": ["Amazon", "Google", "Goldman Sachs"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "arrays",
+      "two-pointers"
+    ],
+    "tech_keywords": [
+      "algorithms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Goldman Sachs"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -459,17 +1058,46 @@
       ],
       "sample_answer": "Use two pointers at both ends, tracking the max height seen from the left and from the right. At each step, move the pointer on the side with the smaller max inward, adding (that max minus the current height) to the trapped total — this is safe because the smaller max is guaranteed to be the limiting wall. This runs in O(n) time and O(1) space."
     },
-    "follow_up_hint": "Ask them to solve the 2D version (trapping rain water in a height map / matrix)."
+    "follow_up_hint": "Ask them to solve the 2D version (trapping rain water in a height map / matrix).",
+    "concept": "Two Pointers",
+    "sub_concept": "Bounding Maximums for Bounded Area",
+    "expected_reasoning": "A strong candidate starts by analyzing the conditions required for water to be trapped at a single index, realizing it depends on the tallest bars to its immediate left and right. They then consider a brute-force approach of scanning both directions for every element, which leads to an O(n^2) time complexity, and look to optimize using precomputed arrays for left and right maximums. Recognizing that the auxiliary space can be reduced, they deduce that two pointers starting from opposite ends can maintain running maximums dynamically. By observing that the water level is always bottlenecked by the shorter of the two bounding heights, they move the smaller pointer inward with confidence that its trapped water is fully determined.",
+    "common_mistakes": [
+      "States the conclusion or formula with no justification of why it works",
+      "Uses a brute-force O(n^2) nested loop approach without attempting optimization",
+      "Allocates extra arrays for left and right maximums and fails to realize it can be done in O(1) space",
+      "Moves the wrong pointer (e.g., moves the larger height instead of the smaller height)",
+      "Fails to handle edge cases like arrays with fewer than three elements or strictly monotonic arrays"
+    ],
+    "progressive_hints": [
+      "What determines how much water can sit directly on top of a single elevation bar?",
+      "You're currently looking for maximums in both directions. If you track running maximums from both ends, which side do you actually need to worry about first?",
+      "If the height at the left pointer is smaller than the height at the right pointer, does the right side's maximum matter for calculating water at the left pointer?"
+    ],
+    "learning_objective": "The candidate should understand how to optimize space complexity by compressing dual-direction scans into a simultaneous two-pointer traversal."
   },
   {
     "id": "dsa-0022",
     "question": "Implement a min-heap from scratch, supporting insert and extract-min.",
     "type": "coding",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["heaps", "arrays"],
-    "tech_keywords": ["algorithms", "data-structures"],
-    "companies_common": ["Amazon", "Microsoft", "Bloomberg"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "heaps",
+      "arrays"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Bloomberg"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -481,17 +1109,45 @@
       ],
       "sample_answer": "Store the heap in an array where a node at index i has children at 2i+1 and 2i+2, and parent at (i-1)/2. Insert appends the new value and bubbles it up, swapping with its parent while smaller. Extract-min swaps the root with the last element, removes the last element, then sifts the new root down to restore the heap property. Both operations are O(log n)."
     },
-    "follow_up_hint": "Ask them to extend it to a priority queue supporting a decrease-key operation."
+    "follow_up_hint": "Ask them to extend it to a priority queue supporting a decrease-key operation.",
+    "concept": "Binary Heaps",
+    "sub_concept": "Array-Based Min-Heap Implementation",
+    "expected_reasoning": "A strong candidate begins by choosing an underlying data structure, recognizing that a complete binary tree can be efficiently represented as a contiguous array without pointer overhead. They derive the index formulas for navigating between parents and children to maintain the shape property. For insertion, they reason that adding an element at the next available leaf and 'bubbling up' restores the heap property in logarithmic time. For extraction, they realize the root must be replaced with the last element before 'sifting down' to restore order.",
+    "common_mistakes": [
+      "Using explicit node and pointer objects instead of a flat array representation",
+      "Getting the index arithmetic wrong for left child, right child, or parent lookups",
+      "Forgetting to maintain the complete binary tree shape property during insertion or extraction",
+      "Failing to handle edge cases like an empty heap or a heap with a single element",
+      "Confusing the time complexity of heapify operations versus individual insert and extract-min actions"
+    ],
+    "progressive_hints": [
+      "How can you represent a complete binary tree in memory without using explicit pointer objects for every node?",
+      "If elements are stored sequentially in an array, what mathematical relationship connects a node at index i to its left and right children?",
+      "When you remove the minimum element from the root, which element should temporarily take its place before you start sifting down?"
+    ],
+    "learning_objective": "Understand how array index arithmetic enables efficient tree traversal and priority queue operations without explicit pointer overhead."
   },
   {
     "id": "dsa-0023",
     "question": "Given an array of integers, find all unique triplets that sum to zero.",
     "type": "coding",
     "difficulty": 2,
-    "roles": ["general_sde"],
-    "topics": ["arrays", "two-pointers", "sorting"],
-    "tech_keywords": ["algorithms"],
-    "companies_common": ["Amazon", "Microsoft", "Adobe"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "arrays",
+      "two-pointers",
+      "sorting"
+    ],
+    "tech_keywords": [
+      "algorithms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Adobe"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -503,17 +1159,47 @@
       ],
       "sample_answer": "Sort the array. For each index i, use two pointers (one just after i, one at the end) to find pairs that sum to -nums[i], moving inward based on whether the current sum is too high or low. Skip over duplicate values at each level to avoid duplicate triplets. This runs in O(n^2) time, better than the O(n^3) brute-force."
     },
-    "follow_up_hint": "Ask for the closest-to-target 3-sum variant, or generalizing to k-sum."
+    "follow_up_hint": "Ask for the closest-to-target 3-sum variant, or generalizing to k-sum.",
+    "concept": "Two Pointers",
+    "sub_concept": "Sorted Array Traversal for Combinatorial Sums",
+    "expected_reasoning": "A strong candidate starts by analyzing the naive cubic time complexity of checking every triplet and realizes they need a more structured approach. They recognize that sorting the array transforms the search space, allowing them to systematically fix one number and reduce the remaining search into a linear scan. They consider how to avoid redundant computations and duplicates by leveraging the sorted order to skip identical adjacent elements at every stage of the traversal. Finally, they weigh the trade-offs of using auxiliary data structures versus an in-place two-pointer scan to optimize space complexity.",
+    "common_mistakes": [
+      "Jumping straight into a triple nested loop resulting in an O(n^3) brute-force solution",
+      "Forgetting to sort the array, which makes duplicate elimination and two-pointer scanning impossible",
+      "Failing to skip duplicate values for the fixed element or the pointers, leading to duplicate triplets in the output",
+      "Using a hash set to store triplets without handling their order, leading to expensive deduplication overhead",
+      "Modifying the pointers incorrectly when a match is found, causing infinite loops or missing valid triplets"
+    ],
+    "progressive_hints": [
+      "If you were to fix the first number of the triplet, how could you simplify finding the remaining two numbers in the rest of the array?",
+      "You are repeatedly scanning the array to find pairs. What property could sorting the array give you that lets you move inward from both ends instead of searching?",
+      "When moving your pointers or advancing your fixed number, what condition must you check against previous values to ensure you never output the exact same triplet twice?"
+    ],
+    "learning_objective": "The candidate should walk away understanding how sorting combined with a two-pointer scan can reduce the complexity of multi-sum problems from cubic to quadratic time."
   },
   {
     "id": "dsa-0024",
     "question": "Given a string containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input is valid (properly matched and nested).",
     "type": "coding",
     "difficulty": 1,
-    "roles": ["general_sde", "frontend"],
-    "topics": ["stacks-queues", "strings"],
-    "tech_keywords": ["algorithms", "data-structures"],
-    "companies_common": ["Amazon", "Microsoft", "Google", "Facebook"],
+    "roles": [
+      "general_sde",
+      "frontend"
+    ],
+    "topics": [
+      "stacks-queues",
+      "strings"
+    ],
+    "tech_keywords": [
+      "algorithms",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google",
+      "Facebook"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -525,17 +1211,43 @@
       ],
       "sample_answer": "Push each opening bracket onto a stack. On a closing bracket, check that the stack isn't empty and its top matches the corresponding opening bracket, popping it if so; otherwise the string is invalid. At the end, the string is valid only if the stack is empty. This is O(n) time and space."
     },
-    "follow_up_hint": "Ask about generating all valid combinations of n pairs of parentheses as a related problem."
+    "follow_up_hint": "Ask about generating all valid combinations of n pairs of parentheses as a related problem.",
+    "concept": "Stack Data Structure",
+    "sub_concept": "LIFO Matching and Nesting",
+    "expected_reasoning": "A strong candidate begins by analyzing the last-in, first-out nature of nested pairs, recognizing that the most recently opened bracket must be the first one closed. They identify that scanning the string left-to-right requires a LIFO data structure to remember unclosed openings while waiting for their partners. They work through edge cases, such as encountering a closing bracket when no openings exist or ending the string with unclosed elements left behind. Finally, they confirm the linear time and space complexity bounds by evaluating the single-pass iteration and maximum stack depth.",
+    "common_mistakes": [
+      "Attempts to solve the problem by merely counting character frequencies without regard to order or nesting.",
+      "Uses a queue instead of a stack, resulting in FIFO processing that breaks nested logic.",
+      "Fails to check if the stack is empty before attempting to pop a closing bracket, leading to runtime errors.",
+      "Forgets to verify that the stack is completely empty at the end of the string, missing trailing unclosed brackets.",
+      "States the solution uses a stack with no justification for why LIFO behavior matches nesting rules."
+    ],
+    "progressive_hints": [
+      "Consider the order in which brackets must be closed relative to when they were opened.",
+      "Think about which data structure naturally remembers the most recently seen, unclosed item.",
+      "What should happen to the stack when you encounter a closing bracket, and how do you know if it's the correct match?"
+    ],
+    "learning_objective": "Understand how LIFO data structures like stacks model and enforce nested structures in parsing problems."
   },
   {
     "id": "dsa-0025",
     "question": "Given an m x n grid filled with non-negative numbers, find a path from top-left to bottom-right that minimizes the sum of numbers along the path (moving only right or down).",
     "type": "coding",
     "difficulty": 2,
-    "roles": ["general_sde"],
-    "topics": ["dynamic-programming", "matrix"],
-    "tech_keywords": ["algorithms"],
-    "companies_common": ["Amazon", "Microsoft"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "dynamic-programming",
+      "matrix"
+    ],
+    "tech_keywords": [
+      "algorithms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -547,6 +1259,22 @@
       ],
       "sample_answer": "Build a DP table where each cell holds the minimum path sum to reach it, computed as the cell's own value plus the minimum of the cell above and the cell to the left (with the first row/column only having one predecessor). The answer is the bottom-right cell. This is O(m*n) time, reducible to O(n) space using a single rolling row."
     },
-    "follow_up_hint": "Ask how the solution changes if diagonal moves are also allowed."
+    "follow_up_hint": "Ask how the solution changes if diagonal moves are also allowed.",
+    "concept": "Dynamic Programming",
+    "sub_concept": "Grid-Based Optimization",
+    "expected_reasoning": "The candidate begins by recognizing that greedy choices fail because local minimums do not guarantee a global minimum path. They realize that the minimum cost to reach any cell depends exclusively on the minimum costs of its top and left neighbors. By defining a state representation for each cell, they establish a bottom-up transition relation that builds the solution incrementally. Finally, they analyze time and space trade-offs, noting that state storage can be optimized from a 2D matrix down to a 1D array.",
+    "common_mistakes": [
+      "Attempts to use a greedy approach by always picking the smaller of right or down at each step without looking ahead",
+      "Uses unoptimized pure recursion without memoization, leading to exponential time complexity",
+      "Forgets to handle the boundary cases for the first row and first column where movement is restricted to a single direction",
+      "Fails to define the state clearly, confusing cell values with accumulated path sums",
+      "States the correct answer code immediately without articulating why greedy fails or how overlapping subproblems are structured"
+    ],
+    "progressive_hints": [
+      "If you stand at any arbitrary cell in the grid, what prior cells could you have possibly come from given your movement constraints?",
+      "You are recomputing optimal paths for the same cells multiple times in a recursive approach. How can you store the minimum cost to reach each intermediate cell?",
+      "Since to calculate any cell you only ever need the cell directly above and the cell directly to the left, how can you build up a table of minimum costs row by row?"
+    ],
+    "learning_objective": "Understand how to identify optimal substructure in a grid and apply bottom-up dynamic programming with space optimization."
   }
 ]

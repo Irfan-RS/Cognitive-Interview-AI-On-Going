@@ -1,7 +1,246 @@
 [
-  {"id":"http-0001","question":"Explain what happens step by step when you type a URL into a browser and press enter.","type":"conceptual","difficulty":2,"roles":["frontend","backend","general_sde"],"topics":["networking","http"],"tech_keywords":["http","dns","tcp"],"companies_common":["Amazon","Google","Microsoft"],"source_style":"faang-common","reference_solution":{"key_points":["DNS resolution: browser resolves the domain name to an IP address (checking cache, then recursive resolver, then authoritative servers)","TCP connection: browser establishes a TCP connection to that IP via a three-way handshake (SYN, SYN-ACK, ACK), plus a TLS handshake if HTTPS","HTTP request/response: browser sends an HTTP request, server processes it and returns a response (HTML, status code, headers)","Browser parses the HTML, discovers additional resources (CSS, JS, images), fetches them (often in parallel), then renders the page (DOM/CSSOM construction, layout, paint)"],"sample_answer":"First, the browser needs to resolve the domain name to an IP address via DNS — checking its own cache, then querying a recursive resolver, which in turn queries root, TLD, and authoritative name servers if needed. Once it has the IP, the browser opens a TCP connection to the server via a three-way handshake, and if it's HTTPS, performs a TLS handshake on top of that to establish an encrypted channel. Then the browser sends an HTTP request, the server processes it and returns a response with a status code, headers, and typically an HTML body. The browser parses that HTML, discovers additional resources it references like CSS, JavaScript, and images, fetches those — often in parallel — and finally renders the page by building the DOM and CSSOM, computing layout, and painting pixels to the screen."},"follow_up_hint":"Ask them to explain the TLS handshake in more detail, or what HTTP/2 or HTTP/3 change about this process."},
-  {"id":"http-0002","question":"What is the difference between TCP and UDP, and when would you choose one over the other?","type":"trade_off_questions","difficulty":2,"roles":["backend","general_sde"],"topics":["networking"],"tech_keywords":["tcp","udp"],"companies_common":["Amazon","Google","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["TCP: connection-oriented, guarantees reliable, ordered delivery via acknowledgments and retransmission; adds overhead (handshake, flow/congestion control)","UDP: connectionless, no delivery/ordering guarantees, no retransmission — but much lower latency and overhead","Choose TCP when correctness/completeness matters more than latency: web pages, file transfer, most APIs","Choose UDP when low latency matters more than occasional lost packets: live video/audio streaming, online gaming, DNS lookups"],"sample_answer":"TCP is connection-oriented and guarantees reliable, in-order delivery — it uses acknowledgments and retransmits lost packets, and includes flow and congestion control, but that reliability comes with more overhead and latency, including an initial handshake. UDP is connectionless and gives no guarantees about delivery or ordering — packets can be lost or arrive out of order and nothing retransmits them — but it has much lower overhead and latency since there's no handshake or acknowledgment machinery. I'd choose TCP for anything where correctness and completeness matter more than raw speed, like loading a web page, transferring a file, or most typical API calls. I'd choose UDP where low latency matters more than occasionally losing some data, like live video or audio streaming, real-time multiplayer gaming, or DNS lookups, where a dropped packet just gets retried at the application level if needed."},"follow_up_hint":"Ask why DNS primarily uses UDP but falls back to TCP for larger responses."},
-  {"id":"http-0003","question":"What is CORS, and why does a browser block a cross-origin request by default?","type":"conceptual","difficulty":2,"roles":["frontend","backend"],"topics":["networking","security"],"tech_keywords":["cors"],"companies_common":["Amazon","Meta"],"source_style":"common-interview","reference_solution":{"key_points":["Same-origin policy: browsers restrict scripts on one origin (scheme+domain+port) from freely reading responses from a different origin, as a security measure against malicious sites making requests using a victim's credentials","CORS is a mechanism for a server to explicitly opt into allowing cross-origin requests from specified origins, via response headers like Access-Control-Allow-Origin","A 'preflight' OPTIONS request is sent by the browser first for non-simple requests, checking with the server whether the actual request is permitted before sending it","Clarifies CORS is enforced by the browser, not a server-side security mechanism itself — a non-browser client (like curl or a server-to-server call) isn't restricted by CORS at all"],"sample_answer":"Browsers enforce a same-origin policy: a script running on one origin — a specific scheme, domain, and port combination — is restricted from freely reading responses from a different origin, to prevent a malicious website from silently making authenticated requests to another site using the victim's logged-in session and reading the response. CORS is the mechanism that lets a server explicitly opt into allowing specific cross-origin requests, by returning headers like Access-Control-Allow-Origin naming which origins are permitted. For requests that aren't 'simple' — like ones using custom headers or certain HTTP methods — the browser first sends an OPTIONS 'preflight' request to check with the server whether the actual request would be allowed, before sending it. It's worth noting CORS is purely a browser-enforced restriction — a server-to-server call or a tool like curl isn't subject to CORS at all, since there's no browser enforcing same-origin policy in that context."},"follow_up_hint":"Ask what the security risk would actually be if CORS didn't exist and every cross-origin request were allowed by default."},
-  {"id":"http-0004","question":"Explain the difference between HTTP status codes 401 and 403.","type":"conceptual","difficulty":1,"roles":["backend"],"topics":["http","security"],"tech_keywords":["http"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["401 Unauthorized: the request lacks valid authentication credentials — the server doesn't know who you are (despite the confusing name, it's really about authentication)","403 Forbidden: the server knows who you are (authentication succeeded or wasn't required) but you don't have permission to access the resource (authorization failure)","A typical flow: no/invalid token → 401; valid token but insufficient role/permissions → 403","Mentions the historically confusing naming (401 is about authentication, not literally 'unauthorized' in the everyday sense)"],"sample_answer":"401 Unauthorized means the request doesn't include valid authentication credentials at all — despite the name, it's really about authentication, meaning the server doesn't know who's making the request. 403 Forbidden means the server does know who you are — you're authenticated, or authentication wasn't required — but you don't have permission to access that specific resource, which is an authorization failure. So a typical flow is: no token or an invalid/expired token returns 401, prompting the client to log in or refresh credentials; a valid token but insufficient role or permissions for that particular action returns 403, which login/re-authentication won't fix."},"follow_up_hint":"Ask what the correct response code should be for a resource that doesn't exist at all versus one the user isn't allowed to know exists."},
-  {"id":"http-0005","question":"What is HTTP/2 multiplexing, and what problem does it solve compared to HTTP/1.1?","type":"conceptual","difficulty":3,"roles":["backend","frontend"],"topics":["http","networking"],"tech_keywords":["http2"],"companies_common":["Google","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["HTTP/1.1 typically allows only one outstanding request per TCP connection at a time (or a small number of parallel connections, since browsers cap concurrent connections per host), causing head-of-line blocking at the HTTP level","HTTP/2 multiplexes many requests and responses over a single TCP connection concurrently, interleaving frames from different streams, removing the need for multiple connections to the same host","This reduces connection overhead (fewer TCP/TLS handshakes) and avoids the need for old workarounds like domain sharding or spriting used to bypass HTTP/1.1's connection limits","Notes HTTP/2 still has TCP-level head-of-line blocking if a packet is lost, which HTTP/3 (built on QUIC/UDP) addresses further"],"sample_answer":"In HTTP/1.1, generally only one request can be outstanding per TCP connection at a time, so browsers work around this by opening several parallel connections to the same host — but that's capped, and led to workarounds like domain sharding or combining files together just to get more parallelism. HTTP/2 introduces multiplexing: multiple requests and responses can be in flight concurrently over a single TCP connection, with data from different logical 'streams' interleaved as frames, so you no longer need multiple connections to the same host, and the old workarounds become counterproductive. This reduces overhead from repeated TCP and TLS handshakes and generally improves page load performance. One remaining limitation is that HTTP/2 still sits on top of TCP, so a single lost packet can still block all the multiplexed streams at the TCP level — which is part of why HTTP/3, built on QUIC over UDP, was developed to solve that remaining head-of-line blocking too."},"follow_up_hint":"Ask what head-of-line blocking specifically means and how HTTP/3's use of QUIC over UDP addresses it."}
+  {
+    "id": "http-0001",
+    "question": "Explain what happens step by step when you type a URL into a browser and press enter.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend",
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "networking",
+      "http"
+    ],
+    "tech_keywords": [
+      "http",
+      "dns",
+      "tcp"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "DNS resolution: browser resolves the domain name to an IP address (checking cache, then recursive resolver, then authoritative servers)",
+        "TCP connection: browser establishes a TCP connection to that IP via a three-way handshake (SYN, SYN-ACK, ACK), plus a TLS handshake if HTTPS",
+        "HTTP request/response: browser sends an HTTP request, server processes it and returns a response (HTML, status code, headers)",
+        "Browser parses the HTML, discovers additional resources (CSS, JS, images), fetches them (often in parallel), then renders the page (DOM/CSSOM construction, layout, paint)"
+      ],
+      "sample_answer": "First, the browser needs to resolve the domain name to an IP address via DNS — checking its own cache, then querying a recursive resolver, which in turn queries root, TLD, and authoritative name servers if needed. Once it has the IP, the browser opens a TCP connection to the server via a three-way handshake, and if it's HTTPS, performs a TLS handshake on top of that to establish an encrypted channel. Then the browser sends an HTTP request, the server processes it and returns a response with a status code, headers, and typically an HTML body. The browser parses that HTML, discovers additional resources it references like CSS, JavaScript, and images, fetches those — often in parallel — and finally renders the page by building the DOM and CSSOM, computing layout, and painting pixels to the screen."
+    },
+    "follow_up_hint": "Ask them to explain the TLS handshake in more detail, or what HTTP/2 or HTTP/3 change about this process.",
+    "concept": "Web Architecture",
+    "sub_concept": "End-to-end Request Lifecycle",
+    "expected_reasoning": "A strong candidate begins by tracing the chronological journey of user intent from input to pixels on screen, moving systematically from network-level establishment to application-level rendering. They break down the process into distinct phases—address resolution, transport layer setup, protocol communication, and client-side execution—rather than listing random networking terms. They explain the sequence logically, ensuring dependencies are respected, such as noting that TCP must precede HTTP and HTML parsing must precede asset fetching.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely listing buzzwords like 'DNS, TCP, HTML' without explaining how they connect or their chronological order.",
+      "Skips the network layers entirely and jumps straight from typing the URL to the browser rendering the page.",
+      "Confuses the order of operations, such as claiming the HTTP request happens before the TCP handshake or DNS resolution.",
+      "Omits the transport and security layers (TCP and TLS handshakes) entirely, treating the connection as instant or implicit.",
+      "Fails to mention how the browser handles sub-resources (CSS, JS, images) discovered during HTML parsing."
+    ],
+    "progressive_hints": [
+      "Think about what needs to happen before your computer can even talk to the remote server, starting with the text you typed.",
+      "You have the server's IP address and you're ready to communicate. What connection and security steps must happen over the wire before an HTTP request can be sent?",
+      "The server has returned the initial HTML document. Think about how the browser processes this file to discover and fetch stylesheets or scripts before showing the final page."
+    ],
+    "learning_objective": "Understand the complete end-to-end journey of a web request, from translating human-readable domain names to physical network routing, secure connection establishment, server processing, and client-side rendering."
+  },
+  {
+    "id": "http-0002",
+    "question": "What is the difference between TCP and UDP, and when would you choose one over the other?",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "networking"
+    ],
+    "tech_keywords": [
+      "tcp",
+      "udp"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "TCP: connection-oriented, guarantees reliable, ordered delivery via acknowledgments and retransmission; adds overhead (handshake, flow/congestion control)",
+        "UDP: connectionless, no delivery/ordering guarantees, no retransmission — but much lower latency and overhead",
+        "Choose TCP when correctness/completeness matters more than latency: web pages, file transfer, most APIs",
+        "Choose UDP when low latency matters more than occasional lost packets: live video/audio streaming, online gaming, DNS lookups"
+      ],
+      "sample_answer": "TCP is connection-oriented and guarantees reliable, in-order delivery — it uses acknowledgments and retransmits lost packets, and includes flow and congestion control, but that reliability comes with more overhead and latency, including an initial handshake. UDP is connectionless and gives no guarantees about delivery or ordering — packets can be lost or arrive out of order and nothing retransmits them — but it has much lower overhead and latency since there's no handshake or acknowledgment machinery. I'd choose TCP for anything where correctness and completeness matter more than raw speed, like loading a web page, transferring a file, or most typical API calls. I'd choose UDP where low latency matters more than occasionally losing some data, like live video or audio streaming, real-time multiplayer gaming, or DNS lookups, where a dropped packet just gets retried at the application level if needed."
+    },
+    "follow_up_hint": "Ask why DNS primarily uses UDP but falls back to TCP for larger responses.",
+    "concept": "Transport Layer Protocols",
+    "sub_concept": "TCP vs UDP Architectural Trade-offs",
+    "expected_reasoning": "A strong candidate begins by identifying the core functional distinction at the transport layer: reliable, ordered stream delivery versus fast, unacknowledged datagram delivery. They systematically weigh the structural overhead of TCP's handshake, state tracking, and retransmission mechanisms against UDP's minimal footprint. Rather than just listing use cases, they derive them from first principles by analyzing application requirements—specifically mapping data integrity constraints against tolerance for latency and packet loss. Finally, they articulate scenarios where partial or missing data is preferable to delayed data.",
+    "common_mistakes": [
+      "Listing textbook definitions without connecting them to actual application-level trade-offs.",
+      "Stating that TCP is 'always better' because it is reliable, ignoring the latency penalty of retransmissions.",
+      "Claiming UDP is 'faster' without explaining why its lack of connection state and flow control reduces overhead.",
+      "Providing isolated use cases like 'use TCP for files and UDP for video' without explaining the underlying rationale.",
+      "Ignoring the impact of packet loss and ordering on real-time streaming versus transactional data."
+    ],
+    "progressive_hints": [
+      "What are the fundamental guarantees an application needs from the network layer when sending data, and how do those needs differ depending on the application type?",
+      "Think about what happens when a packet goes missing mid-transit: how does each protocol handle that event, and what is the cost of that handling on time-sensitive data?",
+      "If you were building a live multiplayer game where missing a single coordinate update is fine because the next one arrives immediately, which protocol's built-in guarantee of retransmission would actually work against you?"
+    ],
+    "learning_objective": "Understand how to select between TCP and UDP by evaluating application requirements for data integrity versus latency constraints."
+  },
+  {
+    "id": "http-0003",
+    "question": "What is CORS, and why does a browser block a cross-origin request by default?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend",
+      "backend"
+    ],
+    "topics": [
+      "networking",
+      "security"
+    ],
+    "tech_keywords": [
+      "cors"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Same-origin policy: browsers restrict scripts on one origin (scheme+domain+port) from freely reading responses from a different origin, as a security measure against malicious sites making requests using a victim's credentials",
+        "CORS is a mechanism for a server to explicitly opt into allowing cross-origin requests from specified origins, via response headers like Access-Control-Allow-Origin",
+        "A 'preflight' OPTIONS request is sent by the browser first for non-simple requests, checking with the server whether the actual request is permitted before sending it",
+        "Clarifies CORS is enforced by the browser, not a server-side security mechanism itself — a non-browser client (like curl or a server-to-server call) isn't restricted by CORS at all"
+      ],
+      "sample_answer": "Browsers enforce a same-origin policy: a script running on one origin — a specific scheme, domain, and port combination — is restricted from freely reading responses from a different origin, to prevent a malicious website from silently making authenticated requests to another site using the victim's logged-in session and reading the response. CORS is the mechanism that lets a server explicitly opt into allowing specific cross-origin requests, by returning headers like Access-Control-Allow-Origin naming which origins are permitted. For requests that aren't 'simple' — like ones using custom headers or certain HTTP methods — the browser first sends an OPTIONS 'preflight' request to check with the server whether the actual request would be allowed, before sending it. It's worth noting CORS is purely a browser-enforced restriction — a server-to-server call or a tool like curl isn't subject to CORS at all, since there's no browser enforcing same-origin policy in that context."
+    },
+    "follow_up_hint": "Ask what the security risk would actually be if CORS didn't exist and every cross-origin request were allowed by default.",
+    "concept": "Cross Origin Resource Sharing",
+    "sub_concept": "Same-Origin Policy and Browser Enforcement",
+    "expected_reasoning": "A strong candidate begins by identifying the fundamental security baseline of browsers: the Same-Origin Policy. They trace what happens when an unauthorized script on one site tries to read data from another domain, noting how malicious sites could exploit user sessions if left unchecked. From there, they explain that CORS is not a server security feature per se, but rather an escape hatch from browser restrictions managed via headers. Finally, they distinguish between simple requests and those requiring a preflight OPTIONS check.",
+    "common_mistakes": [
+      "States that CORS is a server-side security mechanism designed to protect servers from malicious clients.",
+      "Believes that CORS blocks the request from reaching the server entirely, rather than blocking the browser from reading the response.",
+      "Confuses CORS with authentication or authorization tokens like JWTs.",
+      "States the conclusion with no justification regarding what defines an 'origin' (scheme, domain, port).",
+      "Fails to mention preflight requests or why non-browser clients bypass CORS restrictions."
+    ],
+    "progressive_hints": [
+      "What fundamental security assumption do modern web browsers operate under when executing scripts from different websites?",
+      "Think about who is actually enforcing this block — is it the remote server rejecting the packet, or the browser refusing to hand the response to your JavaScript?",
+      "If a server wants to explicitly tell a browser 'it's safe for this specific origin to read my response', what mechanism or headers does it use?"
+    ],
+    "learning_objective": "The candidate should walk away understanding that CORS is a browser-enforced mechanism for safely relaxing the Same-Origin Policy, rather than a server-to-server security barrier."
+  },
+  {
+    "id": "http-0004",
+    "question": "Explain the difference between HTTP status codes 401 and 403.",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "http",
+      "security"
+    ],
+    "tech_keywords": [
+      "http"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "401 Unauthorized: the request lacks valid authentication credentials — the server doesn't know who you are (despite the confusing name, it's really about authentication)",
+        "403 Forbidden: the server knows who you are (authentication succeeded or wasn't required) but you don't have permission to access the resource (authorization failure)",
+        "A typical flow: no/invalid token → 401; valid token but insufficient role/permissions → 403",
+        "Mentions the historically confusing naming (401 is about authentication, not literally 'unauthorized' in the everyday sense)"
+      ],
+      "sample_answer": "401 Unauthorized means the request doesn't include valid authentication credentials at all — despite the name, it's really about authentication, meaning the server doesn't know who's making the request. 403 Forbidden means the server does know who you are — you're authenticated, or authentication wasn't required — but you don't have permission to access that specific resource, which is an authorization failure. So a typical flow is: no token or an invalid/expired token returns 401, prompting the client to log in or refresh credentials; a valid token but insufficient role or permissions for that particular action returns 403, which login/re-authentication won't fix."
+    },
+    "follow_up_hint": "Ask what the correct response code should be for a resource that doesn't exist at all versus one the user isn't allowed to know exists.",
+    "concept": "HTTP Status Codes",
+    "sub_concept": "Authentication versus Authorization Error Differentiation",
+    "expected_reasoning": "A strong candidate begins by separating the core concepts of identity verification versus permission checking. They analyze the literal meaning of the status codes against their actual protocol definitions, noting the historical naming confusion in HTTP. They then trace the request lifecycle to identify the exact point of failure: whether the client's identity is completely unknown or unverified, or if a known identity simply lacks the necessary access rights. Finally, they contrast these scenarios using a clear authorization flow example.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as just saying '401 is auth and 403 is permissions'.",
+      "Confuses authentication with authorization, treating them as interchangeable terms.",
+      "Claims 401 means the user is blocked permanently while 403 means they just need to log in.",
+      "Fails to acknowledge the misnomer in 401's name ('Unauthorized' versus actually meaning 'Unauthenticated').",
+      "Assumes a 403 error means the server has no idea who is making the request."
+    ],
+    "progressive_hints": [
+      "Consider the two distinct steps that happen when a secure system handles a request: first checking who you are, and second checking what you are allowed to do.",
+      "Think about what information the server has about the client in each scenario—does it know your identity, or are you completely anonymous?",
+      "If a server successfully verifies your identity using a token, but your user role is restricted from viewing an admin panel, which of these two status codes applies and why?"
+    ],
+    "learning_objective": "Understand that 401 indicates a failure of identity verification (unauthenticated), while 403 indicates a failure of permission rights despite a known identity (unauthorized/forbidden)."
+  },
+  {
+    "id": "http-0005",
+    "question": "What is HTTP/2 multiplexing, and what problem does it solve compared to HTTP/1.1?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "frontend"
+    ],
+    "topics": [
+      "http",
+      "networking"
+    ],
+    "tech_keywords": [
+      "http2"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "HTTP/1.1 typically allows only one outstanding request per TCP connection at a time (or a small number of parallel connections, since browsers cap concurrent connections per host), causing head-of-line blocking at the HTTP level",
+        "HTTP/2 multiplexes many requests and responses over a single TCP connection concurrently, interleaving frames from different streams, removing the need for multiple connections to the same host",
+        "This reduces connection overhead (fewer TCP/TLS handshakes) and avoids the need for old workarounds like domain sharding or spriting used to bypass HTTP/1.1's connection limits",
+        "Notes HTTP/2 still has TCP-level head-of-line blocking if a packet is lost, which HTTP/3 (built on QUIC/UDP) addresses further"
+      ],
+      "sample_answer": "In HTTP/1.1, generally only one request can be outstanding per TCP connection at a time, so browsers work around this by opening several parallel connections to the same host — but that's capped, and led to workarounds like domain sharding or combining files together just to get more parallelism. HTTP/2 introduces multiplexing: multiple requests and responses can be in flight concurrently over a single TCP connection, with data from different logical 'streams' interleaved as frames, so you no longer need multiple connections to the same host, and the old workarounds become counterproductive. This reduces overhead from repeated TCP and TLS handshakes and generally improves page load performance. One remaining limitation is that HTTP/2 still sits on top of TCP, so a single lost packet can still block all the multiplexed streams at the TCP level — which is part of why HTTP/3, built on QUIC over UDP, was developed to solve that remaining head-of-line blocking too."
+    },
+    "follow_up_hint": "Ask what head-of-line blocking specifically means and how HTTP/3's use of QUIC over UDP addresses it.",
+    "concept": "HTTP Protocol Evolution",
+    "sub_concept": "HTTP/2 Multiplexing and Connection Management",
+    "expected_reasoning": "A strong candidate begins by analyzing the connection limits and request serialization behavior of HTTP/1.1, identifying why browser limits and head-of-line blocking degrade page load performance. They then derive how HTTP/2 restructures data transfer by breaking requests and responses into interleaved frames over a single TCP connection, eliminating application-level blocking and domain sharding workarounds. Finally, they weigh the benefits of reduced connection overhead against the underlying persistence of transport-layer head-of-line blocking in TCP, paving the way for UDP-based protocols like HTTP/3.",
+    "common_mistakes": [
+      "Confusing application-layer head-of-line blocking in HTTP/1.1 with transport-layer head-of-line blocking in TCP",
+      "Stating that HTTP/2 allows multiple requests without explaining how framing and streams actually interleave data",
+      "Believing HTTP/2 opens multiple TCP connections per origin instead of using a single multiplexed connection",
+      "Failing to mention the workarounds (like domain sharding and image spriting) that HTTP/1.1 forced developers to use",
+      "Conflating HTTP/2 multiplexing with multi-threading or parallel processing on the server side"
+    ],
+    "progressive_hints": [
+      "Think about what happens in a browser when it needs to fetch dozens of small assets like CSS, JS, and images simultaneously over HTTP/1.1.",
+      "Look closely at the restriction where a TCP connection could only handle one request-response cycle at a time in HTTP/1.1, and how browsers worked around this per-domain limit.",
+      "Consider how breaking requests and responses into smaller, labeled pieces of data allows them to share a single TCP connection concurrently without waiting for the previous one to finish."
+    ],
+    "learning_objective": "Understand how HTTP/2 solves head-of-line blocking and connection overhead by multiplexing multiple concurrent streams over a single TCP connection."
+  }
 ]

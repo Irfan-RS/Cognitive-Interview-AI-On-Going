@@ -4,10 +4,23 @@
     "question": "What is the difference between a process and a thread?",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["general_sde", "backend"],
-    "topics": ["processes-threads"],
-    "tech_keywords": ["operating-systems", "concurrency"],
-    "companies_common": ["Amazon", "Microsoft", "Infosys", "TCS"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "processes-threads"
+    ],
+    "tech_keywords": [
+      "operating-systems",
+      "concurrency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Infosys",
+      "TCS"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -19,17 +32,46 @@
       ],
       "sample_answer": "A process has its own isolated memory space, file handles, and resources managed by the OS; a thread is a unit of execution inside a process that shares that process's memory and resources with other threads in it, but has its own stack and register state. Because threads share an address space, switching between them is cheaper than a full process context switch, but that shared state means threads need synchronization (locks, etc.) to avoid race conditions, whereas processes are naturally isolated and need explicit IPC to communicate."
     },
-    "follow_up_hint": "Ask about the difference between a kernel-level thread and a user-level (green) thread."
+    "follow_up_hint": "Ask about the difference between a kernel-level thread and a user-level (green) thread.",
+    "concept": "Processes And Threads",
+    "sub_concept": "Memory Isolation Versus Shared Execution Contexts",
+    "expected_reasoning": "A strong candidate begins by defining the fundamental boundary of isolation, noting that a process owns a distinct memory address space while threads exist as lightweight execution units inside that space. They then systematically trace resource ownership by comparing what is shared versus private, explicitly contrasting process-level isolation with thread-level sharing of heaps and file descriptors alongside private stacks. Next, they weigh the performance and safety trade-offs, explaining how address space switching impacts context switch overhead and how shared memory introduces synchronization challenges absent in traditional process isolation. Finally, they anchor these theoretical distinctions in a practical architecture, such as a multi-process browser utilizing threads internally, to demonstrate a real-world mental model.",
+    "common_mistakes": [
+      "Stating that threads have entirely independent memory spaces just like processes",
+      "Claiming processes are faster to switch between because they are more secure",
+      "Failing to mention what specific resources are shared versus private within a process",
+      "Confusing inter-process communication mechanisms with thread synchronization primitives",
+      "Giving a definition that relies solely on 'threads are smaller' without explaining the underlying structural differences"
+    ],
+    "progressive_hints": [
+      "Think about what happens to memory and resources when you launch a completely separate application versus running multiple tasks inside the same application.",
+      "Consider how two tasks running inside the same program would exchange information compared to two entirely different programs running on the operating system.",
+      "Focus on the exact boundary of the memory address space: what parts of memory are duplicated for every execution unit versus what parts are kept in common."
+    ],
+    "learning_objective": "Understand how operating systems allocate memory and schedule execution units, balancing the isolation benefits of processes with the efficiency and sharing capabilities of threads."
   },
   {
     "id": "os-0002",
     "question": "Explain deadlock, and name the four necessary conditions for it to occur.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["concurrency", "deadlock"],
-    "tech_keywords": ["operating-systems", "concurrency"],
-    "companies_common": ["Amazon", "Microsoft", "Google"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "concurrency",
+      "deadlock"
+    ],
+    "tech_keywords": [
+      "operating-systems",
+      "concurrency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -41,17 +83,47 @@
       ],
       "sample_answer": "Deadlock occurs when a group of processes are stuck waiting on each other in a cycle, none able to proceed. It requires four conditions simultaneously: mutual exclusion (a resource can only be used by one process at a time), hold-and-wait (a process holds one resource while requesting another), no preemption (resources can only be released voluntarily), and circular wait (a cycle of processes each waiting for a resource the next one holds). Breaking any one of these prevents deadlock."
     },
-    "follow_up_hint": "Ask about practical strategies to prevent deadlock, e.g. lock ordering, or the Banker's algorithm for avoidance."
+    "follow_up_hint": "Ask about practical strategies to prevent deadlock, e.g. lock ordering, or the Banker's algorithm for avoidance.",
+    "concept": "Concurrency",
+    "sub_concept": "Deadlock Conditions",
+    "expected_reasoning": "A strong candidate begins by defining deadlock conceptually as a state of permanent blockade where multiple execution threads wait on each other indefinitely. They then systematically break down the structural prerequisites for this state to manifest rather than just listing terms from memory. They explain how resource acquisition and allocation policies interact to trap the system. Finally, they tie the conditions together, noting that all four must hold simultaneously for deadlock to occur.",
+    "common_mistakes": [
+      "Listing the four conditions without defining what deadlock actually is",
+      "Confusing deadlock with livelock or resource starvation",
+      "Stating the conditions with no explanation of how they interact",
+      "Missing one or more of the four necessary conditions",
+      "Incorrectly claiming only one condition is required for deadlock to occur"
+    ],
+    "progressive_hints": [
+      "Think about what happens when two threads each need a resource currently held by the other.",
+      "Consider the distinct rules governing how resources are requested, held, and taken away in an operating system.",
+      "Think about the complete set of four classic Coffman conditions required simultaneously for a permanent wait cycle to form."
+    ],
+    "learning_objective": "The candidate should understand that deadlock is an inevitable structural risk when concurrent processes interact under specific constraints regarding resource sharing and allocation."
   },
   {
     "id": "os-0003",
     "question": "What is a race condition, and how do mutexes and semaphores help prevent it?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["concurrency", "synchronization"],
-    "tech_keywords": ["operating-systems", "concurrency", "multithreading"],
-    "companies_common": ["Amazon", "Microsoft", "Uber"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "concurrency",
+      "synchronization"
+    ],
+    "tech_keywords": [
+      "operating-systems",
+      "concurrency",
+      "multithreading"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -63,17 +135,44 @@
       ],
       "sample_answer": "A race condition happens when multiple threads access shared data concurrently and the result depends on unpredictable timing — e.g. two threads both reading a counter's value, incrementing it, and writing back, causing a lost update. A mutex ensures only one thread can execute a critical section at a time, serializing access. A semaphore generalizes this with a count, allowing up to N concurrent accessors; a binary semaphore (count of 1) behaves like a mutex, though mutexes typically enforce ownership (only the locking thread can unlock) while semaphores don't."
     },
-    "follow_up_hint": "Ask them to identify a race condition in a given code snippet and fix it with proper synchronization."
+    "follow_up_hint": "Ask them to identify a race condition in a given code snippet and fix it with proper synchronization.",
+    "concept": "Concurrency Control",
+    "sub_concept": "Race Conditions and Synchronization Primitives",
+    "expected_reasoning": "A strong candidate starts by defining the root cause of a race condition: uncontrolled concurrent access to shared mutable state where execution timing dictates the outcome. They anchor this with a clear mental model or concrete example, such as a read-modify-write operation on a counter. Next, they contrast how different synchronization primitives solve this. They explain that a mutex enforces strict mutual exclusion for a single critical section and ties locking to thread ownership. Finally, they generalize to semaphores, explaining how an integer count governs access to a bounded pool of resources while highlighting the crucial ownership distinction between the two.",
+    "common_mistakes": [
+      "Stating that a race condition is just a slow program without mentioning thread interleaving or shared state.",
+      "Claiming that a mutex and a semaphore are completely identical because a binary semaphore can lock a resource.",
+      "Failing to mention the concept of thread ownership when comparing mutexes and semaphores.",
+      "Giving a vague definition of a critical section without explaining why concurrent access to it is dangerous.",
+      "Confusing concurrency with parallelism."
+    ],
+    "progressive_hints": [
+      "Think about what happens when two separate threads try to read and update the exact same variable at the exact same millisecond.",
+      "Consider how you would restrict access so that only one thread can modify that critical piece of code at a time, and then think about how you might generalize that to allow a specific number of threads.",
+      "Look closely at who is allowed to release or unlock the synchronization mechanism: can any thread do it, or only the one that acquired it?"
+    ],
+    "learning_objective": "Understand how uncoordinated concurrent access leads to race conditions and how mutexes versus semaphores provide distinct guarantees for managing shared resources."
   },
   {
     "id": "os-0004",
     "question": "Explain the difference between paging and segmentation as memory management schemes.",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["memory-management"],
-    "tech_keywords": ["operating-systems"],
-    "companies_common": ["Amazon", "Microsoft", "Nvidia"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "memory-management"
+    ],
+    "tech_keywords": [
+      "operating-systems"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Nvidia"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -85,17 +184,44 @@
       ],
       "sample_answer": "Paging splits both physical and logical memory into fixed-size chunks called pages/frames, using a page table to map virtual pages to physical frames — this avoids external fragmentation but can waste space via internal fragmentation within the last page. Segmentation divides memory into variable-sized segments that map to logical program units like code, stack, and heap, which better matches how programs are structured but can suffer external fragmentation as segments of different sizes are allocated and freed. Modern systems like x86 typically combine both, segmenting first and then paging each segment."
     },
-    "follow_up_hint": "Ask them to explain what a TLB (Translation Lookaside Buffer) is and why it matters for performance."
+    "follow_up_hint": "Ask them to explain what a TLB (Translation Lookaside Buffer) is and why it matters for performance.",
+    "concept": "Memory Management",
+    "sub_concept": "Paging vs Segmentation",
+    "expected_reasoning": "A strong candidate starts by defining the fundamental abstraction gap: hardware addresses physical memory while programs run on logical chunks. They distinguish how paging splits memory mechanically into fixed-size blocks to conquer allocation headaches, whereas segmentation mirrors the programmer's conceptual view of code, data, and stacks. Next, they weigh the trade-offs regarding fragmentation—internal waste for paging versus external swiss-cheesing for segmentation. Finally, they unify the concepts by explaining how modern architectures often combine them or how address translation tables resolve the virtual-to-physical mapping.",
+    "common_mistakes": [
+      "Stating that paging and segmentation do the exact same thing without explaining structural differences.",
+      "Confusing internal fragmentation (wasted space inside a fixed block) with external fragmentation (scattered free gaps between variable blocks).",
+      "Ignoring the hardware implementation details like page tables or segment registers.",
+      "Claiming one scheme completely replaces the other in all modern operating systems without mentioning hybrid approaches.",
+      "Focusing entirely on disk storage and swapping rather than RAM allocation mechanisms."
+    ],
+    "progressive_hints": [
+      "How does a program naturally organize its components, like functions and data arrays, compared to how hardware lays out raw physical memory?",
+      "Think about what happens when you allocate and free variable-sized chunks of memory over time versus fixed-size blocks. What kind of fragmentation does each approach create?",
+      "Consider why an operating system might choose fixed-size bookkeeping over logical program boundaries, and how a hybrid architecture manages to use both."
+    ],
+    "learning_objective": "Understand how operating systems balance physical memory efficiency using fixed-size paging with program-centric logic using variable-sized segmentation."
   },
   {
     "id": "os-0005",
     "question": "What is virtual memory, and how does demand paging work?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["memory-management"],
-    "tech_keywords": ["operating-systems"],
-    "companies_common": ["Amazon", "Microsoft", "Google"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "memory-management"
+    ],
+    "tech_keywords": [
+      "operating-systems"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -107,17 +233,43 @@
       ],
       "sample_answer": "Virtual memory lets each process address a large, private, contiguous space that's mapped by the OS to physical RAM (or disk) via page tables, regardless of how physical memory is actually laid out. Demand paging means pages aren't loaded until they're actually needed — accessing a page not currently in RAM triggers a page fault, and the OS loads it from disk into a free frame, updating the mapping. This allows programs larger than physical RAM to run, at the cost of page-fault overhead, which becomes severe (thrashing) if memory is oversubscribed."
     },
-    "follow_up_hint": "Ask them to explain thrashing and how an OS might detect and respond to it."
+    "follow_up_hint": "Ask them to explain thrashing and how an OS might detect and respond to it.",
+    "concept": "Virtual Memory",
+    "sub_concept": "Demand Paging and Address Translation",
+    "expected_reasoning": "A strong candidate starts by explaining how virtual memory abstracts physical RAM, giving processes an independent, contiguous address space mapped via page tables. They then connect this decoupling to demand paging, explaining that memory is allocated lazily rather than upfront. They trace the execution path of a page fault when a requested page is absent from physical RAM. Finally, they weigh the benefits of memory overcommitment and running large programs against the severe performance cost of thrashing.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as just saying 'virtual memory is RAM on the disk' without explaining address space decoupling.",
+      "Confuses virtual memory with physical disk storage or simple swap space without mentioning page tables or address translation.",
+      "Describes demand paging as loading whole files or entire programs at startup instead of lazy loading on demand.",
+      "Fails to mention what a page fault actually does or how the operating system handles the hardware trap.",
+      "Ignores the performance trade-offs, completely omitting concepts like page fault latency or thrashing under heavy memory pressure."
+    ],
+    "progressive_hints": [
+      "Consider what happens when a program's total memory requirement exceeds the actual physical RAM installed in the machine.",
+      "Think about why the operating system doesn't need to load an entire executable file into RAM the moment you click 'run'.",
+      "If a CPU instruction references an address whose corresponding page table entry is marked invalid or not present, what hardware and OS mechanism intercepts this to bring the data in from disk?"
+    ],
+    "learning_objective": "The candidate should understand how operating systems use page tables and demand paging to decouple process address spaces from physical hardware, enabling efficient memory sharing and execution of programs larger than physical RAM."
   },
   {
     "id": "os-0006",
     "question": "Compare the First-Come-First-Served, Shortest Job First, Round Robin, and Priority CPU scheduling algorithms.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde"],
-    "topics": ["scheduling"],
-    "tech_keywords": ["operating-systems"],
-    "companies_common": ["Amazon", "Microsoft", "Infosys"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "scheduling"
+    ],
+    "tech_keywords": [
+      "operating-systems"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Infosys"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -129,17 +281,47 @@
       ],
       "sample_answer": "FCFS runs processes in arrival order — simple but can cause a convoy effect where short jobs wait behind one long one. Shortest Job First minimizes average waiting time provably, but needs burst-time estimates and can starve longer jobs. Round Robin gives each process a fixed time slice in rotation, which is fair and responsive for interactive workloads, but a too-small quantum wastes time on context switching while too-large approaches FCFS. Priority scheduling runs the highest-priority ready process first, but risks starving low-priority processes unless combined with aging (gradually increasing waiting processes' priority)."
     },
-    "follow_up_hint": "Ask what 'aging' means in the context of priority scheduling and why it's needed."
+    "follow_up_hint": "Ask what 'aging' means in the context of priority scheduling and why it's needed.",
+    "concept": "CPU Scheduling Algorithms",
+    "sub_concept": "Trade-offs between throughput, latency, fairness, and implementation complexity",
+    "expected_reasoning": "A strong candidate begins by establishing the core criteria used to evaluate scheduling algorithms, such as turnaround time, waiting time, response time, and throughput. They then systematically analyze each algorithm by examining its mechanism, its primary advantage against specific workloads, and its inherent failure modes or edge cases. Rather than listing features in isolation, they compare how preemptive versus non-preemptive strategies handle interactive versus batch tasks. Finally, they synthesize these trade-offs to explain why modern operating systems employ complex hybrid schedulers rather than relying on any single classical algorithm.",
+    "common_mistakes": [
+      "Listing definitions and pros/cons of each algorithm with no comparative analysis",
+      "Failing to mention the convoy effect when discussing FCFS",
+      "Ignoring the impossibility of knowing exact future burst times in SJF",
+      "Forgetting to mention the impact of time quantum size selection in Round Robin",
+      "Omitting the risk of starvation and the concept of aging in priority scheduling",
+      "Treating classical textbook algorithms as what modern production operating systems actually use"
+    ],
+    "progressive_hints": [
+      "What metrics do operating systems try to optimize when deciding which process runs next?",
+      "Consider how different workloads—such as a long batch computation versus an interactive text editor—suffer under a purely sequential policy like FCFS.",
+      "Think about what information is required to make Shortest Job First optimal, and what happens to tasks that lack that information or have low priority."
+    ],
+    "learning_objective": "The candidate should understand that every CPU scheduling algorithm is a design compromise among competing objectives like fairness, turnaround time, and responsiveness, requiring different strategies for batch versus interactive workloads."
   },
   {
     "id": "os-0007",
     "question": "Explain the difference between multithreading, multiprocessing, and asynchronous I/O for achieving concurrency.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["concurrency"],
-    "tech_keywords": ["operating-systems", "concurrency", "async"],
-    "companies_common": ["Amazon", "Google", "Uber"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "concurrency"
+    ],
+    "tech_keywords": [
+      "operating-systems",
+      "concurrency",
+      "async"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -151,17 +333,44 @@
       ],
       "sample_answer": "Multithreading shares memory across threads in one process, giving true parallelism on multi-core CPUs for CPU-bound work, but requires synchronization. Multiprocessing isolates memory per process, sidestepping shared-state bugs but requiring explicit, heavier IPC to communicate, and is often used in Python to work around the GIL for CPU-bound tasks. Asynchronous I/O uses a single thread with an event loop that issues non-blocking I/O calls and resumes on completion — ideal for I/O-bound workloads like handling thousands of concurrent network connections without the memory/context-switch overhead of one OS thread per connection."
     },
-    "follow_up_hint": "Ask what the Global Interpreter Lock (GIL) is and why it limits Python's multithreading for CPU-bound tasks."
+    "follow_up_hint": "Ask what the Global Interpreter Lock (GIL) is and why it limits Python's multithreading for CPU-bound tasks.",
+    "concept": "Concurrency Models",
+    "sub_concept": "Trade-offs between multithreading, multiprocessing, and asynchronous I/O",
+    "expected_reasoning": "A strong candidate begins by separating workloads into CPU-bound and I/O-bound categories, as this dictates the choice of concurrency model. They analyze how resource sharing differs, contrasting shared-memory threads with isolated-memory processes and single-threaded event loops. Next, they weigh the overhead of context switching and inter-process communication against the constraints of language runtimes like the GIL. Finally, they synthesize these factors to map each concurrency paradigm to the exact problem space where it excels.",
+    "common_mistakes": [
+      "States that multithreading speeds up CPU-bound tasks in languages with a Global Interpreter Lock (GIL) without mentioning the limitation.",
+      "Confuses asynchronous I/O with multiprocessing, assuming async runs code in parallel across multiple cores.",
+      "Claims multiprocessing is always superior because it avoids race conditions, ignoring the high cost of inter-process communication.",
+      "Provides textbook definitions of threads, processes, and async without linking them to specific workload characteristics (CPU vs I/O bound).",
+      "Fails to mention how memory is managed or shared differently between threads and processes."
+    ],
+    "progressive_hints": [
+      "Start by thinking about what happens when your code spends most of its time waiting for a network response versus performing heavy mathematical calculations.",
+      "Consider how memory access and isolation differ when you spawn a new thread versus a separate operating system process.",
+      "Think about why a single-threaded event loop can handle thousands of concurrent network connections without needing thousands of OS threads."
+    ],
+    "learning_objective": "The candidate should understand how to match specific concurrency models—multithreading, multiprocessing, and async I/O—to the fundamental nature of the workload and its resource constraints."
   },
   {
     "id": "os-0008",
     "question": "What is a context switch, and what makes it relatively expensive?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["processes-threads", "scheduling"],
-    "tech_keywords": ["operating-systems"],
-    "companies_common": ["Amazon", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "processes-threads",
+      "scheduling"
+    ],
+    "tech_keywords": [
+      "operating-systems"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -173,17 +382,46 @@
       ],
       "sample_answer": "A context switch is when the OS suspends one process or thread, saving its CPU register state and program counter, and loads another's to run instead. It's expensive because saving/restoring registers and scheduler bookkeeping takes time, and — for switching between processes specifically — changing the page table invalidates the TLB and CPU caches, causing subsequent memory accesses to be slower until they warm back up. This is why thread switches (same address space) are cheaper than process switches, and why an event-driven single-threaded model can beat a heavily multi-threaded one for I/O-bound work that doesn't need true parallelism."
     },
-    "follow_up_hint": "Ask why switching between threads of the same process is generally cheaper than switching between processes."
+    "follow_up_hint": "Ask why switching between threads of the same process is generally cheaper than switching between processes.",
+    "concept": "Context Switching",
+    "sub_concept": "Performance overhead and mechanics of process versus thread switching",
+    "expected_reasoning": "A strong candidate begins by defining the core mechanism: saving the active execution context of one task and loading another's. They then trace the execution path to identify where time and cycles are actually spent, distinguishing between the trivial register-save steps and the expensive hardware-level disruptions. By considering memory management, they deduce why switching between processes costs significantly more than switching between threads within the same process. Finally, they connect these micro-level mechanics to macro-level architectural trade-offs, such as OS scheduling limits and the performance profile of event-driven versus thread-heavy I/O models.",
+    "common_mistakes": [
+      "States that a context switch just means running a different program with no mechanical explanation.",
+      "Claims context switching is expensive solely due to copying data in RAM.",
+      "Fails to distinguish between process switches and thread switches regarding address space changes.",
+      "Misses the impact of TLB invalidation and CPU cache misses entirely.",
+      "Confuses CPU virtualization time with operating system context switching overhead."
+    ],
+    "progressive_hints": [
+      "What specific hardware state must the CPU remember for any running task, and where does that state have to go when the task is paused?",
+      "Think about what happens to the MMU, page tables, and hardware caches when you switch execution to a task belonging to an entirely different address space.",
+      "Consider why switching between two threads in the same application is noticeably faster than switching between two separate applications."
+    ],
+    "learning_objective": "The candidate should understand the hardware and software overhead incurred during a context switch, distinguishing between thread-level and process-level switches and their impact on system throughput."
   },
   {
     "id": "os-0009",
     "question": "What is a semaphore versus a monitor, and how does the producer-consumer problem illustrate their use?",
     "type": "scenario",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["concurrency", "synchronization"],
-    "tech_keywords": ["operating-systems", "concurrency"],
-    "companies_common": ["Amazon", "Microsoft", "Google"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "concurrency",
+      "synchronization"
+    ],
+    "tech_keywords": [
+      "operating-systems",
+      "concurrency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -195,17 +433,44 @@
       ],
       "sample_answer": "A semaphore is a simple counter threads can wait on or signal to coordinate access to a limited resource. A monitor bundles the shared data and its access methods together with built-in mutual exclusion, exposing condition variables for threads to wait on specific conditions. In the producer-consumer problem with a bounded buffer, a semaphore solution uses two counting semaphores — one tracking empty slots, one tracking filled slots — plus a mutex for the buffer itself; producers wait on 'empty', consumers wait on 'filled'. A monitor-based solution instead uses one lock with condition variables 'notFull' and 'notEmpty' that producers and consumers wait() on and signal() when the buffer state changes."
     },
-    "follow_up_hint": "Ask them to actually write pseudocode for the semaphore-based producer-consumer solution."
+    "follow_up_hint": "Ask them to actually write pseudocode for the semaphore-based producer-consumer solution.",
+    "concept": "Concurrency Control",
+    "sub_concept": "Semaphores vs Monitors",
+    "expected_reasoning": "A strong candidate starts by defining the core abstraction level of each primitive, contrasting raw counting signals with encapsulated object-oriented synchronization. They then map these primitives to the classic concurrency constraints of a bounded buffer. Next, they derive the state tracking mechanisms required for both approaches, showing how semaphores manage raw integer counts for resource availability while monitors leverage condition variables and integrated mutual exclusion. Finally, they contrast the developer experience and safety guarantees, noting how monitors prevent common manual lock-management errors.",
+    "common_mistakes": [
+      "States the definitions of semaphore and monitor without explaining how they differ in encapsulation and abstraction level.",
+      "Confuses condition variables inside a monitor with semaphores, treating them as interchangeable counter primitives.",
+      "Forgets to include mutual exclusion alongside resource tracking in the semaphore producer-consumer solution.",
+      "Fails to explain how condition variables in a monitor handle signaling and re-acquiring the lock safely.",
+      "Provides a high-level summary of producer-consumer without detailing the specific state variables each approach requires."
+    ],
+    "progressive_hints": [
+      "Consider the structural difference between a primitive that simply holds an integer count versus an abstraction that bundles shared data and methods together.",
+      "Think about how threads wait for specific state conditions to become true—how does a semaphore handle waiting compared to a condition variable inside a monitor?",
+      "For the producer-consumer buffer, identify what two state conditions producers and consumers need to wait for, and how each synchronization mechanism tracks and signals those exact conditions."
+    ],
+    "learning_objective": "Understand the architectural trade-offs between low-level counting semaphores and high-level monitored objects when solving classic producer-consumer synchronization problems."
   },
   {
     "id": "os-0010",
     "question": "Explain how a system call works, and the difference between kernel mode and user mode.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["os-internals"],
-    "tech_keywords": ["operating-systems"],
-    "companies_common": ["Amazon", "Microsoft", "Nvidia"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "os-internals"
+    ],
+    "tech_keywords": [
+      "operating-systems"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Nvidia"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -217,17 +482,43 @@
       ],
       "sample_answer": "User mode restricts what a running process can do — no direct hardware access or privileged CPU instructions — while kernel mode has unrestricted access. A system call is how a user-mode program asks the kernel to do something privileged on its behalf, like reading a file. Making the call triggers a trap that switches the CPU into kernel mode, runs the requested kernel code (like the actual disk read), and then switches back to user mode with the result. This mode switch has measurable overhead, which is why high-performance code tries to batch or minimize syscalls."
     },
-    "follow_up_hint": "Ask about the difference between a system call and a library function call, e.g. printf vs write()."
+    "follow_up_hint": "Ask about the difference between a system call and a library function call, e.g. printf vs write().",
+    "concept": "Operating System Architecture",
+    "sub_concept": "Privilege Levels and System Calls",
+    "expected_reasoning": "A strong candidate begins by contrasting the isolation and safety of user mode with the unconstrained hardware access of kernel mode. They then derive why a controlled boundary crossing is necessary when user code needs to perform privileged operations like disk or network I/O. Next, they trace the precise mechanism of a system call, explaining how a software interrupt or trap triggers the CPU to save state and switch execution rings. Finally, they weigh the performance implications, recognizing that the CPU state transitions and context switches introduce non-trivial overhead.",
+    "common_mistakes": [
+      "States that a system call is just a regular function call without explaining the mode switch",
+      "Fails to mention CPU privilege levels or protection rings entirely",
+      "Believes user mode can directly access hardware if the code is written correctly",
+      "Omits the concept of traps, interrupts, or hardware state transitions during the switch",
+      "Ignores the performance impact or overhead associated with frequent system calls"
+    ],
+    "progressive_hints": [
+      "Consider what prevents a normal user-level application from directly reading raw sectors off a hard drive.",
+      "Think about what happens at the CPU architecture level when user code needs to execute a privileged instruction.",
+      "If the CPU has to switch execution rings to handle a request, what mechanism triggers that switch, and why does doing it repeatedly hurt performance?"
+    ],
+    "learning_objective": "The candidate should understand how hardware-enforced CPU privilege rings isolate applications from the operating system, and how system calls safely bridge that gap at a performance cost."
   },
   {
     "id": "os-0011",
     "question": "What causes thrashing in an operating system, and how would you fix it?",
     "type": "scenario",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["memory-management"],
-    "tech_keywords": ["operating-systems"],
-    "companies_common": ["Amazon", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "memory-management"
+    ],
+    "tech_keywords": [
+      "operating-systems"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -239,17 +530,46 @@
       ],
       "sample_answer": "Thrashing happens when too many processes are competing for too little physical memory, so each process's working set can't stay resident — they constantly page fault, and the system spends most of its time swapping pages rather than doing useful work, even though it looks 'busy'. The fix is to reduce how many processes run concurrently, add more physical RAM, or use a working-set-based memory allocator that gives each process enough frames to hold its actively used pages before admitting new processes."
     },
-    "follow_up_hint": "Ask how the working-set model decides how many frames to allocate to each process."
+    "follow_up_hint": "Ask how the working-set model decides how many frames to allocate to each process.",
+    "concept": "Memory Management",
+    "sub_concept": "Virtual Memory Thrashing and Page Fault Overheads",
+    "expected_reasoning": "A strong candidate begins by defining the relationship between physical memory limits and active process requirements, noticing that a sharp drop in CPU utilization often signals a system bottleneck unrelated to compute. They analyze what happens when the aggregate working set of all running processes exceeds available RAM, tracing the causal chain from initial page faults to continuous disk I/O and blocked threads. Next, they weigh mitigation strategies against each other, distinguishing between reactive page-replacement adjustments and proactive limits on multiprogramming. Finally, they tie the whole phenomenon back to the operating system's fundamental trade-off between concurrency and resource starvation.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying 'thrashing is when RAM is full and it slows down.'",
+      "Confuses thrashing with standard CPU scheduling or context-switching overhead.",
+      "Claims that adding more swap space fixes thrashing, ignoring that disk latency makes the problem worse.",
+      "Fails to explain the counter-intuitive symptom where CPU utilization drops to near zero while the disk is pegged at 100%.",
+      "Suggests simply buying faster CPUs as a remedy instead of addressing memory oversubscription."
+    ],
+    "progressive_hints": [
+      "Think about what a process is doing when it encounters a page fault, and what happens to the CPU while that disk I/O is resolving.",
+      "Consider the scenario where you run ten heavy applications on a machine with only enough RAM for three; where do the evicted pages keep going?",
+      "If the operating system is spending all its time moving pages between RAM and disk rather than executing instructions, what structural levers does the scheduler have to restore balance?"
+    ],
+    "learning_objective": "Understand that thrashing is a cascading memory oversubscription failure where excessive page faults consume all I/O bandwidth, requiring control over multiprogramming degree rather than just raw hardware additions."
   },
   {
     "id": "os-0012",
     "question": "Explain what a deadlock-free design pattern looks like using lock ordering.",
     "type": "scenario",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["concurrency", "deadlock"],
-    "tech_keywords": ["operating-systems", "concurrency"],
-    "companies_common": ["Amazon", "Uber", "Bloomberg"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "concurrency",
+      "deadlock"
+    ],
+    "tech_keywords": [
+      "operating-systems",
+      "concurrency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber",
+      "Bloomberg"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -261,17 +581,44 @@
       ],
       "sample_answer": "A classic deadlock happens when thread A locks account 1 then tries to lock account 2, while thread B locks account 2 then tries to lock account 1 — each waits on a lock the other holds. Lock ordering fixes this by always acquiring locks in a consistent global order, e.g. by account ID: whichever account has the smaller ID is always locked first, regardless of which is 'from' or 'to'. This eliminates the circular wait condition entirely. Alternatives include using try-lock with a timeout and retry, or a single coarser-grained lock when fine-grained locking isn't worth the complexity."
     },
-    "follow_up_hint": "Ask them to write pseudocode for the money-transfer example using consistent lock ordering."
+    "follow_up_hint": "Ask them to write pseudocode for the money-transfer example using consistent lock ordering.",
+    "concept": "Concurrency Control",
+    "sub_concept": "Lock Ordering and Deadlock Prevention",
+    "expected_reasoning": "A strong candidate begins by identifying the necessary conditions for a deadlock to occur, focusing specifically on the circular wait condition. They then explain how enforcing a strict global ordering on all lock acquisitions mathematically eliminates the possibility of cycles in the resource allocation graph. To illustrate, they walk through a classic scenario like multi-account money transfers, showing how ordering locks by a unique identifier rather than parameter order prevents conflicting interleavings. Finally, they weigh the operational trade-offs, such as the requirement for codebase-wide discipline and the difficulty of manual enforcement, while briefly acknowledging alternative strategies like timeouts or lock-free data structures.",
+    "common_mistakes": [
+      "States that simply using multiple locks prevents deadlock without explaining the ordering requirement",
+      "Confuses deadlock prevention (like lock ordering) with deadlock detection and recovery",
+      "Gives the money transfer example without explaining how sorting by ID prevents the circular wait",
+      "Claims lock ordering eliminates all forms of race conditions and thread synchronization bugs",
+      "Fails to mention any trade-offs or the difficulty of enforcing global conventions across a large codebase"
+    ],
+    "progressive_hints": [
+      "What specific condition among the classic four Coffman deadlock conditions is typically caused by two threads grabbing the same two resources in opposite sequences?",
+      "If threads acquire locks based on arbitrary argument order like 'from' and 'to', a cycle can form. How could you standardize the order in which locks are requested regardless of argument order?",
+      "If you assign a unique, comparable identifier to every lock in the system and enforce that threads always acquire the lower-numbered lock before the higher-numbered one, what happens to the circular dependency chain?"
+    ],
+    "learning_objective": "The candidate should understand how establishing a global, deterministic order for resource acquisition systematically prevents circular wait conditions and eliminates deadlocks."
   },
   {
     "id": "os-0013",
     "question": "What is copy-on-write, and where is it used in modern operating systems?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["memory-management"],
-    "tech_keywords": ["operating-systems"],
-    "companies_common": ["Amazon", "Microsoft", "Nvidia"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "memory-management"
+    ],
+    "tech_keywords": [
+      "operating-systems"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Nvidia"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -283,17 +630,46 @@
       ],
       "sample_answer": "Copy-on-write shares the same physical memory pages between two owners marked read-only, and only actually duplicates a page when one of them tries to write to it — the write triggers a trap, the OS copies the page, and the write proceeds on the private copy. The canonical example is Unix's fork(): the child process initially shares all the parent's pages instead of copying the entire address space upfront, which is fast and memory-efficient since many forked processes immediately exec() a different program without touching most of the inherited memory."
     },
-    "follow_up_hint": "Ask why fork() followed immediately by exec() benefits so much from copy-on-write specifically."
+    "follow_up_hint": "Ask why fork() followed immediately by exec() benefits so much from copy-on-write specifically.",
+    "concept": "Copy on Write",
+    "sub_concept": "Memory Sharing and Page Fault Handling",
+    "expected_reasoning": "A strong candidate begins by defining the core resource-saving optimization where data duplication is deferred until an actual modification occurs. They then trace the mechanics of how virtual memory page tables and page fault handlers coordinate to enforce this lazy copying. Next, they explain a classic application like process creation via fork(), weighing the performance benefits of avoiding full memory copies against the overhead of page faults and page table management. Finally, they may generalize the pattern to other domains such as storage snapshots or persistent data structures.",
+    "common_mistakes": [
+      "States the conclusion that it copies memory later with no justification of how the OS detects the write.",
+      "Confuses copy-on-write with lazy loading or demand paging from disk.",
+      "Assumes the entire address space is copied immediately upon the first write instead of operating at page granularity.",
+      "Fails to mention how page table permissions (read-only flags) trigger the mechanism.",
+      "Omits concrete examples like fork() or virtual memory management in modern kernels."
+    ],
+    "progressive_hints": [
+      "Consider what happens to memory utilization when a large process duplicates itself, and whether copying every single byte immediately is always necessary.",
+      "Think about how virtual memory hardware and page table permissions could be used to intercept an attempted modification before it alters shared data.",
+      "If parent and child processes share the exact same physical pages marked read-only, what specific CPU exception occurs when one tries to write, and what can the OS handler do right then?"
+    ],
+    "learning_objective": "Understand how copy-on-write leverages page table protections and deferred duplication to optimize memory efficiency during process duplication."
   },
   {
     "id": "os-0014",
     "question": "What is the difference between a mutex and a spinlock, and when would you choose a spinlock?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["concurrency", "synchronization"],
-    "tech_keywords": ["operating-systems", "concurrency"],
-    "companies_common": ["Nvidia", "Amazon", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "concurrency",
+      "synchronization"
+    ],
+    "tech_keywords": [
+      "operating-systems",
+      "concurrency"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -305,17 +681,46 @@
       ],
       "sample_answer": "A mutex, when contended, puts the waiting thread to sleep so the scheduler can run other work, then wakes it when the lock frees up — this involves context-switch overhead. A spinlock instead busy-waits in a loop, repeatedly checking if the lock is free, burning CPU the entire time rather than sleeping. Spinlocks make sense only when the expected wait is shorter than a context switch would cost, typically for very short critical sections in kernel or driver code on a multi-core system — on a single core, a spinning thread just wastes the only CPU the lock holder needs to finish."
     },
-    "follow_up_hint": "Ask why spinlocks are a poor choice on a single-core (uniprocessor) system specifically."
+    "follow_up_hint": "Ask why spinlocks are a poor choice on a single-core (uniprocessor) system specifically.",
+    "concept": "Concurrency Synchronization",
+    "sub_concept": "Mutex Versus Spinlock Trade-offs",
+    "expected_reasoning": "A strong candidate begins by defining the fundamental mechanism of both primitives, contrasting how a mutex yields the CPU via OS scheduling versus how a spinlock actively consumes CPU cycles through busy-waiting. They then analyze the underlying cost models, comparing the overhead of context switching against the wasted CPU cycles of busy-waiting. Next, they weigh these costs against context factors like critical section duration and core count. Finally, they synthesize a decision rule based on expected wait times and system topology.",
+    "common_mistakes": [
+      "States that spinlocks are always faster because they avoid kernel involvement, without considering CPU waste.",
+      "Claims mutexes and spinlocks perform identically on single-core versus multi-core systems.",
+      "Gives a hand-wavy definition of blocking without mentioning OS scheduling or context switches.",
+      "Fails to specify any criteria for when a spinlock is actually appropriate, treating it purely as an academic comparison.",
+      "Confuses busy-waiting with asynchronous non-blocking I/O or sleep-waiting."
+    ],
+    "progressive_hints": [
+      "What happens to the execution thread at the OS level when it cannot acquire a mutex versus when it cannot acquire a spinlock?",
+      "Think about the time cost of putting a thread to sleep and waking it back up via a context switch. How does that compare to the cost of a CPU executing a tight loop?",
+      "If a thread is busy-waiting on a single-core machine while holding the lock, what happens to the thread that actually needs to release the lock?"
+    ],
+    "learning_objective": "Understand that the choice between a mutex and a spinlock depends entirely on the trade-off between the overhead of context switching and the cost of wasted CPU cycles during busy-waiting."
   },
   {
     "id": "os-0015",
     "question": "Explain the readers-writers problem and one way to solve it fairly.",
     "type": "scenario",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["concurrency", "synchronization"],
-    "tech_keywords": ["operating-systems", "concurrency"],
-    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "concurrency",
+      "synchronization"
+    ],
+    "tech_keywords": [
+      "operating-systems",
+      "concurrency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -327,6 +732,22 @@
       ],
       "sample_answer": "The readers-writers problem allows any number of concurrent readers, but a writer must have exclusive access with no other readers or writers active. A naive solution favoring readers can starve writers if readers keep arriving before the current ones finish; a solution favoring writers can starve readers similarly. A fair solution queues incoming requests in arrival order — once a writer is waiting, no new readers jump ahead of it, and vice versa — which is essentially what a fair read-write lock implementation provides, like Java's ReentrantReadWriteLock in fair mode."
     },
-    "follow_up_hint": "Ask them to explain the trade-off in throughput between a fair and an unfair read-write lock."
+    "follow_up_hint": "Ask them to explain the trade-off in throughput between a fair and an unfair read-write lock.",
+    "concept": "Concurrency Control",
+    "sub_concept": "Readers-Writers Problem and Fairness",
+    "expected_reasoning": "A strong candidate starts by defining the core conflict between concurrent readers and exclusive writers, establishing why shared access rules are necessary. They then examine the trade-offs of naive solutions, recognizing how continuous reader arrivals can block writers or vice versa. Next, they analyze why standard mutexes or binary locks fall short of maximizing concurrent throughput. Finally, they derive a fair scheduling mechanism, such as an explicit queue or ticket-based ordering, to ensure neither readers nor writers experience starvation.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'use a read-write lock' without explaining the underlying mechanics.",
+      "Fails to recognize the starvation risk, claiming that reader-preference is always optimal because it maximizes read concurrency.",
+      "Conflates mutual exclusion for writers with total exclusion, forgetting that multiple readers can safely access data concurrently.",
+      "Proposes a complex locking hierarchy that introduces deadlock vulnerabilities.",
+      "Ignores arrival order entirely, leading to unbounded latency for one of the request types."
+    ],
+    "progressive_hints": [
+      "What happens to writers if a continuous stream of readers arrives while a read lock is already held?",
+      "Think about how prioritizing one type of operation permanently over the other affects the system under heavy load. How could you incorporate arrival order into the lock acquisition logic?",
+      "If you assign sequential ticket numbers to every incoming read and write request, how can you ensure a thread only acquires the lock when its turn arrives in the queue?"
+    ],
+    "learning_objective": "Understand how to balance concurrent access for readers with exclusive access for writers while preventing starvation through fair scheduling."
   }
 ]

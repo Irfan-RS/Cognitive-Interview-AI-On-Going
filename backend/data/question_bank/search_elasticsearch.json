@@ -1,3 +1,49 @@
 [
-  {"id":"search-0001","question":"Why would you use a dedicated search engine like Elasticsearch instead of just using SQL LIKE queries against a relational database?","type":"trade_off_questions","difficulty":3,"roles":["backend","system_design"],"topics":["search"],"tech_keywords":["elasticsearch"],"companies_common":["Amazon","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["SQL LIKE queries (especially with leading wildcards, e.g. LIKE '%term%') generally can't use a standard B-tree index efficiently, forcing a full table/column scan that gets slow at scale","Elasticsearch uses an inverted index (mapping each word to the documents/rows containing it), purpose-built for fast full-text search across large volumes of text","Provides relevance ranking out of the box (scoring how well a document matches a query, not just a binary match/no-match), plus fuzzy matching, typo tolerance, and language-aware tokenization/stemming","Trade-off: adds an additional system to operate and keep in sync with the source-of-truth database (usually via a change-data-capture or dual-write pipeline), introducing eventual consistency between the two"],"sample_answer":"A SQL LIKE query, especially one with a leading wildcard like '%searchterm%', generally can't use a standard database index efficiently at all, forcing a full scan across the column or table, which gets prohibitively slow as data grows. Elasticsearch is purpose-built for this: it maintains an inverted index, mapping each individual word to all the documents containing it, which makes full-text search across large volumes of text fast regardless of scale. It also provides relevance ranking out of the box — scoring how well each result actually matches the query rather than just a binary yes/no match — along with features like fuzzy matching for typo tolerance and language-aware tokenization and stemming, which a plain relational LIKE query has no concept of at all. The trade-off is that adding Elasticsearch means operating and maintaining an entirely separate system that needs to be kept in sync with your actual source-of-truth database, typically through a change-data-capture pipeline or dual writes, which introduces some eventual consistency between the primary database and what's searchable in Elasticsearch at any given moment."},"follow_up_hint":"Ask them how they'd keep Elasticsearch's index in sync with the primary database as records are created, updated, and deleted."}
+  {
+    "id": "search-0001",
+    "question": "Why would you use a dedicated search engine like Elasticsearch instead of just using SQL LIKE queries against a relational database?",
+    "type": "trade_off_questions",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "search"
+    ],
+    "tech_keywords": [
+      "elasticsearch"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "SQL LIKE queries (especially with leading wildcards, e.g. LIKE '%term%') generally can't use a standard B-tree index efficiently, forcing a full table/column scan that gets slow at scale",
+        "Elasticsearch uses an inverted index (mapping each word to the documents/rows containing it), purpose-built for fast full-text search across large volumes of text",
+        "Provides relevance ranking out of the box (scoring how well a document matches a query, not just a binary match/no-match), plus fuzzy matching, typo tolerance, and language-aware tokenization/stemming",
+        "Trade-off: adds an additional system to operate and keep in sync with the source-of-truth database (usually via a change-data-capture or dual-write pipeline), introducing eventual consistency between the two"
+      ],
+      "sample_answer": "A SQL LIKE query, especially one with a leading wildcard like '%searchterm%', generally can't use a standard database index efficiently at all, forcing a full scan across the column or table, which gets prohibitively slow as data grows. Elasticsearch is purpose-built for this: it maintains an inverted index, mapping each individual word to all the documents containing it, which makes full-text search across large volumes of text fast regardless of scale. It also provides relevance ranking out of the box — scoring how well each result actually matches the query rather than just a binary yes/no match — along with features like fuzzy matching for typo tolerance and language-aware tokenization and stemming, which a plain relational LIKE query has no concept of at all. The trade-off is that adding Elasticsearch means operating and maintaining an entirely separate system that needs to be kept in sync with your actual source-of-truth database, typically through a change-data-capture pipeline or dual writes, which introduces some eventual consistency between the primary database and what's searchable in Elasticsearch at any given moment."
+    },
+    "follow_up_hint": "Ask them how they'd keep Elasticsearch's index in sync with the primary database as records are created, updated, and deleted.",
+    "concept": "Full Text Search",
+    "sub_concept": "Search Engines vs Relational Databases",
+    "expected_reasoning": "A strong candidate begins by analyzing how both systems store and retrieve textual data, noting the structural limitations of relational databases when dealing with arbitrary text matching. They derive the performance bottleneck of wildcard scans in B-trees and contrast this with the lookup efficiency of an inverted index. Next, they evaluate semantic capabilities such as ranking algorithms, linguistic tokenization, and typo tolerance that standard SQL engines lack. Finally, they weigh these capabilities against the operational overhead and synchronization challenges of introducing a secondary datastore into an architecture.",
+    "common_mistakes": [
+      "States that Elasticsearch is just faster without explaining the underlying data structures like inverted indexes.",
+      "Claims SQL databases cannot search text at all, ignoring LIKE queries and full-text search extensions (like PostgreSQL tsvector).",
+      "Focuses purely on query performance while completely ignoring the operational complexity and synchronization trade-offs.",
+      "Confuses database indexing (B-trees) with search indexing (inverted indices) and assumes standard indexes optimize partial string matches.",
+      "Gives a surface-level answer about 'big data' without explaining how text is tokenized or scored for relevance."
+    ],
+    "progressive_hints": [
+      "Consider what happens to database index utilization when you run a query searching for a substring in the middle of a large text column.",
+      "Think about how a relational database's B-tree index structures data versus how you would efficiently find every document containing a specific word across a massive corpus.",
+      "Contrast the binary match outcome of a SQL query with how search engines handle relevance scoring, stemming, and the operational cost of keeping two systems in sync."
+    ],
+    "learning_objective": "Understand when to introduce a dedicated search engine over a relational database by weighing the performance and feature benefits of inverted indices and relevance scoring against the operational complexity of dual-datastore architectures."
+  }
 ]

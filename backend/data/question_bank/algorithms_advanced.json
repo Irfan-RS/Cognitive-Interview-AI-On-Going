@@ -1,7 +1,241 @@
 [
-  {"id":"algo-0001","question":"Explain the difference between Dijkstra's algorithm and the Bellman-Ford algorithm for shortest paths.","type":"conceptual","difficulty":4,"roles":["general_sde"],"topics":["algorithms","dsa"],"tech_keywords":["dijkstra","bellman-ford","graphs"],"companies_common":["Google","Amazon","Microsoft"],"source_style":"faang-common","reference_solution":{"key_points":["Dijkstra's greedily picks the closest unvisited node each step using a priority queue, running in O((V+E) log V) — but requires all edge weights to be non-negative","Bellman-Ford relaxes all edges repeatedly for V-1 iterations, running in O(V*E) — slower, but correctly handles negative edge weights","Bellman-Ford can also detect negative weight cycles (an extra pass checking if any edge can still be relaxed indicates one exists); Dijkstra cannot handle or detect these at all","Choose Dijkstra when weights are guaranteed non-negative for better performance; choose Bellman-Ford when negative weights are possible or cycle detection is needed"],"sample_answer":"Dijkstra's algorithm greedily expands the closest unvisited node at each step, typically implemented with a priority queue, running in O((V+E) log V) time — but it assumes all edge weights are non-negative, since its greedy choice can be wrong if a later negative edge could produce a shorter path. Bellman-Ford instead relaxes every edge repeatedly for V-1 iterations, which is slower at O(V*E), but it correctly handles negative edge weights since it doesn't commit to a node's shortest distance early. Bellman-Ford can also detect negative weight cycles with one extra pass — if any edge can still be relaxed after V-1 iterations, a negative cycle exists — which Dijkstra can't do or handle at all. In practice, I'd use Dijkstra whenever weights are guaranteed non-negative for its better performance, and Bellman-Ford specifically when negative weights are possible or cycle detection matters."},"follow_up_hint":"Ask them to explain why Dijkstra's greedy approach breaks down in the presence of negative edge weights, with a concrete counterexample."},
-  {"id":"algo-0002","question":"What is dynamic programming, and how do you identify whether a problem can be solved with it?","type":"conceptual","difficulty":3,"roles":["general_sde"],"topics":["algorithms","dsa"],"tech_keywords":["dynamic-programming"],"companies_common":["Google","Amazon","Microsoft","Meta"],"source_style":"faang-common","reference_solution":{"key_points":["DP solves problems by breaking them into overlapping subproblems and storing (memoizing) their results to avoid redundant recomputation","Two required properties to apply DP: optimal substructure (the optimal solution to a problem can be built from optimal solutions to its subproblems) and overlapping subproblems (the same subproblems recur multiple times during naive recursion)","Two implementation styles: top-down memoization (recursive, cache results as computed) and bottom-up tabulation (iterative, build up a table of results from base cases)","Contrast with divide-and-conquer, whose subproblems typically don't overlap (e.g. merge sort), so memoization wouldn't help there"],"sample_answer":"Dynamic programming solves a problem by breaking it into subproblems, but specifically leverages the fact that those subproblems overlap — the same subproblem gets solved repeatedly in a naive recursive approach — and stores their results so each subproblem is computed only once. To tell if DP applies, I'd look for two properties: optimal substructure, meaning the optimal answer to the whole problem can be constructed from optimal answers to its subproblems, and overlapping subproblems, meaning a plain recursive solution would redundantly recompute the same subproblem many times. You can implement DP either top-down, with recursion plus memoization caching results as you go, or bottom-up, iteratively filling a table starting from base cases. This is different from divide-and-conquer approaches like merge sort, where the subproblems don't actually overlap, so memoization wouldn't provide any benefit there."},"follow_up_hint":"Ask them to identify the overlapping subproblems in naive recursive Fibonacci and show how memoization fixes the exponential blowup."},
-  {"id":"algo-0003","question":"Explain how a trie (prefix tree) works and give a use case where it outperforms a hash map.","type":"conceptual","difficulty":3,"roles":["general_sde"],"topics":["algorithms","dsa"],"tech_keywords":["trie"],"companies_common":["Google","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["A trie stores strings character by character down a tree structure, where each node represents a prefix shared by all strings passing through it","Lookup/insert of a string of length L takes O(L) time regardless of how many strings are stored, since you just walk down matching characters","Use case where it beats a hash map: prefix-based queries — 'find all words starting with prefix X' or autocomplete, which a hash map can't do efficiently (it would need to check every key)","Trade-off: tries can use more memory than a hash map due to per-character node overhead, especially with sparse/varied alphabets, unless compressed (e.g. a radix tree)"],"sample_answer":"A trie stores a set of strings by breaking them into individual characters along paths in a tree, where every node represents a prefix shared by all the strings that pass through it — so common prefixes are stored just once instead of duplicated across strings. Both lookup and insertion take O(L) time, where L is the length of the string, since you're just walking down the tree matching one character at a time, and this doesn't depend on how many total strings are stored. Where a trie clearly outperforms a hash map is for prefix-based queries — like autocomplete, or 'find all words starting with a given prefix' — since a hash map has no efficient way to enumerate keys sharing a prefix without scanning every key, while a trie just walks to the prefix's node and explores everything beneath it. The trade-off is a trie can use more memory than a hash map, due to the per-character node overhead, though this can be mitigated with a compressed variant like a radix tree that merges chains of single-child nodes."},"follow_up_hint":"Ask them to implement autocomplete (returning all words with a given prefix) using a trie."},
-  {"id":"algo-0004","question":"What is the time complexity of building a heap from an unsorted array, and why is it O(n) rather than O(n log n)?","type":"conceptual","difficulty":4,"roles":["general_sde"],"topics":["algorithms","dsa"],"tech_keywords":["heap"],"companies_common":["Google","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["Naively, you might think inserting n elements one at a time (each O(log n)) gives O(n log n) to build a heap — but the standard 'heapify' bottom-up approach does better","Heapify calls sift-down starting from the last non-leaf node up to the root; most nodes are near the bottom of the tree where sift-down does very little work (a leaf needs 0 sift-down steps)","Summing the work across all levels (a geometric-like series where most nodes do O(1) work and only a few near the root do up to O(log n) work) gives a total of O(n), not O(n log n)","This is a good example of amortized/aggregate analysis producing a better bound than a naive per-operation multiplication would suggest"],"sample_answer":"You might naively assume building a heap takes O(n log n), reasoning that inserting n elements one at a time each costs O(log n). But the standard build-heap algorithm doesn't insert one at a time — it calls sift-down starting from the last non-leaf node up through the root, and here's the key insight: most nodes in a heap are near the bottom of the tree, and a node near the bottom has very little distance to sift down — a leaf node needs zero work, nodes just above leaves need at most one swap, and so on. When you sum the total work across all levels, it forms a series where the vast majority of nodes contribute only O(1) work and just a few nodes near the root contribute up to O(log n), and that sum actually converges to O(n) overall, not O(n log n). It's a classic example of aggregate analysis giving a tighter bound than naively multiplying a per-operation cost by the number of operations."},"follow_up_hint":"Ask them to at least sketch the summation showing why the total work converges to O(n)."},
-  {"id":"algo-0005","question":"Explain the union-find (disjoint set) data structure and how path compression and union by rank improve its performance.","type":"conceptual","difficulty":4,"roles":["general_sde"],"topics":["algorithms","dsa"],"tech_keywords":["union-find"],"companies_common":["Google","Amazon","Meta"],"source_style":"faang-common","reference_solution":{"key_points":["Union-find tracks a collection of disjoint sets, supporting 'find' (which set does an element belong to) and 'union' (merge two sets), commonly used for connectivity/cycle-detection problems like Kruskal's MST algorithm","Naive implementation: find/union can degrade to O(n) per operation if the tree structure becomes a long chain","Union by rank/size: always attach the smaller/shallower tree under the root of the larger/deeper one during union, keeping trees shallow","Path compression: during find, make every node on the path point directly to the root, flattening the structure for future lookups — combined, these give near-constant (inverse Ackermann function) amortized time per operation"],"sample_answer":"Union-find maintains a collection of disjoint sets and supports two operations: find, which tells you which set/representative an element belongs to, and union, which merges two sets together — it's commonly used for connectivity problems, like detecting cycles when building a minimum spanning tree with Kruskal's algorithm. A naive implementation, where union just attaches one tree's root under another's arbitrarily, can degrade into a long chain, making find take O(n) in the worst case. Union by rank (or size) fixes this by always attaching the smaller or shallower tree under the root of the larger one during a union, keeping the overall tree shallow. Path compression further optimizes find by making every node visited along the way point directly to the root once it's found, flattening the structure so future lookups on those nodes are nearly instant. Combined, these two optimizations bring the amortized time per operation down to nearly O(1) — technically O(inverse Ackermann function of n), which is effectively constant for any realistic input size."},"follow_up_hint":"Ask them to implement union-find with both path compression and union by rank from scratch."}
+  {
+    "id": "algo-0001",
+    "question": "Explain the difference between Dijkstra's algorithm and the Bellman-Ford algorithm for shortest paths.",
+    "type": "conceptual",
+    "difficulty": 4,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "algorithms",
+      "dsa"
+    ],
+    "tech_keywords": [
+      "dijkstra",
+      "bellman-ford",
+      "graphs"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Dijkstra's greedily picks the closest unvisited node each step using a priority queue, running in O((V+E) log V) — but requires all edge weights to be non-negative",
+        "Bellman-Ford relaxes all edges repeatedly for V-1 iterations, running in O(V*E) — slower, but correctly handles negative edge weights",
+        "Bellman-Ford can also detect negative weight cycles (an extra pass checking if any edge can still be relaxed indicates one exists); Dijkstra cannot handle or detect these at all",
+        "Choose Dijkstra when weights are guaranteed non-negative for better performance; choose Bellman-Ford when negative weights are possible or cycle detection is needed"
+      ],
+      "sample_answer": "Dijkstra's algorithm greedily expands the closest unvisited node at each step, typically implemented with a priority queue, running in O((V+E) log V) time — but it assumes all edge weights are non-negative, since its greedy choice can be wrong if a later negative edge could produce a shorter path. Bellman-Ford instead relaxes every edge repeatedly for V-1 iterations, which is slower at O(V*E), but it correctly handles negative edge weights since it doesn't commit to a node's shortest distance early. Bellman-Ford can also detect negative weight cycles with one extra pass — if any edge can still be relaxed after V-1 iterations, a negative cycle exists — which Dijkstra can't do or handle at all. In practice, I'd use Dijkstra whenever weights are guaranteed non-negative for its better performance, and Bellman-Ford specifically when negative weights are possible or cycle detection matters."
+    },
+    "follow_up_hint": "Ask them to explain why Dijkstra's greedy approach breaks down in the presence of negative edge weights, with a concrete counterexample.",
+    "concept": "Graph Shortest Path Algorithms",
+    "sub_concept": "Dijkstra vs. Bellman-Ford Trade-offs",
+    "expected_reasoning": "The candidate first frames both as single-source shortest path algorithms, identifying the core algorithmic strategies that differentiate them (greedy choice vs. iterative edge relaxation). They analyze Dijkstra's assumption that once a node is finalized, its distance can never decrease, deriving why negative edge weights invalidate this greedy property. They then transition to Bellman-Ford, reasoning about why running V-1 iterations guarantees that shortest paths up to V-1 edges long are correctly computed. Finally, they weigh the performance trade-offs (O((V+E)\\log V) vs O(V \\cdot E)) and explain how Bellman-Ford leverages a V-th iteration to detect negative cycles, concluding with distinct selection criteria based on graph constraints.",
+    "common_mistakes": [
+      "Claiming Dijkstra works correctly with negative edge weights as long as there are no negative cycles.",
+      "Failing to explain the architectural reason why Dijkstra fails with negative weights (violating greedy finalization).",
+      "Stating that Bellman-Ford can find shortest paths inside a negative cycle, rather than correctly identifying that it detects the cycle and reports an error.",
+      "Forgetting why Bellman-Ford requires specifically V-1 iterations of edge relaxations.",
+      "Comparing complexities without specifying the data structure used for Dijkstra (e.g., array vs. binary heap vs. Fibonacci heap)."
+    ],
+    "progressive_hints": [
+      "Consider the core design paradigm behind each algorithm—greedy finalization versus repeated dynamic programming relaxation—and what each assumes about node distances once examined.",
+      "Think about what happens when a graph contains negative edge weights: why does Dijkstra's rule of never revisiting a finalized node break, while Bellman-Ford's approach of relaxing all edges repeatedly stays correct?",
+      "Focus on the maximum number of edges a simple path can have in a graph with V vertices, how iterating edge relaxations V-1 times guarantees shortest path coverage, and what an extra V-th pass reveals."
+    ],
+    "learning_objective": "Understand the algorithmic mechanics, time complexity trade-offs, and edge-weight constraints that dictate when to choose Dijkstra's algorithm versus the Bellman-Ford algorithm."
+  },
+  {
+    "id": "algo-0002",
+    "question": "What is dynamic programming, and how do you identify whether a problem can be solved with it?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "algorithms",
+      "dsa"
+    ],
+    "tech_keywords": [
+      "dynamic-programming"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon",
+      "Microsoft",
+      "Meta"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "DP solves problems by breaking them into overlapping subproblems and storing (memoizing) their results to avoid redundant recomputation",
+        "Two required properties to apply DP: optimal substructure (the optimal solution to a problem can be built from optimal solutions to its subproblems) and overlapping subproblems (the same subproblems recur multiple times during naive recursion)",
+        "Two implementation styles: top-down memoization (recursive, cache results as computed) and bottom-up tabulation (iterative, build up a table of results from base cases)",
+        "Contrast with divide-and-conquer, whose subproblems typically don't overlap (e.g. merge sort), so memoization wouldn't help there"
+      ],
+      "sample_answer": "Dynamic programming solves a problem by breaking it into subproblems, but specifically leverages the fact that those subproblems overlap — the same subproblem gets solved repeatedly in a naive recursive approach — and stores their results so each subproblem is computed only once. To tell if DP applies, I'd look for two properties: optimal substructure, meaning the optimal answer to the whole problem can be constructed from optimal answers to its subproblems, and overlapping subproblems, meaning a plain recursive solution would redundantly recompute the same subproblem many times. You can implement DP either top-down, with recursion plus memoization caching results as you go, or bottom-up, iteratively filling a table starting from base cases. This is different from divide-and-conquer approaches like merge sort, where the subproblems don't actually overlap, so memoization wouldn't provide any benefit there."
+    },
+    "follow_up_hint": "Ask them to identify the overlapping subproblems in naive recursive Fibonacci and show how memoization fixes the exponential blowup.",
+    "concept": "Dynamic Programming",
+    "sub_concept": "Problem Identification and Core Properties",
+    "expected_reasoning": "A strong candidate starts by defining dynamic programming conceptually as an optimization technique that trades memory for time by caching subproblem solutions. They derive the applicability of DP by looking for two specific prerequisites: optimal substructure and overlapping subproblems. To demonstrate depth, they contrast DP with divide-and-conquer, highlighting that divide-and-conquer handles disjoint subproblems while DP targets overlapping ones. Finally, they weigh the practical trade-offs between implementation strategies (top-down memoization vs. bottom-up tabulation).",
+    "common_mistakes": [
+      "Confusing dynamic programming with divide-and-conquer, failing to mention that divide-and-conquer subproblems do not overlap.",
+      "Stating that optimal substructure alone is sufficient to use dynamic programming, ignoring greedy approaches.",
+      "Defining DP purely as 'recursion with a hash map' without explaining the underlying mathematical properties of the problem.",
+      "Treating top-down memoization and bottom-up tabulation as completely unrelated techniques rather than alternative strategies for the same underlying recurrence relation.",
+      "Claiming DP applies to any problem that requires finding an optimal min/max value without checking for overlapping subproblems."
+    ],
+    "progressive_hints": [
+      "Think about what happens when you draw out the execution tree of a naive recursive solution to a problem like Fibonacci or Knapsack. What visual pattern suggests work is being wasted?",
+      "Consider the structure of the subproblems: how do lower-level solutions relate to the main answer, and do the exact same sub-arguments appear across different branches of the recursion tree?",
+      "One required property means an overall optimal choice depends on optimal choices of smaller parts; the second means identical state calls occur repeatedly. What are these two formal properties?"
+    ],
+    "learning_objective": "Understand how to identify dynamic programming problems using optimal substructure and overlapping subproblems, and distinguish DP from divide-and-conquer strategies."
+  },
+  {
+    "id": "algo-0003",
+    "question": "Explain how a trie (prefix tree) works and give a use case where it outperforms a hash map.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "algorithms",
+      "dsa"
+    ],
+    "tech_keywords": [
+      "trie"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "A trie stores strings character by character down a tree structure, where each node represents a prefix shared by all strings passing through it",
+        "Lookup/insert of a string of length L takes O(L) time regardless of how many strings are stored, since you just walk down matching characters",
+        "Use case where it beats a hash map: prefix-based queries — 'find all words starting with prefix X' or autocomplete, which a hash map can't do efficiently (it would need to check every key)",
+        "Trade-off: tries can use more memory than a hash map due to per-character node overhead, especially with sparse/varied alphabets, unless compressed (e.g. a radix tree)"
+      ],
+      "sample_answer": "A trie stores a set of strings by breaking them into individual characters along paths in a tree, where every node represents a prefix shared by all the strings that pass through it — so common prefixes are stored just once instead of duplicated across strings. Both lookup and insertion take O(L) time, where L is the length of the string, since you're just walking down the tree matching one character at a time, and this doesn't depend on how many total strings are stored. Where a trie clearly outperforms a hash map is for prefix-based queries — like autocomplete, or 'find all words starting with a given prefix' — since a hash map has no efficient way to enumerate keys sharing a prefix without scanning every key, while a trie just walks to the prefix's node and explores everything beneath it. The trade-off is a trie can use more memory than a hash map, due to the per-character node overhead, though this can be mitigated with a compressed variant like a radix tree that merges chains of single-child nodes."
+    },
+    "follow_up_hint": "Ask them to implement autocomplete (returning all words with a given prefix) using a trie.",
+    "concept": "Trie",
+    "sub_concept": "Prefix Tree Operations",
+    "expected_reasoning": "A strong candidate first clarifies how a trie stores strings character by character in a tree structure, where each node represents a shared prefix. They then explain the O(L) time complexity for lookup and insert operations. Next, they describe a use case where a trie outperforms a hash map, such as prefix-based queries. Finally, they discuss the trade-off of using more memory for tries compared to hash maps, especially with sparse or varied alphabets.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as directly stating a trie outperforms a hash map without explaining the mechanism or time complexity benefits.",
+      "Fails to mention the memory overhead of tries.",
+      "Doesn't explain the O(L) time complexity for lookup and insert in a trie."
+    ],
+    "progressive_hints": [
+      "What is the primary data structure used to store strings in a trie?",
+      "Why is the time complexity for lookup and insert in a trie O(L)?",
+      "In what scenarios would a trie outperform a hash map, and how?"
+    ],
+    "learning_objective": "Understand the operation and limitations of a trie data structure, including its use cases and performance characteristics compared to hash maps."
+  },
+  {
+    "id": "algo-0004",
+    "question": "What is the time complexity of building a heap from an unsorted array, and why is it O(n) rather than O(n log n)?",
+    "type": "conceptual",
+    "difficulty": 4,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "algorithms",
+      "dsa"
+    ],
+    "tech_keywords": [
+      "heap"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Naively, you might think inserting n elements one at a time (each O(log n)) gives O(n log n) to build a heap — but the standard 'heapify' bottom-up approach does better",
+        "Heapify calls sift-down starting from the last non-leaf node up to the root; most nodes are near the bottom of the tree where sift-down does very little work (a leaf needs 0 sift-down steps)",
+        "Summing the work across all levels (a geometric-like series where most nodes do O(1) work and only a few near the root do up to O(log n) work) gives a total of O(n), not O(n log n)",
+        "This is a good example of amortized/aggregate analysis producing a better bound than a naive per-operation multiplication would suggest"
+      ],
+      "sample_answer": "You might naively assume building a heap takes O(n log n), reasoning that inserting n elements one at a time each costs O(log n). But the standard build-heap algorithm doesn't insert one at a time — it calls sift-down starting from the last non-leaf node up through the root, and here's the key insight: most nodes in a heap are near the bottom of the tree, and a node near the bottom has very little distance to sift down — a leaf node needs zero work, nodes just above leaves need at most one swap, and so on. When you sum the total work across all levels, it forms a series where the vast majority of nodes contribute only O(1) work and just a few nodes near the root contribute up to O(log n), and that sum actually converges to O(n) overall, not O(n log n). It's a classic example of aggregate analysis giving a tighter bound than naively multiplying a per-operation cost by the number of operations."
+    },
+    "follow_up_hint": "Ask them to at least sketch the summation showing why the total work converges to O(n).",
+    "concept": "Heap Data Structure",
+    "sub_concept": "Bottom-Up Heapify Complexity Analysis",
+    "expected_reasoning": "A strong candidate starts by distinguishing top-down repeated insertion from bottom-up heap construction (the standard Floyd's algorithm). They analyze the structure of a complete binary tree, mapping out the number of nodes present at each height level from leaves to root. They recognize that the maximum work required for a node is proportional to its height (the maximum distance it can sift down), meaning nodes at lower levels do very little work. Finally, they set up the summation of work per level (node count at height h times height h) and show that this bounded geometric series converges, yielding O(n) total operations.",
+    "common_mistakes": [
+      "Confusing top-down insertion (n calls to insert, which is O(n log n)) with bottom-up heapification (build_heap, which is O(n)).",
+      "Stating the answer is O(n) by hand-waving that 'operations take O(1) on average' without analyzing node heights or tree structure.",
+      "Assuming every node requires O(log n) work because the tree height is log n, overestimating the total work as O(n log n).",
+      "Confusing sift-down with sift-up when describing the bottom-up construction algorithm.",
+      "Failing to set up or explain the convergence of the mathematical summation that bounds the total number of swaps."
+    ],
+    "progressive_hints": [
+      "Consider the difference between inserting elements one-by-one into a dynamic heap versus processing an existing unsorted array from the bottom levels up. How does node count vary across levels?",
+      "Think about the max sift-down steps required for nodes at each level: how many nodes are leaves (height 0), how many are at height 1, and how far can nodes at each height travel?",
+      "Half the nodes are leaves requiring 0 swaps, a quarter are one level up requiring at most 1 swap, an eighth require at most 2 swaps, and so on. What does the series sum( (n / 2^(h+1)) * h ) converge to?"
+    ],
+    "learning_objective": "Understand how structural height distribution in a complete binary tree allows bottom-up heap construction to run in O(n) time instead of O(n log n)."
+  },
+  {
+    "id": "algo-0005",
+    "question": "Explain the union-find (disjoint set) data structure and how path compression and union by rank improve its performance.",
+    "type": "conceptual",
+    "difficulty": 4,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "algorithms",
+      "dsa"
+    ],
+    "tech_keywords": [
+      "union-find"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Union-find tracks a collection of disjoint sets, supporting 'find' (which set does an element belong to) and 'union' (merge two sets), commonly used for connectivity/cycle-detection problems like Kruskal's MST algorithm",
+        "Naive implementation: find/union can degrade to O(n) per operation if the tree structure becomes a long chain",
+        "Union by rank/size: always attach the smaller/shallower tree under the root of the larger/deeper one during union, keeping trees shallow",
+        "Path compression: during find, make every node on the path point directly to the root, flattening the structure for future lookups — combined, these give near-constant (inverse Ackermann function) amortized time per operation"
+      ],
+      "sample_answer": "Union-find maintains a collection of disjoint sets and supports two operations: find, which tells you which set/representative an element belongs to, and union, which merges two sets together — it's commonly used for connectivity problems, like detecting cycles when building a minimum spanning tree with Kruskal's algorithm. A naive implementation, where union just attaches one tree's root under another's arbitrarily, can degrade into a long chain, making find take O(n) in the worst case. Union by rank (or size) fixes this by always attaching the smaller or shallower tree under the root of the larger one during a union, keeping the overall tree shallow. Path compression further optimizes find by making every node visited along the way point directly to the root once it's found, flattening the structure so future lookups on those nodes are nearly instant. Combined, these two optimizations bring the amortized time per operation down to nearly O(1) — technically O(inverse Ackermann function of n), which is effectively constant for any realistic input size."
+    },
+    "follow_up_hint": "Ask them to implement union-find with both path compression and union by rank from scratch.",
+    "concept": "Disjoint Set Union",
+    "sub_concept": "Tree Balancing and Path Optimization",
+    "expected_reasoning": "The candidate should begin by defining the core operations of Union-Find (find root, merge sets) and explaining its representation as a forest of trees. They should then identify the worst-case degradation of a naive implementation, where sequential unions create a long linear chain leading to O(N) lookup times. Next, they should explain how 'union by rank/size' prevents tree height growth during set merging, and how 'path compression' lazily flattens tree paths during search operations. Finally, the candidate should weigh the combined effect of both optimizations to conclude that amortized time complexity drops to near-constant O(α(N)) time per operation.",
+    "common_mistakes": [
+      "Stating the optimized complexity is strictly O(1) instead of amortized near-constant time using the inverse Ackermann function O(α(N))",
+      "Confusing path compression (which occurs during find) with union by rank (which occurs during union)",
+      "Failing to explain why the naive implementation degrades to O(N) performance",
+      "Claiming that union by rank alone or path compression alone is sufficient to achieve the theoretical optimal bound",
+      "Explaining path compression as updating all nodes in the set rather than just the nodes along the search path"
+    ],
+    "progressive_hints": [
+      "Think about the shape of the tree structure in a naive implementation when you perform a sequence of chained union operations. What happens to search performance?",
+      "Consider what you can optimize during each of the two core operations: how can you smartly attach trees during 'union', and what can you modify as you traverse up to a root during 'find'?",
+      "If 'union by rank' keeps trees from growing tall during merges, and 'path compression' rewires visited nodes directly to the root during traversal, how do these two complementary mechanisms continuously flatten the forest?"
+    ],
+    "learning_objective": "Understand how combining proactive structural balancing (union by rank) with reactive lazily flattened paths (path compression) optimizes Union-Find operations from linear time down to amortized near-constant time O(α(N))."
+  }
 ]

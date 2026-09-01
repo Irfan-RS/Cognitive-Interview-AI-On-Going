@@ -4,10 +4,22 @@
     "question": "Explain the difference between stack and heap memory allocation in C++, and when you'd use `new`/`delete` versus a local variable.",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["backend", "general_sde"],
-    "topics": ["memory-management"],
-    "tech_keywords": ["c++", "memory-management"],
-    "companies_common": ["Nvidia", "Amazon", "Microsoft"],
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "memory-management"
+    ],
+    "tech_keywords": [
+      "c++",
+      "memory-management"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -19,17 +31,47 @@
       ],
       "sample_answer": "Stack memory is allocated automatically when a function is entered and freed automatically when it exits, making it very fast but limited in size and tied to the scope's lifetime. Heap memory, allocated via new, persists until explicitly freed with delete (or until a smart pointer manages its lifetime), which lets an object outlive the function that created it, at the cost of manual management. You'd use the heap when an object needs to be returned/shared beyond its creating scope or is too large for the stack; otherwise a local stack variable is simpler, faster, and safer. Manual new/delete risks memory leaks and dangling pointers, which is why modern C++ favors smart pointers instead."
     },
-    "follow_up_hint": "Ask what a stack overflow is and how deep recursion can cause one."
+    "follow_up_hint": "Ask what a stack overflow is and how deep recursion can cause one.",
+    "concept": "Memory Management",
+    "sub_concept": "Stack versus Heap Allocation",
+    "expected_reasoning": "A strong candidate begins by contrasting the lifetime and scoping rules of automatic stack storage against dynamic heap allocation. They then evaluate performance trade-offs, noting the speed and safety of stack frames versus the overhead and manual control of the heap. Next, they weigh structural factors such as object size and required longevity, explaining when data must outlive its scope. Finally, they incorporate modern C++ best practices, emphasizing that raw new and delete should be replaced by smart pointers to prevent common safety hazards.",
+    "common_mistakes": [
+      "States that stack is just for small things and heap is for big things without mentioning lifetime or scope.",
+      "Claims raw new and delete are the standard modern way to manage heap memory in C++.",
+      "Ignores performance implications, treating stack and heap as interchangeable storage locations.",
+      "Fails to mention specific risks like memory leaks or dangling pointers.",
+      "Confuses compile-time allocation with stack allocation."
+    ],
+    "progressive_hints": [
+      "Consider what happens to a local variable's memory when the function it was declared in finishes executing.",
+      "Think about the lifetime of your data: what if an object needs to exist and be accessed long after the function that created it has returned?",
+      "Compare how automatic scope-based cleanup on the stack differs from managing resources explicitly, and how modern C++ prevents you from forgetting to free heap memory."
+    ],
+    "learning_objective": "The candidate should understand how to choose between stack and heap allocation based on object lifetime, scope requirements, performance trade-offs, and modern C++ safety practices."
   },
   {
     "id": "cpp-0002",
     "question": "Explain the difference between `unique_ptr`, `shared_ptr`, and `weak_ptr` in modern C++.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["backend", "general_sde"],
-    "topics": ["memory-management", "smart-pointers"],
-    "tech_keywords": ["c++", "smart-pointers", "memory-management"],
-    "companies_common": ["Nvidia", "Amazon", "Microsoft"],
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "memory-management",
+      "smart-pointers"
+    ],
+    "tech_keywords": [
+      "c++",
+      "smart-pointers",
+      "memory-management"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -41,17 +83,45 @@
       ],
       "sample_answer": "unique_ptr represents exclusive ownership of a heap-allocated object — it can't be copied, only moved, and automatically deletes the object when it goes out of scope. shared_ptr allows multiple owners via atomic reference counting; the object is deleted only once the last shared_ptr pointing to it is destroyed. weak_ptr holds a non-owning reference to an object managed by a shared_ptr — it doesn't affect the reference count or keep the object alive, and is mainly used to break reference cycles: if two objects hold shared_ptrs to each other, neither's count ever reaches zero, leaking both; having one side hold a weak_ptr instead fixes that. Because shared_ptr's atomic reference counting has real overhead, unique_ptr should be the default unless you genuinely need shared ownership."
     },
-    "follow_up_hint": "Ask them to draw out a concrete parent-child object relationship where a shared_ptr cycle would leak, and how weak_ptr fixes it."
+    "follow_up_hint": "Ask them to draw out a concrete parent-child object relationship where a shared_ptr cycle would leak, and how weak_ptr fixes it.",
+    "concept": "Smart Pointers",
+    "sub_concept": "Ownership semantics and memory management strategies in C++",
+    "expected_reasoning": "A strong candidate begins by establishing the baseline of resource management, distinguishing between exclusive ownership and shared ownership models. They explain how unique_ptr enforces a strict single-owner policy using move semantics to prevent double-frees. Next, they contrast this with shared_ptr, explaining the bookkeeping overhead of reference counting required when multiple parts of a program need to manage the same resource's lifespan. Finally, they introduce weak_ptr as an observer that breaks circular references without altering the control block's lifetime metrics, concluding with performance implications that favor unique_ptr as the default choice.",
+    "common_mistakes": [
+      "Stating that unique_ptr can be copied if casted correctly, confusing copy semantics with move semantics",
+      "Believing that weak_ptr owns the underlying resource just like shared_ptr",
+      "Failing to mention reference cycles and how memory leaks occur when only using shared_ptr",
+      "Ignoring the performance overhead associated with the atomic reference counting of shared_ptr",
+      "Treating smart pointers as garbage collection rather than deterministic RAII mechanisms"
+    ],
+    "progressive_hints": [
+      "Consider the different ways multiple parts of a program might need to relate to the lifetime of a single heap-allocated object.",
+      "Think about what happens when two objects need to point to each other using shared_ptr, and how their reference counts are affected when they go out of scope.",
+      "Evaluate what kind of pointer you would use if you need to look at an object managed by someone else without preventing that object from being destroyed."
+    ],
+    "learning_objective": "Understand how to select the appropriate smart pointer type based on ownership requirements, lifetime guarantees, and performance trade-offs."
   },
   {
     "id": "cpp-0003",
     "question": "What is the Rule of Three/Five/Zero in C++? Why does defining a custom destructor often force you to also define a copy constructor and copy assignment operator?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["backend", "general_sde"],
-    "topics": ["oop-fundamentals", "memory-management"],
-    "tech_keywords": ["c++"],
-    "companies_common": ["Nvidia", "Amazon", "Microsoft"],
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "oop-fundamentals",
+      "memory-management"
+    ],
+    "tech_keywords": [
+      "c++"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -63,17 +133,45 @@
       ],
       "sample_answer": "If a class needs a custom destructor — usually because it directly owns a resource like a raw pointer — it almost certainly also needs a custom copy constructor and copy assignment operator (Rule of Three), because the compiler-generated defaults would just shallow-copy the raw pointer, leaving two objects thinking they own the same resource; when both destructors run, you get a double-free. C++11 extended this to the Rule of Five, adding move constructor and move assignment for efficient ownership transfer. In modern practice, the best approach is the Rule of Zero: don't manage raw resources directly in every class — delegate to existing RAII-based types like unique_ptr or standard containers, so your class needs none of these five special members defined explicitly."
     },
-    "follow_up_hint": "Ask them to write out the exact double-free bug scenario step by step for a class that only defines a destructor."
+    "follow_up_hint": "Ask them to write out the exact double-free bug scenario step by step for a class that only defines a destructor.",
+    "concept": "Rule of Five",
+    "sub_concept": "Manual Resource Management and Special Member Functions",
+    "expected_reasoning": "A strong candidate begins by analyzing what happens when a class manages a raw resource, recognizing that default compiler-generated operations perform shallow copies. They then trace the lifecycle of an object through copying, moving, and destruction to explain why defining one of these special member functions implies ownership semantics that break the defaults. Finally, they contrast this legacy manual approach with modern RAII practices, explaining how delegating ownership eliminates the need for any of these boilerplate functions entirely.",
+    "common_mistakes": [
+      "Stating that you only need a destructor and ignoring copy/move semantics completely",
+      "Believing that the compiler generates safe deep copies by default for raw pointers",
+      "Confusing shallow copy with deep copy behavior without explaining the double-free or memory leak consequence",
+      "Failing to mention C++11 move semantics when discussing the modern extension of the rule",
+      "Listing the rules by rote without explaining the underlying resource ownership rationale"
+    ],
+    "progressive_hints": [
+      "Think about what happens to a raw pointer inside an object when the compiler-generated copy constructor is used.",
+      "Consider the lifetime of the underlying memory when two distinct object instances both point to the exact same heap allocation and eventually go out of scope.",
+      "Ask yourself what happens when you pass that object by value or assign it, and how the destructor running twice on the same pointer triggers undefined behavior."
+    ],
+    "learning_objective": "Understand how manual resource management tightly couples destruction, copying, and moving, and how modern RAII eliminates this burden."
   },
   {
     "id": "cpp-0004",
     "question": "Explain what a virtual destructor is and why a base class should almost always declare one if it has any virtual functions.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["backend", "general_sde"],
-    "topics": ["oop-fundamentals", "polymorphism"],
-    "tech_keywords": ["c++"],
-    "companies_common": ["Nvidia", "Amazon", "Microsoft"],
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "oop-fundamentals",
+      "polymorphism"
+    ],
+    "tech_keywords": [
+      "c++"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -85,17 +183,46 @@
       ],
       "sample_answer": "If a base class has a non-virtual destructor and you delete a derived object through a base class pointer, only the base class's destructor runs — the derived class's destructor is skipped entirely, so any resources it owns are never released, causing undefined behavior and typically a leak. Declaring the base class's destructor virtual fixes this: deletion through a base pointer correctly calls the most-derived destructor first, which then chains up through each base class's destructor in order. Because of this, any class meant to be used polymorphically — i.e. having at least one virtual function — should almost always declare a virtual destructor, even if it does nothing but call the base destructor."
     },
-    "follow_up_hint": "Ask them to write a minimal reproducible example showing the resource leak from a missing virtual destructor."
+    "follow_up_hint": "Ask them to write a minimal reproducible example showing the resource leak from a missing virtual destructor.",
+    "concept": "Polymorphism",
+    "sub_concept": "Virtual Destructors",
+    "expected_reasoning": "A strong candidate begins by analyzing what happens during object destruction under polymorphism, tracing the lifecycle when a derived object is deleted via a base class pointer. They reason about static versus dynamic dispatch, recognizing that destructors act just like virtual functions and require vtable lookup to chain correctly from derived to base. Next, they weigh the consequences of non-virtual destruction—specifically resource leaks and undefined behavior—against the minimal cost of adding a vtable pointer to the base class. Finally, they formulate the overarching rule of thumb connecting polymorphism directly to the necessity of virtual destructors.",
+    "common_mistakes": [
+      "States that destructors automatically chain from derived to base without realizing the chain only works downward if initiated by a virtual destructor.",
+      "Claims virtual destructors are mandatory for all classes, missing that they are only needed when classes participate in polymorphism.",
+      "Believes the base destructor runs first, failing to understand the correct bottom-up destruction order.",
+      "Completely ignores resource leaks or undefined behavior, treating the issue as a compiler warning rather than a core correctness bug.",
+      "Focuses heavily on syntax rather than the underlying mechanism of vtables and dynamic dispatch during deletion."
+    ],
+    "progressive_hints": [
+      "What happens when you delete an object of a derived class using a pointer whose type is the base class?",
+      "Think about how normal virtual functions determine which implementation to run at runtime, and whether destructors behave similarly.",
+      "If the base class destructor is non-virtual, the compiler only knows to call that specific destructor because the pointer type is static. How does making it virtual change which destructor executes first?"
+    ],
+    "learning_objective": "Understand that deleting derived objects through base class pointers requires a virtual destructor to prevent undefined behavior and resource leaks."
   },
   {
     "id": "cpp-0005",
     "question": "Explain move semantics in C++11: what problem does `std::move` and the move constructor solve compared to always copying?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["backend", "general_sde"],
-    "topics": ["move-semantics"],
-    "tech_keywords": ["c++", "c++11", "move-semantics"],
-    "companies_common": ["Nvidia", "Amazon", "Microsoft"],
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "move-semantics"
+    ],
+    "tech_keywords": [
+      "c++",
+      "c++11",
+      "move-semantics"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -107,17 +234,45 @@
       ],
       "sample_answer": "Before C++11, returning a large object like a std::vector by value from a function meant deep-copying all its internal data, even though the source was about to be destroyed anyway. Move semantics let a move constructor instead 'steal' the internal buffer pointer directly from that temporary object, leaving the source in a valid-but-empty state — a cheap pointer swap instead of a full copy. std::move itself doesn't move anything; it's just a cast that treats an lvalue as an rvalue reference, telling the compiler 'it's safe to select the move overload here' since the caller won't use that value again. This is why returning big containers by value became efficient without needing manual output-parameter tricks."
     },
-    "follow_up_hint": "Ask them to explain what state a moved-from object is left in, and why it's still safe to destroy or reassign but not safe to assume anything about its contents."
+    "follow_up_hint": "Ask them to explain what state a moved-from object is left in, and why it's still safe to destroy or reassign but not safe to assume anything about its contents.",
+    "concept": "Move Semantics",
+    "sub_concept": "Resource Transfer and Rvalue References",
+    "expected_reasoning": "A strong candidate begins by identifying the performance bottleneck of deep copies when dealing with temporary objects. They then trace how extending the type system with rvalue references allows overloading functions to distinguish between persistent and ephemeral objects. Next, they explain that `std::move` is merely a cast rather than a mechanical action, which directs the compiler to invoke the resource-stealing move constructor rather than a duplicating copy constructor. Finally, they tie this together by describing how the source object is safely left in a valid, destructible state.",
+    "common_mistakes": [
+      "Believing that std::move actually performs the movement of data itself",
+      "Stating that move semantics delete or destroy the source object immediately",
+      "Confusing rvalue references with const references or pointers",
+      "Failing to mention that the source object is left in a valid but unspecified state",
+      "Claiming move constructors copy data faster when they actually just reassign pointers"
+    ],
+    "progressive_hints": [
+      "Think about what happens to a large temporary object, like a returned vector, right after its value is used in an assignment.",
+      "Consider how the compiler knows whether an object is about to expire, and how function overloading could use that distinction.",
+      "If you want to avoid allocating a new heap buffer and copying millions of elements from a temporary, what internal pointer manipulation could you perform instead?"
+    ],
+    "learning_objective": "Understand how move semantics and rvalue references eliminate redundant deep copies by transferring resource ownership from temporary objects."
   },
   {
     "id": "cpp-0006",
     "question": "What is a dangling pointer, and give an example of how one can arise from returning a reference to a local variable.",
     "type": "scenario",
     "difficulty": 2,
-    "roles": ["backend", "general_sde"],
-    "topics": ["memory-management", "common-pitfalls"],
-    "tech_keywords": ["c++"],
-    "companies_common": ["Nvidia", "Amazon", "Microsoft"],
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "memory-management",
+      "common-pitfalls"
+    ],
+    "tech_keywords": [
+      "c++"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -129,17 +284,46 @@
       ],
       "sample_answer": "A dangling reference/pointer refers to memory that's no longer valid — already freed or out of scope — and using it is undefined behavior. A classic cause: `int& getValue() { int x = 5; return x; }` — x is a local stack variable destroyed when the function returns, so the caller's reference points to reclaimed stack memory. This is dangerous because it can appear to 'work' by coincidence if that memory hasn't been overwritten yet, only to fail unpredictably later once something else reuses that stack space. The fix is to return by value instead (modern compilers optimize this via move semantics/RVO so it's not actually expensive), or if the object genuinely needs to outlive the function, allocate it on the heap with clear ownership, e.g. via a smart pointer."
     },
-    "follow_up_hint": "Ask them why this specific bug is especially dangerous compared to a null pointer dereference, which usually crashes immediately and obviously."
+    "follow_up_hint": "Ask them why this specific bug is especially dangerous compared to a null pointer dereference, which usually crashes immediately and obviously.",
+    "concept": "Memory Management",
+    "sub_concept": "Dangling References and Stack Lifetimes",
+    "expected_reasoning": "A strong candidate begins by defining what happens to local stack variables when a function exits, recognizing that their memory is automatically reclaimed. They then trace how returning a reference to that local variable creates a persistent handle pointing to invalidated memory. Next, they analyze the mechanics of undefined behavior, noting that the memory might temporarily retain its previous value before being overwritten by subsequent stack frames. Finally, they contrast this flawed approach with correct design patterns, such as returning by value or using appropriate heap allocation when an object must outlive its scope.",
+    "common_mistakes": [
+      "States the conclusion that it is a bug without explaining the underlying mechanism of stack frame destruction.",
+      "Confuses compile-time scope rules with runtime memory validity, assuming local variables persist if a reference to them escapes the function.",
+      "Believes that because the printed value appeared correct in a simple test case, the code is safe.",
+      "Suggests fixing the issue by changing the reference to a raw pointer without addressing the underlying lifetime problem.",
+      "Forgets to mention that using a dangling pointer results in undefined behavior."
+    ],
+    "progressive_hints": [
+      "Consider where local variables are stored and what happens to that storage when a function finishes executing and returns.",
+      "Think about what a reference holds and what happens to the memory address it points to once the stack frame containing the local variable is popped.",
+      "If a function hands back a reference to a variable that was just destroyed, what is the caller actually looking at, and how can you design the return mechanism so the data survives the function exit?"
+    ],
+    "learning_objective": "Understand that returning references to local stack variables creates dangling pointers leading to undefined behavior, and learn how proper value semantics or ownership models prevent this."
   },
   {
     "id": "cpp-0007",
     "question": "Explain templates in C++: how do they differ from generics in Java, particularly around compile-time versus runtime behavior?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["backend", "general_sde"],
-    "topics": ["templates", "generic-programming"],
-    "tech_keywords": ["c++", "templates"],
-    "companies_common": ["Nvidia", "Amazon", "Microsoft"],
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "templates",
+      "generic-programming"
+    ],
+    "tech_keywords": [
+      "c++",
+      "templates"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -151,17 +335,44 @@
       ],
       "sample_answer": "C++ templates work by compile-time code generation: for every distinct type a template is used with, the compiler generates a fully separate, specialized version of that function or class — enabling aggressive optimization and inlining specific to that type, at the cost of longer compile times and larger binaries. Java generics instead use type erasure: the generic type information is mostly stripped away at compile time, and all instantiations share one actual bytecode implementation at runtime, with casts inserted automatically — simpler and avoids code bloat, but no per-type specialization or optimization. A practical consequence is that C++ templates work with any type supporting the required operations without needing a shared interface, though pre-C++20 template errors could be famously cryptic; C++20 concepts made these constraints and their error messages much clearer."
     },
-    "follow_up_hint": "Ask them what a C++20 concept is and how it improves on unconstrained templates."
+    "follow_up_hint": "Ask them what a C++20 concept is and how it improves on unconstrained templates.",
+    "concept": "Generic Programming",
+    "sub_concept": "Compile-Time Code Generation vs. Type Erasure",
+    "expected_reasoning": "A strong candidate begins by contrasting the core mechanics of how C++ and Java handle types before runtime. They trace what happens to the code during compilation in both languages, noting that C++ produces specialized machine code per type while Java retains a single shared implementation. From this mechanistic difference, they systematically derive the downstream trade-offs regarding binary size, compilation speed, optimization potential, and error messaging. Finally, they discuss the philosophical shift in interface requirements—comparing Java's explicit bound requirements with C++'s structural syntax-checking approach.",
+    "common_mistakes": [
+      "States that C++ templates and Java generics are basically the same thing with different syntax.",
+      "Claims Java generates specialized bytecode for every generic type instantiation.",
+      "Misses the trade-off of code bloat and longer compilation times in C++.",
+      "Fails to mention type erasure or how Java handles runtime type safety under the hood.",
+      "States conclusions without explaining the underlying compiler or runtime mechanisms."
+    ],
+    "progressive_hints": [
+      "Think about what happens to the source code when you build a C++ program versus when you compile a Java class file.",
+      "Consider how many copies of a generic class's machine code or bytecode actually exist in memory or final binaries in each language.",
+      "Reflect on how each language verifies that a type supplied to a generic structure actually supports the required operations, and when that check occurs."
+    ],
+    "learning_objective": "Understand how C++ compile-time template instantiation differs fundamentally from Java's type erasure, impacting performance, binary size, and error handling."
   },
   {
     "id": "cpp-0008",
     "question": "What is Undefined Behavior (UB) in C++, and give two concrete examples that a compiler is allowed to handle in surprising ways.",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["backend", "general_sde"],
-    "topics": ["language-semantics"],
-    "tech_keywords": ["c++"],
-    "companies_common": ["Nvidia", "Amazon", "Microsoft"],
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "language-semantics"
+    ],
+    "tech_keywords": [
+      "c++"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -173,17 +384,44 @@
       ],
       "sample_answer": "Undefined behavior means the C++ standard imposes absolutely no requirements on what happens — the compiler is free to do anything, including optimizing based on the assumption that the UB-triggering code path is simply unreachable, which can produce results that look nonsensical or wildly different across compilers or optimization levels. Signed integer overflow is a classic example: unlike unsigned integers, which wrap around predictably by the standard's definition, signed overflow is UB, and compilers can and do optimize code assuming it never occurs, sometimes eliminating checks a programmer expected to run. Dereferencing a null or already-freed pointer is another: it doesn't reliably crash — it might appear to work, corrupt unrelated memory, or crash unpredictably depending on what's nearby. This unpredictability is exactly why tools like AddressSanitizer and UndefinedBehaviorSanitizer exist, to catch these issues deterministically during testing rather than relying on them to fail obviously in production."
     },
-    "follow_up_hint": "Ask them why a compiler is 'allowed' to assume UB never happens, and how that assumption can eliminate a security check the programmer wrote."
+    "follow_up_hint": "Ask them why a compiler is 'allowed' to assume UB never happens, and how that assumption can eliminate a security check the programmer wrote.",
+    "concept": "Language Semantics",
+    "sub_concept": "Undefined Behavior and Compiler Optimization",
+    "expected_reasoning": "A strong candidate starts by defining undefined behavior precisely in terms of the C++ standard's lack of mandates, distinguishing it from implementation-defined or unspecified behavior. They then connect UB to performance trade-offs, explaining that the standard allows compilers to assume UB never occurs to enable aggressive code optimizations. Next, they provide concrete, non-trivial examples like signed integer overflow or strict aliasing violations rather than just null pointer dereferences. Finally, they mention how modern tooling (like UBSan or ASan) is essential for detection because the compiler's behavior is unpredictable.",
+    "common_mistakes": [
+      "Stating that undefined behavior always causes a segmentation fault or immediate program crash",
+      "Confusing undefined behavior with implementation-defined or unspecified behavior",
+      "Giving trivial or incomplete examples like 'syntax errors' or 'runtime exceptions' which are actually well-defined or compile-time errors",
+      "Failing to explain why the standard permits UB (i.e., optimization and not penalizing correct code with runtime checks)",
+      "Assuming that if a piece of code works in debug mode, it is guaranteed to be free of undefined behavior"
+    ],
+    "progressive_hints": [
+      "What does the C++ standard actually mandate about code that violates its rules, and why doesn't it require every edge case to throw an exception?",
+      "Think about what a compiler is allowed to assume about code logic to make it run faster. If the standard says a certain condition 'cannot happen', how might the optimizer treat that assumption?",
+      "Consider a mathematical operation on signed integers that exceeds the limits of the type, or an operation that violates strict aliasing. What makes the compiler's output on these constructs surprising compared to unsigned arithmetic?"
+    ],
+    "learning_objective": "Understand that undefined behavior in C++ is a contract where violating the standard permits the compiler to optimize under the assumption the code path is impossible, leading to unpredictable runtime consequences."
   },
   {
     "id": "cpp-0009",
     "question": "Explain how `const` correctness works in C++ for function parameters, member functions, and pointers — what does `const int* p` mean versus `int* const p`?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["backend", "general_sde"],
-    "topics": ["language-semantics"],
-    "tech_keywords": ["c++"],
-    "companies_common": ["Nvidia", "Amazon", "Microsoft"],
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "language-semantics"
+    ],
+    "tech_keywords": [
+      "c++"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -195,17 +433,45 @@
       ],
       "sample_answer": "The rule of thumb is to read the declaration right-to-left around the asterisk relative to const's position: `const int* p` means p points to data that's const — you can reassign p to point elsewhere, but can't modify the int through p. `int* const p` means p itself is a const pointer — it can't be reassigned to point elsewhere, but you CAN modify the int it points to. Combining both, `const int* const p`, locks down both the pointer and the pointed-to value. Similarly, marking a member function 'const' (e.g. `int getValue() const`) promises the method won't modify the object's state, which is required to call it on a const instance of the class, and lets the compiler catch accidental state mutations at compile time."
     },
-    "follow_up_hint": "Ask them to explain why a const member function can still legally modify a field marked 'mutable'."
+    "follow_up_hint": "Ask them to explain why a const member function can still legally modify a field marked 'mutable'.",
+    "concept": "Const Correctness",
+    "sub_concept": "Pointers, Member Functions, and Parameter Qualification",
+    "expected_reasoning": "A strong candidate begins by methodically parsing pointer declarations from right to left to establish ownership and mutability rules. They then extend this principle to member functions, explaining how the trailing `const` qualifier modifies the implicit `this` pointer to protect object state. Next, they discuss pass-by-const-reference for function parameters to prevent unnecessary copying while enforcing read-only guarantees. Finally, they articulate the broader architectural philosophy: making immutability the default to catch bugs at compile-time and communicate intent unambiguously.",
+    "common_mistakes": [
+      "Confusing `const int* p` with `int* const p` and guessing their meanings instead of reading them right-to-left.",
+      "Stating that a `const` member function means the entire object in memory is immutable, rather than just preventing modification through that specific `this` pointer.",
+      "Believing that returning a value by `const` from a function has significant meaning for primitive types.",
+      "Providing a list of definitions without explaining the compile-time safety and self-documenting benefits of const-correctness.",
+      "Forgetting that non-const member functions cannot be invoked on const instances, breaking encapsulation if not handled correctly."
+    ],
+    "progressive_hints": [
+      "Think about how C++ parses declarations and try reading pointer qualifiers starting from the variable name and moving outward.",
+      "Consider which part of a pointer declaration is locked down when the `const` keyword appears on the left of the asterisk versus when it appears on the right.",
+      "For member functions, look at where the `const` keyword is placed in the signature and think about what object or pointer it is implicitly modifying."
+    ],
+    "learning_objective": "The candidate should walk away understanding how to enforce immutability across pointers, parameters, and member functions to enable compile-time safety and clearly communicate design intent."
   },
   {
     "id": "cpp-0010",
     "question": "What is the difference between compile-time polymorphism (function/operator overloading, templates) and runtime polymorphism (virtual functions) in C++?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["backend", "general_sde"],
-    "topics": ["polymorphism", "oop-fundamentals"],
-    "tech_keywords": ["c++"],
-    "companies_common": ["Nvidia", "Amazon", "Microsoft"],
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "polymorphism",
+      "oop-fundamentals"
+    ],
+    "tech_keywords": [
+      "c++"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -217,6 +483,22 @@
       ],
       "sample_answer": "Compile-time polymorphism — function overloading and templates — is resolved entirely by the compiler based on static types known at compile time, with zero runtime overhead; the compiler literally generates or selects the specific code to run ahead of time. Runtime polymorphism, via virtual functions, defers the decision of which implementation runs until execution, based on the object's actual dynamic type through the vtable — this enables genuinely dynamic behavior, like a std::vector<Shape*> holding a mix of Circle and Square objects and correctly calling each one's own draw() implementation, at the cost of one extra pointer indirection per virtual call. Real-world C++ code often combines both, e.g. a templated container holding polymorphic base-class pointers."
     },
-    "follow_up_hint": "Ask them to explain the performance cost difference concretely: what extra work happens at a virtual call site versus a non-virtual one?"
+    "follow_up_hint": "Ask them to explain the performance cost difference concretely: what extra work happens at a virtual call site versus a non-virtual one?",
+    "concept": "Polymorphism",
+    "sub_concept": "Compile-Time vs Runtime Polymorphism in C++",
+    "expected_reasoning": "A strong candidate begins by defining polymorphism as the ability for different types to be processed through a unified interface. They then systematically contrast how resolution happens in both paradigms, separating static type binding from dynamic vtable dispatch. Next, they evaluate the practical trade-offs regarding performance overhead, binary size, and design flexibility, such as heterogeneous collections. Finally, they tie their explanation to concrete language features like templates and virtual functions.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply listing 'templates are compile time, virtuals are runtime' without explaining why.",
+      "Confuses function overloading with overriding, thinking overloading happens at runtime.",
+      "Claims runtime polymorphism has no performance cost or that compile-time polymorphism always results in smaller binaries (ignoring code bloat from templates).",
+      "Fails to mention the mechanism behind runtime polymorphism, omitting the vtable and dynamic dispatch.",
+      "Assumes compile-time polymorphism can handle dynamic heterogeneous collections determined entirely at runtime."
+    ],
+    "progressive_hints": [
+      "Think about when the compiler versus the CPU actually decides which specific piece of code to execute.",
+      "Consider how a container holding a mix of different derived objects requires runtime type information versus how a template resolves types before the program runs.",
+      "Compare the cost of looking up a function pointer in a vtable at runtime versus generating specialized machine code per type during compilation."
+    ],
+    "learning_objective": "The candidate should understand the distinct mechanics, performance implications, and architectural trade-offs between compile-time and runtime polymorphism in C++."
   }
 ]

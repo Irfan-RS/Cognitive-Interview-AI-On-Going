@@ -1,8 +1,279 @@
 [
-  {"id":"react-0001","question":"Explain how React's Virtual DOM works and why it improves performance.","type":"conceptual","difficulty":2,"roles":["frontend"],"topics":["react","frontend"],"tech_keywords":["react"],"companies_common":["Meta","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["Virtual DOM is a lightweight in-memory JS representation of the actual DOM tree","On state change, React builds a new virtual DOM tree and diffs it against the previous one (reconciliation)","Only the actual minimal set of real DOM mutations needed to match the new virtual tree are applied, since real DOM operations are comparatively expensive","Clarifies it's not always faster than manual optimal DOM updates, but makes writing declarative UI code fast enough by default without manual DOM management"],"sample_answer":"The Virtual DOM is a lightweight JavaScript object tree that mirrors the actual DOM structure. When state changes, React builds a new virtual DOM tree and diffs it against the previous version — a process called reconciliation — to compute the minimal set of actual DOM mutations needed. It then applies just those changes to the real DOM, which is comparatively expensive to manipulate directly. This isn't necessarily faster than a hand-optimized direct DOM update would be, but it lets developers write declarative, easy-to-reason-about UI code without manually tracking and minimizing DOM operations themselves."},"follow_up_hint":"Ask what the 'key' prop is used for during list reconciliation and what happens if it's omitted or incorrect."},
-  {"id":"react-0002","question":"What is the difference between useMemo and useCallback in React?","type":"conceptual","difficulty":2,"roles":["frontend"],"topics":["react"],"tech_keywords":["react","hooks"],"companies_common":["Meta","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["useMemo memoizes a computed VALUE, recomputing it only when its dependencies change","useCallback memoizes a FUNCTION reference itself, so the same function identity is preserved across renders unless dependencies change","Both exist primarily to avoid unnecessary recomputation or to prevent unnecessary re-renders of memoized child components (React.memo) that would otherwise see a 'new' prop reference every render","Cautions against overusing them — they have their own overhead and are only worth it when the computation is expensive or re-renders are provably a problem"],"sample_answer":"useMemo memoizes a computed value, only recalculating it when one of its dependencies changes, which is useful for expensive computations. useCallback memoizes a function's reference itself, so the function identity stays stable across re-renders unless its dependencies change — this mainly matters when passing callbacks to a child wrapped in React.memo, since otherwise a new function reference every render would defeat that memoization. Both add their own small overhead, so I'd only reach for them when profiling shows an actual expensive recomputation or unnecessary re-render, not by default everywhere."},"follow_up_hint":"Ask them to give an example where using useCallback without React.memo on the child provides no benefit."},
-  {"id":"react-0003","question":"Explain the React reconciliation process and how the 'key' prop affects it in lists.","type":"conceptual","difficulty":3,"roles":["frontend"],"topics":["react"],"tech_keywords":["react"],"companies_common":["Meta"],"source_style":"faang-common","reference_solution":{"key_points":["React's diffing algorithm compares elements by type and position by default when reconciling children","For lists, without stable keys, React matches old and new children by index, which can misattribute state to the wrong item when items are reordered/inserted/removed","A stable, unique 'key' lets React correctly track which item is which across renders, even if the order changes, preserving correct component state and minimizing DOM operations","Using array index as key is problematic specifically when list order/composition can change, since the index doesn't identify the item"],"sample_answer":"When reconciling a list of children, React needs to match old elements to new ones to decide what to update, add, or remove. Without a stable key, it falls back to matching by index position, which can cause bugs when the list is reordered or an item is inserted in the middle — component state can end up attached to the wrong logical item, since React thinks 'the thing at index 2' is the same element even though the actual data there changed. A unique, stable key — usually a database ID — lets React correctly identify each item across renders regardless of reordering, so it preserves the right state and only does the minimal necessary DOM operations. Using the array index as a key defeats this whenever the list's order or membership can change."},"follow_up_hint":"Ask them to describe a concrete bug caused by using array index as a key in a reorderable to-do list."},
-  {"id":"react-0004","question":"What are React Server Components, and how do they differ from traditional client-rendered components?","type":"conceptual","difficulty":4,"roles":["frontend"],"topics":["react"],"tech_keywords":["react","ssr"],"companies_common":["Meta","Vercel"],"source_style":"faang-common","reference_solution":{"key_points":["Server Components render entirely on the server and send serialized output (not JS bundle code) to the client — no client-side JS is shipped for them","Reduces client bundle size since server-only logic/dependencies never reach the browser","Can directly access server resources (databases, filesystem) without an API layer, since they never run in the browser","Cannot use browser-only APIs, state, or effects (no useState/useEffect) since they don't run/re-render on the client; interactive parts still need Client Components"],"sample_answer":"React Server Components render exclusively on the server, and instead of shipping the component's JavaScript to the browser, only its rendered output/serialized representation is sent to the client — so their code and dependencies never bloat the client bundle. This also lets them directly access server-only resources like a database or filesystem without needing a separate API endpoint. The trade-off is they can't use browser-only features, state, or effects like useState or useEffect, since they don't run or re-render in the browser at all — any interactive UI still needs to be a traditional Client Component, and Server and Client Components are composed together in the same tree."},"follow_up_hint":"Ask how data fetched in a Server Component gets passed down to an interactive Client Component."},
-  {"id":"react-0005","question":"Explain what happens during React's render phase versus commit phase.","type":"conceptual","difficulty":3,"roles":["frontend"],"topics":["react"],"tech_keywords":["react"],"companies_common":["Meta"],"source_style":"faang-common","reference_solution":{"key_points":["Render phase: React calls component functions to figure out what the UI should look like, building the new virtual DOM tree and diffing it — this phase is pure and can be paused/aborted/restarted (used by concurrent features)","Commit phase: React actually applies the computed DOM mutations, runs lifecycle methods like componentDidMount/useLayoutEffect, and this phase is synchronous and can't be interrupted","Explains why side effects shouldn't happen during render (calling components multiple times, or aborting a render, would run the side effect incorrectly) — that's why useEffect exists to run after commit"],"sample_answer":"During the render phase, React calls your component functions to compute what the new UI tree should look like, and diffs it against the previous tree — this phase is meant to be pure with no side effects, since React may call it more than once, pause it, or throw away the result entirely under concurrent rendering features. The commit phase is where React actually applies the computed DOM mutations and runs effects tied to DOM changes, like componentDidMount or useLayoutEffect — this phase is synchronous and can't be interrupted. This distinction is exactly why side effects belong in useEffect rather than directly in the component body — putting a side effect in render risks it running multiple times or running for a render that gets thrown away."},"follow_up_hint":"Ask why useLayoutEffect runs synchronously during commit while useEffect runs asynchronously after paint."},
-  {"id":"react-0006","question":"What is prop drilling, and what are the common solutions to avoid it?","type":"trade_off_questions","difficulty":2,"roles":["frontend"],"topics":["react"],"tech_keywords":["react","state-management"],"companies_common":["Amazon","Meta"],"source_style":"common-interview","reference_solution":{"key_points":["Prop drilling is passing a prop through multiple intermediate components that don't use it themselves, just to get it to a deeply nested descendant","Solutions: React Context API for moderate cross-cutting data (theme, auth user) without prop chains","Global state management libraries (Redux, Zustand, Jotai) for more complex/frequently-updated shared state with better devtools and performance controls","Component composition (passing children/render props) can also avoid drilling by restructuring the component tree instead of threading props through it"],"sample_answer":"Prop drilling is when a prop has to be passed through several intermediate components that don't actually use it, purely to reach a deeply nested child that does. For moderate cases like theme or the logged-in user, React's Context API avoids this by letting a deeply nested component read a value directly without every level in between passing it along. For more complex or frequently-changing shared state, a dedicated state management library like Redux, Zustand, or Jotai often works better, since Context re-renders every consumer on any change and lacks some devtools/performance features those libraries provide. Restructuring the component tree with composition — passing a fully-built child element down as a prop instead of raw data — can also sidestep the need to drill data through layers at all."},"follow_up_hint":"Ask about a performance downside of using Context for very frequently changing state."}
+  {
+    "id": "react-0001",
+    "question": "Explain how React's Virtual DOM works and why it improves performance.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "react",
+      "frontend"
+    ],
+    "tech_keywords": [
+      "react"
+    ],
+    "companies_common": [
+      "Meta",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Virtual DOM is a lightweight in-memory JS representation of the actual DOM tree",
+        "On state change, React builds a new virtual DOM tree and diffs it against the previous one (reconciliation)",
+        "Only the actual minimal set of real DOM mutations needed to match the new virtual tree are applied, since real DOM operations are comparatively expensive",
+        "Clarifies it's not always faster than manual optimal DOM updates, but makes writing declarative UI code fast enough by default without manual DOM management"
+      ],
+      "sample_answer": "The Virtual DOM is a lightweight JavaScript object tree that mirrors the actual DOM structure. When state changes, React builds a new virtual DOM tree and diffs it against the previous version — a process called reconciliation — to compute the minimal set of actual DOM mutations needed. It then applies just those changes to the real DOM, which is comparatively expensive to manipulate directly. This isn't necessarily faster than a hand-optimized direct DOM update would be, but it lets developers write declarative, easy-to-reason-about UI code without manually tracking and minimizing DOM operations themselves."
+    },
+    "follow_up_hint": "Ask what the 'key' prop is used for during list reconciliation and what happens if it's omitted or incorrect.",
+    "concept": "Virtual DOM",
+    "sub_concept": "Reconciliation and Diffing Algorithms",
+    "expected_reasoning": "A strong candidate begins by defining the Virtual DOM as a lightweight JavaScript representation of the real DOM tree. They then walk through the lifecycle of a state change: a new virtual tree is constructed and compared against the old one using a diffing algorithm during the reconciliation phase. Rather than concluding that JavaScript is inherently faster than the browser, they analyze the performance bottleneck—explaining that batching and minimizing expensive actual DOM mutations is where the optimization lies. Finally, they nuance the performance claims by noting that while it is rarely faster than hand-tuned imperative DOM manipulation, it automates optimization to provide great performance for declarative UI development.",
+    "common_mistakes": [
+      "States that the Virtual DOM is always faster than the real DOM without explaining why real DOM operations are expensive",
+      "Claims React updates the entire real DOM on every single state change",
+      "Believes the Virtual DOM is a browser-native feature rather than a user-space abstraction",
+      "Confuses the Virtual DOM diffing process with browser layout and paint cycles",
+      "Treats the mechanism as a magic bullet for performance without mentioning trade-offs or memory overhead"
+    ],
+    "progressive_hints": [
+      "What is the actual bottleneck in browsers when you update UI elements frequently?",
+      "Think about what happens in memory when component state changes before anything is actually shown on the screen.",
+      "If you have an old tree of objects and a new tree of objects, how can you figure out the absolute minimum number of changes needed to get from one to the other without touching the real DOM yet?"
+    ],
+    "learning_objective": "Candidates should understand that the Virtual DOM optimizes performance by batching and minimizing expensive real DOM manipulations through in-memory diffing, enabling fast declarative UI development."
+  },
+  {
+    "id": "react-0002",
+    "question": "What is the difference between useMemo and useCallback in React?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "react"
+    ],
+    "tech_keywords": [
+      "react",
+      "hooks"
+    ],
+    "companies_common": [
+      "Meta",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "useMemo memoizes a computed VALUE, recomputing it only when its dependencies change",
+        "useCallback memoizes a FUNCTION reference itself, so the same function identity is preserved across renders unless dependencies change",
+        "Both exist primarily to avoid unnecessary recomputation or to prevent unnecessary re-renders of memoized child components (React.memo) that would otherwise see a 'new' prop reference every render",
+        "Cautions against overusing them — they have their own overhead and are only worth it when the computation is expensive or re-renders are provably a problem"
+      ],
+      "sample_answer": "useMemo memoizes a computed value, only recalculating it when one of its dependencies changes, which is useful for expensive computations. useCallback memoizes a function's reference itself, so the function identity stays stable across re-renders unless its dependencies change — this mainly matters when passing callbacks to a child wrapped in React.memo, since otherwise a new function reference every render would defeat that memoization. Both add their own small overhead, so I'd only reach for them when profiling shows an actual expensive recomputation or unnecessary re-render, not by default everywhere."
+    },
+    "follow_up_hint": "Ask them to give an example where using useCallback without React.memo on the child provides no benefit.",
+    "concept": "React Performance Optimization",
+    "sub_concept": "Memoization Hooks",
+    "expected_reasoning": "A strong candidate starts by defining the primary purpose of both hooks as performance optimization through memoization. They then contrast what is actually stored—a computed value versus a function reference—explaining how JavaScript reference equality triggers downstream renders in child components wrapped in React.memo. Finally, they weigh the trade-offs, noting that premature optimization adds overhead and memory pressure, so these hooks should only be used when dealing with expensive calculations or strict reference stability requirements.",
+    "common_mistakes": [
+      "States that useCallback is just a shorthand for useMemo returning a function without explaining the difference in intent.",
+      "Claims these hooks should be used on every function and value to make the app faster.",
+      "Does not mention reference equality or referential identity when discussing why child components re-render.",
+      "Confuses the return value of useMemo (the result of the executed function) with useCallback (the function itself).",
+      "Fails to mention the overhead of memoization and when it is unnecessary or counterproductive."
+    ],
+    "progressive_hints": [
+      "What changes about JavaScript variables and functions on every single render in a React component?",
+      "Think about what each hook returns: one caches the result of running a function, while the other caches something else entirely. What is that something else?",
+      "If you pass a function down as a prop to a child wrapped in React.memo, why might it re-render even if its inputs haven't changed, and which hook prevents that?"
+    ],
+    "learning_objective": "Understand that useMemo caches computed values and useCallback caches function references, both serving to maintain referential stability and prevent unnecessary re-renders only when weighed against their internal overhead."
+  },
+  {
+    "id": "react-0003",
+    "question": "Explain the React reconciliation process and how the 'key' prop affects it in lists.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "react"
+    ],
+    "tech_keywords": [
+      "react"
+    ],
+    "companies_common": [
+      "Meta"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "React's diffing algorithm compares elements by type and position by default when reconciling children",
+        "For lists, without stable keys, React matches old and new children by index, which can misattribute state to the wrong item when items are reordered/inserted/removed",
+        "A stable, unique 'key' lets React correctly track which item is which across renders, even if the order changes, preserving correct component state and minimizing DOM operations",
+        "Using array index as key is problematic specifically when list order/composition can change, since the index doesn't identify the item"
+      ],
+      "sample_answer": "When reconciling a list of children, React needs to match old elements to new ones to decide what to update, add, or remove. Without a stable key, it falls back to matching by index position, which can cause bugs when the list is reordered or an item is inserted in the middle — component state can end up attached to the wrong logical item, since React thinks 'the thing at index 2' is the same element even though the actual data there changed. A unique, stable key — usually a database ID — lets React correctly identify each item across renders regardless of reordering, so it preserves the right state and only does the minimal necessary DOM operations. Using the array index as a key defeats this whenever the list's order or membership can change."
+    },
+    "follow_up_hint": "Ask them to describe a concrete bug caused by using array index as a key in a reorderable to-do list.",
+    "concept": "React Reconciliation",
+    "sub_concept": "List Diffing and Key Prop Optimization",
+    "expected_reasoning": "A strong candidate begins by explaining the core purpose of React's reconciliation algorithm as a heuristic for efficient tree comparison between renders. They then analyze how React handles child lists by default through positional matching and type checking. Next, they derive why this default behavior breaks down during list mutations like reordering, as positional indexes remain static while item identities shift. Finally, they explain how unique and stable keys establish an explicit identity map, enabling the diffing algorithm to accurately track item persistence, preserve component local state, and minimize expensive DOM mutations.",
+    "common_mistakes": [
+      "States that keys are only needed to get rid of console warnings without explaining the underlying mechanics.",
+      "Claims that keys improve performance by avoiding all re-renders without mentioning identity tracking or DOM conservation.",
+      "Uses array indices as keys while claiming it completely solves the reordering problem.",
+      "Confuses the Virtual DOM diffing algorithm with browser layout and paint cycles.",
+      "States that React compares every single node in the entire application tree simultaneously."
+    ],
+    "progressive_hints": [
+      "Consider what information React has about a list item when it renders a new array versus the previous render if no unique identifiers are provided.",
+      "Think about what happens to the internal component state of a list item when an item is inserted at the beginning of an array and items shift down by one index.",
+      "If React matches children by their positional index during the diffing phase, how does providing a stable, unique key change what React compares across renders?"
+    ],
+    "learning_objective": "The candidate should understand how React's diffing heuristic uses unique keys to maintain component identity and state across dynamic list operations."
+  },
+  {
+    "id": "react-0004",
+    "question": "What are React Server Components, and how do they differ from traditional client-rendered components?",
+    "type": "conceptual",
+    "difficulty": 4,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "react"
+    ],
+    "tech_keywords": [
+      "react",
+      "ssr"
+    ],
+    "companies_common": [
+      "Meta",
+      "Vercel"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Server Components render entirely on the server and send serialized output (not JS bundle code) to the client — no client-side JS is shipped for them",
+        "Reduces client bundle size since server-only logic/dependencies never reach the browser",
+        "Can directly access server resources (databases, filesystem) without an API layer, since they never run in the browser",
+        "Cannot use browser-only APIs, state, or effects (no useState/useEffect) since they don't run/re-render on the client; interactive parts still need Client Components"
+      ],
+      "sample_answer": "React Server Components render exclusively on the server, and instead of shipping the component's JavaScript to the browser, only its rendered output/serialized representation is sent to the client — so their code and dependencies never bloat the client bundle. This also lets them directly access server-only resources like a database or filesystem without needing a separate API endpoint. The trade-off is they can't use browser-only features, state, or effects like useState or useEffect, since they don't run or re-render in the browser at all — any interactive UI still needs to be a traditional Client Component, and Server and Client Components are composed together in the same tree."
+    },
+    "follow_up_hint": "Ask how data fetched in a Server Component gets passed down to an interactive Client Component.",
+    "concept": "React Server Components",
+    "sub_concept": "Server-side rendering architecture vs traditional client-side rendering",
+    "expected_reasoning": "A strong candidate first identifies where code executes by contrasting the server environment with the browser runtime. They derive the architectural implication: if a component runs exclusively on the server, its dependencies and execution logic never need to be bundled into the JavaScript payload sent to the client. They then weigh the trade-offs regarding data access—recognizing that direct backend access is unlocked—against the limitations, such as the complete inability to use state, effects, or browser-only APIs. Finally, they synthesize how server and client components interleave to form a cohesive rendering tree.",
+    "common_mistakes": [
+      "Confusing React Server Components with traditional Server-Side Rendering (SSR) like Next.js getServerSideProps.",
+      "Stating that Server Components send HTML to the client rather than a serialized component output stream.",
+      "Believing that Server Components can manage local state using hooks like useState if they re-render on the server.",
+      "Assuming all components in a modern React application must now be written as Server Components.",
+      "Failing to mention the impact on client JavaScript bundle size and dependency elimination."
+    ],
+    "progressive_hints": [
+      "Consider where the code for these components actually executes and what gets shipped to the browser.",
+      "Think about what happens to heavy third-party libraries or database queries used inside these components—where do those dependencies live?",
+      "If a component never runs in the browser, what does that imply about its ability to handle user interaction, local state, or browser APIs like localStorage?"
+    ],
+    "learning_objective": "Understand how React Server Components split execution to eliminate zero-interactivity bundle weight and allow direct server resource access without sacrificing client-side interactivity."
+  },
+  {
+    "id": "react-0005",
+    "question": "Explain what happens during React's render phase versus commit phase.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "react"
+    ],
+    "tech_keywords": [
+      "react"
+    ],
+    "companies_common": [
+      "Meta"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Render phase: React calls component functions to figure out what the UI should look like, building the new virtual DOM tree and diffing it — this phase is pure and can be paused/aborted/restarted (used by concurrent features)",
+        "Commit phase: React actually applies the computed DOM mutations, runs lifecycle methods like componentDidMount/useLayoutEffect, and this phase is synchronous and can't be interrupted",
+        "Explains why side effects shouldn't happen during render (calling components multiple times, or aborting a render, would run the side effect incorrectly) — that's why useEffect exists to run after commit"
+      ],
+      "sample_answer": "During the render phase, React calls your component functions to compute what the new UI tree should look like, and diffs it against the previous tree — this phase is meant to be pure with no side effects, since React may call it more than once, pause it, or throw away the result entirely under concurrent rendering features. The commit phase is where React actually applies the computed DOM mutations and runs effects tied to DOM changes, like componentDidMount or useLayoutEffect — this phase is synchronous and can't be interrupted. This distinction is exactly why side effects belong in useEffect rather than directly in the component body — putting a side effect in render risks it running multiple times or running for a render that gets thrown away."
+    },
+    "follow_up_hint": "Ask why useLayoutEffect runs synchronously during commit while useEffect runs asynchronously after paint.",
+    "concept": "React Rendering Phases",
+    "sub_concept": "Render Phase vs Commit Phase and Side Effects",
+    "expected_reasoning": "A strong candidate begins by separating React's work into two distinct mental models: computing changes versus applying them. They first explain that the render phase is pure, meaning components are called to generate the virtual DOM and diff against the old tree without touching the actual browser DOM. They deduce that because this phase can be paused, restarted, or aborted by concurrent features, any side effects placed here would run unpredictably or multiple times. Finally, they reason that the commit phase must be synchronous and uninterrupted to prevent visual tearing when mutating the real DOM, and that side effects belong here or post-commit via hooks.",
+    "common_mistakes": [
+      "Confusing virtual DOM diffing with actual DOM manipulation, assuming React updates the real DOM during render.",
+      "Stating that the render phase interacts with the browser or fires DOM-dependent side effects.",
+      "Claiming that render phase functions like useEffect run during the render phase instead of after commit.",
+      "Failing to explain *why* the render phase must be pure and interruptible (concurrency and re-running).",
+      "Treating the two phases as a single continuous synchronous block without mentioning React's ability to pause work."
+    ],
+    "progressive_hints": [
+      "Think about how React separates the process of figuring out *what* changed from actually *applying* those changes to the screen.",
+      "Consider what happens if React starts calculating a component update, but then pauses or throws it away to handle a higher-priority interaction. What does that imply about the code running inside your component body?",
+      "If component functions might be called multiple times during an interrupted or restarted render, where must you place asynchronous data fetching or subscriptions so they only run once after the real DOM is updated?"
+    ],
+    "learning_objective": "The candidate should understand how React's separation of rendering and committing enables concurrent features and why keeping the render phase pure is critical for correctness."
+  },
+  {
+    "id": "react-0006",
+    "question": "What is prop drilling, and what are the common solutions to avoid it?",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "react"
+    ],
+    "tech_keywords": [
+      "react",
+      "state-management"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Prop drilling is passing a prop through multiple intermediate components that don't use it themselves, just to get it to a deeply nested descendant",
+        "Solutions: React Context API for moderate cross-cutting data (theme, auth user) without prop chains",
+        "Global state management libraries (Redux, Zustand, Jotai) for more complex/frequently-updated shared state with better devtools and performance controls",
+        "Component composition (passing children/render props) can also avoid drilling by restructuring the component tree instead of threading props through it"
+      ],
+      "sample_answer": "Prop drilling is when a prop has to be passed through several intermediate components that don't actually use it, purely to reach a deeply nested child that does. For moderate cases like theme or the logged-in user, React's Context API avoids this by letting a deeply nested component read a value directly without every level in between passing it along. For more complex or frequently-changing shared state, a dedicated state management library like Redux, Zustand, or Jotai often works better, since Context re-renders every consumer on any change and lacks some devtools/performance features those libraries provide. Restructuring the component tree with composition — passing a fully-built child element down as a prop instead of raw data — can also sidestep the need to drill data through layers at all."
+    },
+    "follow_up_hint": "Ask about a performance downside of using Context for very frequently changing state.",
+    "concept": "State Management",
+    "sub_concept": "Prop Drilling and Avoidance Patterns",
+    "expected_reasoning": "A strong candidate begins by defining prop drilling precisely as the structural overhead of passing data through intermediate components that have no operational need for it. They then evaluate architectural trade-offs across different scales of applications. For static or infrequently updated cross-cutting concerns, they consider the Context API. For complex mutations or performance-sensitive global state, they pivot to state management libraries like Zustand or Redux. Finally, they weigh non-state alternatives such as component composition to solve structural coupling.",
+    "common_mistakes": [
+      "States the definition without explaining why it is an architectural maintenance problem",
+      "Prescribes Redux as the only solution for every state sharing requirement",
+      "Ignores component composition as a valid structural alternative to global state",
+      "Fails to mention performance implications or re-render overhead associated with solutions like Context",
+      "Confuses state location with data flow mechanisms"
+    ],
+    "progressive_hints": [
+      "Consider what happens to intermediate components in a deep tree when a deeply nested child needs access to a top-level piece of data.",
+      "Look beyond global state libraries—are there ways to restructure your component hierarchy or pass markup directly to avoid threading props?",
+      "Evaluate when a built-in React feature designed for dependency injection is sufficient versus when a dedicated state container or restructuring approach is necessary."
+    ],
+    "learning_objective": "Understand how to identify the maintainability bottlenecks of prop drilling and select the appropriate architectural pattern—Context, global state, or component composition—to resolve them."
+  }
 ]

@@ -1,6 +1,192 @@
 [
-  {"id":"jsd-0001","question":"Explain JavaScript closures with a practical example.","type":"conceptual","difficulty":2,"roles":["frontend","backend"],"topics":["javascript"],"tech_keywords":["javascript","closures"],"companies_common":["Amazon","Meta","Google"],"source_style":"common-interview","reference_solution":{"key_points":["A closure is a function that retains access to variables from its enclosing lexical scope, even after that outer function has finished executing","This happens because JavaScript functions capture references to their surrounding scope at creation time, not just a snapshot of values","Practical example: a counter factory function that returns an increment function, where each returned function keeps its own private, persistent count variable inaccessible from outside","Commonly used for data privacy/encapsulation (private variables), and historically for the module pattern before ES modules existed"],"sample_answer":"A closure is a function that retains access to variables from the scope it was defined in, even after that outer, enclosing function has already finished running and returned. This works because JavaScript functions capture a live reference to their surrounding lexical scope at the time they're created, not just a one-time snapshot of the values. A classic practical example is a counter factory: `function makeCounter() { let count = 0; return () => ++count; }` — the returned function keeps access to that specific `count` variable, incrementing and remembering it across calls, even though `makeCounter` itself has already returned. This is commonly used for data privacy, keeping a variable like count truly private and inaccessible from outside code except through the specifically returned function, and it was the basis of the module pattern for encapsulation before ES modules existed natively."},"follow_up_hint":"Ask them the classic 'var in a loop' closure gotcha and how let versus var changes the behavior."},
-  {"id":"jsd-0002","question":"What is the difference between `==` and `===` in JavaScript, and why is `===` generally recommended?","type":"conceptual","difficulty":1,"roles":["frontend","backend"],"topics":["javascript"],"tech_keywords":["javascript"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["== performs type coercion before comparing — it converts operands to a common type if they differ, which can produce surprising results (e.g. '' == 0 is true, null == undefined is true)","=== compares both value and type directly, with no coercion — if types differ, it's simply false, no exceptions","=== is generally recommended because coercion rules are complex and non-obvious, making == a common source of subtle bugs","Gives at least one concrete surprising == example to demonstrate the risk"],"sample_answer":"The == operator performs type coercion before comparing two values — if the operands are different types, JavaScript converts them to a common type first, which can lead to surprising results, like '' == 0 evaluating to true, or null == undefined also being true. The === operator compares both the value and the type directly with no coercion at all — if the types differ, it's simply false, with no conversion happening behind the scenes. === is generally recommended because the coercion rules behind == are genuinely complex and non-obvious even to experienced developers, making == a common source of subtle, hard-to-spot bugs, whereas === behaves predictably and explicitly."},"follow_up_hint":"Ask them what NaN == NaN evaluates to, and why, as a further example of coercion's surprising edge cases."},
-  {"id":"jsd-0003","question":"Explain JavaScript's prototype chain and how it enables inheritance.","type":"conceptual","difficulty":3,"roles":["frontend","backend"],"topics":["javascript"],"tech_keywords":["javascript","prototypes"],"companies_common":["Amazon","Meta"],"source_style":"faang-common","reference_solution":{"key_points":["Every JS object has an internal link to another object, its prototype; when a property/method isn't found directly on an object, JS looks up the chain to the prototype, then the prototype's prototype, and so on","This chain ultimately ends at Object.prototype, whose own prototype is null, terminating the lookup","Object.create(), constructor functions with .prototype, or the 'class' syntax (syntactic sugar over prototypes) are different ways to set up this prototype linkage for inheritance","class syntax in modern JS doesn't change this underlying mechanism — it's still prototype-based inheritance, just with more familiar, class-like syntax on top"],"sample_answer":"Every JavaScript object has an internal link to another object called its prototype. When you access a property or method on an object and it's not found directly on that object itself, JavaScript automatically looks up the chain to its prototype, then that prototype's own prototype, and so on, until it either finds the property or reaches the end of the chain, which terminates at Object.prototype, whose own prototype is null. This chain is what implements inheritance in JavaScript: you can set an object's prototype via Object.create(), through a constructor function's .prototype property, or using the more familiar 'class' syntax introduced in ES6 — but it's important to know that 'class' is really just syntactic sugar over this same underlying prototype-based mechanism, not a fundamentally different inheritance model like in classical OOP languages."},"follow_up_hint":"Ask them to explain what `hasOwnProperty` checks for, in contrast to a property found via the prototype chain."},
-  {"id":"jsd-0004","question":"Explain the difference between `null` and `undefined` in JavaScript.","type":"conceptual","difficulty":1,"roles":["frontend"],"topics":["javascript"],"tech_keywords":["javascript"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["undefined: a variable has been declared but not yet assigned a value, or a function parameter wasn't provided, or accessing a non-existent object property — JS's own default for 'no value yet'","null: an explicitly assigned value representing 'intentionally no value' — set deliberately by the programmer to indicate absence","typeof null is (confusingly, due to a long-standing JS bug) 'object', while typeof undefined is 'undefined'","== considers null and undefined equal to each other, but === does not, since they're different types"],"sample_answer":"undefined typically represents the absence of a value that JavaScript itself assigns by default — a declared variable that hasn't been given a value yet, a function parameter that wasn't passed an argument, or accessing a property that doesn't exist on an object. null, on the other hand, is a value that's explicitly assigned by the programmer to deliberately represent 'intentionally no value' or 'nothing here on purpose'. One quirky detail is that typeof null returns 'object', which is actually a long-standing bug baked into the language from its earliest days that's kept for backward compatibility, while typeof undefined correctly returns 'undefined'. Using ==, null and undefined are considered equal to each other, but using ===, they're not, since they're different types."},"follow_up_hint":"Ask them why checking `if (value == null)` is sometimes used deliberately to catch both null and undefined in one check."}
+  {
+    "id": "jsd-0001",
+    "question": "Explain JavaScript closures with a practical example.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend",
+      "backend"
+    ],
+    "topics": [
+      "javascript"
+    ],
+    "tech_keywords": [
+      "javascript",
+      "closures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A closure is a function that retains access to variables from its enclosing lexical scope, even after that outer function has finished executing",
+        "This happens because JavaScript functions capture references to their surrounding scope at creation time, not just a snapshot of values",
+        "Practical example: a counter factory function that returns an increment function, where each returned function keeps its own private, persistent count variable inaccessible from outside",
+        "Commonly used for data privacy/encapsulation (private variables), and historically for the module pattern before ES modules existed"
+      ],
+      "sample_answer": "A closure is a function that retains access to variables from the scope it was defined in, even after that outer, enclosing function has already finished running and returned. This works because JavaScript functions capture a live reference to their surrounding lexical scope at the time they're created, not just a one-time snapshot of the values. A classic practical example is a counter factory: `function makeCounter() { let count = 0; return () => ++count; }` — the returned function keeps access to that specific `count` variable, incrementing and remembering it across calls, even though `makeCounter` itself has already returned. This is commonly used for data privacy, keeping a variable like count truly private and inaccessible from outside code except through the specifically returned function, and it was the basis of the module pattern for encapsulation before ES modules existed natively."
+    },
+    "follow_up_hint": "Ask them the classic 'var in a loop' closure gotcha and how let versus var changes the behavior.",
+    "concept": "JavaScript Closures",
+    "sub_concept": "Lexical Scope and Data Encapsulation",
+    "expected_reasoning": "A strong candidate begins by defining the relationship between an inner function and its outer lexical environment. They trace how variable references are preserved in memory rather than destroyed when the outer execution context pops off the stack. Next, they construct a practical scenario, such as a factory function that generates independent stateful instances. Finally, they explain the mechanism of action—that the inner function maintains a live reference to the outer scope—highlighting both the utility for data privacy and the memory implications.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely saying 'a closure is when a function remembers its variables'.",
+      "Confuses closures with object-oriented classes or simple global variables.",
+      "Claims that closures take a static snapshot of variable values at creation time rather than maintaining live references.",
+      "Fails to provide a concrete, working code example and relies entirely on abstract definitions.",
+      "Believes that closures are unique to JavaScript or function asynchronously, rather than being a natural consequence of lexical scoping."
+    ],
+    "progressive_hints": [
+      "What happens to local variables inside a function after that function finishes executing and returns?",
+      "Think about what a nested function carries with it regarding its surrounding environment when it is returned and executed elsewhere.",
+      "If an outer function declares a variable and returns an inner function that modifies it, how does the inner function maintain access to that specific variable instance across multiple calls?"
+    ],
+    "learning_objective": "The candidate should walk away understanding how lexical scoping allows inner functions to maintain live references to outer variables, enabling powerful encapsulation and state management patterns."
+  },
+  {
+    "id": "jsd-0002",
+    "question": "What is the difference between `==` and `===` in JavaScript, and why is `===` generally recommended?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "frontend",
+      "backend"
+    ],
+    "topics": [
+      "javascript"
+    ],
+    "tech_keywords": [
+      "javascript"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "== performs type coercion before comparing — it converts operands to a common type if they differ, which can produce surprising results (e.g. '' == 0 is true, null == undefined is true)",
+        "=== compares both value and type directly, with no coercion — if types differ, it's simply false, no exceptions",
+        "=== is generally recommended because coercion rules are complex and non-obvious, making == a common source of subtle bugs",
+        "Gives at least one concrete surprising == example to demonstrate the risk"
+      ],
+      "sample_answer": "The == operator performs type coercion before comparing two values — if the operands are different types, JavaScript converts them to a common type first, which can lead to surprising results, like '' == 0 evaluating to true, or null == undefined also being true. The === operator compares both the value and the type directly with no coercion at all — if the types differ, it's simply false, with no conversion happening behind the scenes. === is generally recommended because the coercion rules behind == are genuinely complex and non-obvious even to experienced developers, making == a common source of subtle, hard-to-spot bugs, whereas === behaves predictably and explicitly."
+    },
+    "follow_up_hint": "Ask them what NaN == NaN evaluates to, and why, as a further example of coercion's surprising edge cases.",
+    "concept": "Equality Comparison",
+    "sub_concept": "Type Coercion vs Strict Equality",
+    "expected_reasoning": "A strong candidate begins by defining the primary operational difference regarding type handling during comparison. They then analyze how the presence or absence of type coercion alters evaluation outcomes for operands of different types. Next, they weigh the predictability and readability benefits of strict comparison against the potential for unexpected runtime behavior caused by implicit rules. Finally, they illustrate their reasoning with a concrete, counterintuitive example where loose equality fails human expectations.",
+    "common_mistakes": [
+      "States that == checks value and === checks memory reference, confusing it with object identity.",
+      "Merely states that '=== is stricter' without explaining type coercion or providing a concrete example.",
+      "Claims that == is faster than === for performance reasons.",
+      "Believes that null and undefined evaluate to false under both operators.",
+      "Fails to mention any specific edge cases or surprising coercion rules."
+    ],
+    "progressive_hints": [
+      "Consider what happens behind the scenes when you compare two values of completely different data types using each operator.",
+      "Think about what JavaScript does automatically to the operands before evaluating the expression with two equals signs.",
+      "Look closely at the complex rules JavaScript uses to convert strings, numbers, and booleans during comparison, and why hiding those rules might cause maintenance headaches."
+    ],
+    "learning_objective": "Understand that loose equality introduces unpredictable behavior through implicit type coercion, making strict equality the safer and more maintainable standard."
+  },
+  {
+    "id": "jsd-0003",
+    "question": "Explain JavaScript's prototype chain and how it enables inheritance.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "frontend",
+      "backend"
+    ],
+    "topics": [
+      "javascript"
+    ],
+    "tech_keywords": [
+      "javascript",
+      "prototypes"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Every JS object has an internal link to another object, its prototype; when a property/method isn't found directly on an object, JS looks up the chain to the prototype, then the prototype's prototype, and so on",
+        "This chain ultimately ends at Object.prototype, whose own prototype is null, terminating the lookup",
+        "Object.create(), constructor functions with .prototype, or the 'class' syntax (syntactic sugar over prototypes) are different ways to set up this prototype linkage for inheritance",
+        "class syntax in modern JS doesn't change this underlying mechanism — it's still prototype-based inheritance, just with more familiar, class-like syntax on top"
+      ],
+      "sample_answer": "Every JavaScript object has an internal link to another object called its prototype. When you access a property or method on an object and it's not found directly on that object itself, JavaScript automatically looks up the chain to its prototype, then that prototype's own prototype, and so on, until it either finds the property or reaches the end of the chain, which terminates at Object.prototype, whose own prototype is null. This chain is what implements inheritance in JavaScript: you can set an object's prototype via Object.create(), through a constructor function's .prototype property, or using the more familiar 'class' syntax introduced in ES6 — but it's important to know that 'class' is really just syntactic sugar over this same underlying prototype-based mechanism, not a fundamentally different inheritance model like in classical OOP languages."
+    },
+    "follow_up_hint": "Ask them to explain what `hasOwnProperty` checks for, in contrast to a property found via the prototype chain.",
+    "concept": "JavaScript Prototypes",
+    "sub_concept": "Prototype Chain and Inheritance Mechanism",
+    "expected_reasoning": "A strong candidate begins by defining the fundamental nature of JavaScript as a prototype-based language rather than a classical one. They trace how property and method lookup works dynamically at runtime by following internal links from an object to its prototype. Next, they explain how this forms a chain terminating at Object.prototype and null. Finally, they connect these low-level mechanics to modern syntax, explaining how constructor functions and ES6 classes utilize this exact same underlying model.",
+    "common_mistakes": [
+      "Confusing JavaScript's prototype inheritance with classical inheritance found in languages like Java or C++.",
+      "Stating that the 'class' keyword creates a separate classical inheritance model rather than being syntactic sugar over prototypes.",
+      "Failing to mention the internal lookup mechanism or how property resolution travels up the chain.",
+      "Forgetting where the prototype chain ultimately terminates (Object.prototype and null).",
+      "Conflating an object's 'prototype' internal property ([[Prototype]] or __proto__) with a constructor function's '.prototype' property."
+    ],
+    "progressive_hints": [
+      "Think about what happens in JavaScript when you try to access a property on an object that doesn't exist directly on that object itself.",
+      "Consider how the runtime engine keeps searching for that missing property across different objects, and how these objects are linked together in a sequence.",
+      "Reflect on how modern 'class' syntax compiles down under the hood, and whether it introduces a new inheritance system or leverages an existing one."
+    ],
+    "learning_objective": "Understand that JavaScript implements inheritance through a dynamic prototype chain where objects delegate property and method lookups to their linked prototypes rather than instantiating static classes."
+  },
+  {
+    "id": "jsd-0004",
+    "question": "Explain the difference between `null` and `undefined` in JavaScript.",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "javascript"
+    ],
+    "tech_keywords": [
+      "javascript"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "undefined: a variable has been declared but not yet assigned a value, or a function parameter wasn't provided, or accessing a non-existent object property — JS's own default for 'no value yet'",
+        "null: an explicitly assigned value representing 'intentionally no value' — set deliberately by the programmer to indicate absence",
+        "typeof null is (confusingly, due to a long-standing JS bug) 'object', while typeof undefined is 'undefined'",
+        "== considers null and undefined equal to each other, but === does not, since they're different types"
+      ],
+      "sample_answer": "undefined typically represents the absence of a value that JavaScript itself assigns by default — a declared variable that hasn't been given a value yet, a function parameter that wasn't passed an argument, or accessing a property that doesn't exist on an object. null, on the other hand, is a value that's explicitly assigned by the programmer to deliberately represent 'intentionally no value' or 'nothing here on purpose'. One quirky detail is that typeof null returns 'object', which is actually a long-standing bug baked into the language from its earliest days that's kept for backward compatibility, while typeof undefined correctly returns 'undefined'. Using ==, null and undefined are considered equal to each other, but using ===, they're not, since they're different types."
+    },
+    "follow_up_hint": "Ask them why checking `if (value == null)` is sometimes used deliberately to catch both null and undefined in one check.",
+    "concept": "JavaScript Types",
+    "sub_concept": "Primitive Absence Values",
+    "expected_reasoning": "A strong candidate begins by establishing the fundamental distinction between language-level default states and programmer-level intentional assignments. They walk through the lifecycle of variables and object properties to show when each value naturally arises or is explicitly used. Next, they address the runtime quirks by contrasting type checking behavior and equality comparison rules. Finally, they synthesize these technical details to explain the semantic contract each value communicates to other developers.",
+    "common_mistakes": [
+      "States that they are completely identical without providing any technical distinction.",
+      "Claims null and undefined are both assigned automatically by JavaScript.",
+      "Fails to mention the typeof null historical bug.",
+      "Confuses loose equality (==) behavior with strict equality (===) behavior regarding these two values.",
+      "Treats the distinction as purely stylistic rather than semantic."
+    ],
+    "progressive_hints": [
+      "Consider who is responsible for assigning each value in a typical application: the JavaScript engine or the programmer.",
+      "Think about what a variable contains when it is declared without an initializer versus when a developer explicitly wants to clear a value.",
+      "Look at how the typeof operator and strict equality operators evaluate the relationship between these two values."
+    ],
+    "learning_objective": "The candidate should understand that undefined represents an accidental or engine-level absence of value, while null represents an intentional, programmer-defined absence of value, and how this distinction impacts runtime behavior and type checking."
+  }
 ]

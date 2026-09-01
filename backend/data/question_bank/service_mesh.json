@@ -1,3 +1,53 @@
 [
-  {"id":"mesh-0001","question":"What is a service mesh, and what problems does it solve for a microservices architecture?","type":"conceptual","difficulty":4,"roles":["devops","backend","system_design"],"topics":["microservices","devops"],"tech_keywords":["service-mesh","istio"],"companies_common":["Google","Uber","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["A service mesh is a dedicated infrastructure layer that handles service-to-service communication concerns (traffic management, security, observability) via a sidecar proxy deployed alongside each service, rather than each service implementing this logic itself","Without a mesh, cross-cutting concerns like retries, timeouts, circuit breaking, mTLS encryption, and distributed tracing would need to be implemented (and kept consistent) in every service's own code, often duplicated across different languages/frameworks","With a mesh (e.g. Istio, Linkerd), the sidecar proxy intercepts all network traffic to/from a service, applying these policies uniformly and centrally-configurably, without changing the application code at all","Trade-off: adds meaningful operational complexity and some latency overhead (extra network hop through the sidecar proxy) — often only justified once the number of services and the cross-cutting concerns across them become substantial"],"sample_answer":"A service mesh is a dedicated infrastructure layer that handles service-to-service communication concerns — traffic routing, retries and timeouts, circuit breaking, mutual TLS encryption, and observability like distributed tracing — through a sidecar proxy deployed alongside each service instance, rather than requiring every individual service to implement all of that logic itself. Without a mesh, those cross-cutting concerns would need to be built into every service's own code, and keeping that consistent across services written in different languages or frameworks is genuinely hard and error-prone. With a mesh like Istio or Linkerd, the sidecar proxy transparently intercepts all network traffic going in and out of a service and applies these policies uniformly, configured centrally, without the application code needing to know or care that the mesh exists at all. The trade-off is a service mesh adds real operational complexity to run and understand, plus some latency overhead from the extra network hop through the sidecar proxy on every call — which is usually only worth taking on once you have enough services, and enough cross-cutting concerns to manage across them, that doing it manually per-service has become genuinely painful."},"follow_up_hint":"Ask them to give a concrete example of a canary rollout or mutual TLS policy being configured at the mesh level instead of in application code."}
+  {
+    "id": "mesh-0001",
+    "question": "What is a service mesh, and what problems does it solve for a microservices architecture?",
+    "type": "conceptual",
+    "difficulty": 4,
+    "roles": [
+      "devops",
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "microservices",
+      "devops"
+    ],
+    "tech_keywords": [
+      "service-mesh",
+      "istio"
+    ],
+    "companies_common": [
+      "Google",
+      "Uber",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "A service mesh is a dedicated infrastructure layer that handles service-to-service communication concerns (traffic management, security, observability) via a sidecar proxy deployed alongside each service, rather than each service implementing this logic itself",
+        "Without a mesh, cross-cutting concerns like retries, timeouts, circuit breaking, mTLS encryption, and distributed tracing would need to be implemented (and kept consistent) in every service's own code, often duplicated across different languages/frameworks",
+        "With a mesh (e.g. Istio, Linkerd), the sidecar proxy intercepts all network traffic to/from a service, applying these policies uniformly and centrally-configurably, without changing the application code at all",
+        "Trade-off: adds meaningful operational complexity and some latency overhead (extra network hop through the sidecar proxy) — often only justified once the number of services and the cross-cutting concerns across them become substantial"
+      ],
+      "sample_answer": "A service mesh is a dedicated infrastructure layer that handles service-to-service communication concerns — traffic routing, retries and timeouts, circuit breaking, mutual TLS encryption, and observability like distributed tracing — through a sidecar proxy deployed alongside each service instance, rather than requiring every individual service to implement all of that logic itself. Without a mesh, those cross-cutting concerns would need to be built into every service's own code, and keeping that consistent across services written in different languages or frameworks is genuinely hard and error-prone. With a mesh like Istio or Linkerd, the sidecar proxy transparently intercepts all network traffic going in and out of a service and applies these policies uniformly, configured centrally, without the application code needing to know or care that the mesh exists at all. The trade-off is a service mesh adds real operational complexity to run and understand, plus some latency overhead from the extra network hop through the sidecar proxy on every call — which is usually only worth taking on once you have enough services, and enough cross-cutting concerns to manage across them, that doing it manually per-service has become genuinely painful."
+    },
+    "follow_up_hint": "Ask them to give a concrete example of a canary rollout or mutual TLS policy being configured at the mesh level instead of in application code.",
+    "concept": "Service Mesh",
+    "sub_concept": "Infrastructure Architecture and Traffic Management in Microservices",
+    "expected_reasoning": "A strong candidate begins by identifying the fundamental pain point of scaling microservices: distributed communication challenges like security, reliability, and observability. Rather than discussing specific tools immediately, they explain the architectural shift from embedding network logic inside application code to decoupling it into a dedicated layer. They derive the need for sidecar proxies by analyzing how cross-cutting concerns would otherwise require redundant boilerplate across multiple languages. Finally, they weigh these benefits against the operational complexity and performance overhead introduced by extra hops, concluding that a mesh is a targeted solution for large-scale systems rather than a default requirement.",
+    "common_mistakes": [
+      "States that a service mesh is just a load balancer or an API gateway without mentioning service-to-service internal traffic.",
+      "Claims application code must be heavily modified to use a service mesh, missing the transparency provided by sidecar proxies.",
+      "Lists features like mTLS and circuit breaking without explaining *why* solving them centrally is better than doing it per-application.",
+      "Ignores the trade-offs entirely, presenting the mesh as a pure benefit with no operational overhead or latency cost.",
+      "Confuses a service mesh with a container orchestrator like Kubernetes, missing that it operates specifically on the networking layer."
+    ],
+    "progressive_hints": [
+      "Think about what every microservice needs to do when talking to another service, such as retrying failed calls or encrypting traffic.",
+      "Imagine you have microservices written in three different languages and need to enforce a uniform security policy across all of them without rewriting their code. Where would that logic live?",
+      "Consider how intercepting network packets right at the container boundary via a companion process enables centralized policy enforcement, and weigh what overhead that extra network hop introduces."
+    ],
+    "learning_objective": "Understand how a service mesh decouples network management from application code via sidecars to solve cross-cutting microservices communication challenges, while weighing its operational trade-offs."
+  }
 ]

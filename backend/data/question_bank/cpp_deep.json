@@ -1,5 +1,147 @@
 [
-  {"id":"cppd-0001","question":"Explain RAII (Resource Acquisition Is Initialization) in C++ and why it's central to modern C++ resource management.","type":"conceptual","difficulty":3,"roles":["backend","general_sde"],"topics":["cpp"],"tech_keywords":["cpp","raii"],"companies_common":["Google","Microsoft","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["RAII ties a resource's lifetime (memory, file handle, lock, socket) to an object's lifetime — acquired in the constructor, released in the destructor","When the object goes out of scope, its destructor runs automatically (even during stack unwinding from an exception), guaranteeing cleanup without needing explicit manual release calls","This is what smart pointers (unique_ptr, shared_ptr), std::lock_guard, and std::fstream are built on — no manual delete/unlock/close needed in normal control flow","Prevents resource leaks that plague manual resource management, especially in the presence of early returns or exceptions that could otherwise skip a cleanup call"],"sample_answer":"RAII ties the lifetime of a resource — memory, a file handle, a mutex lock, a socket — directly to the lifetime of an object: the resource is acquired in the object's constructor and released in its destructor. Because C++ guarantees destructors run automatically when an object goes out of scope, including during stack unwinding triggered by an exception, this guarantees cleanup happens reliably without needing an explicit manual release call scattered through every possible exit path of a function. This is exactly what smart pointers like unique_ptr and shared_ptr, std::lock_guard for mutexes, and std::fstream for files are built on — you just let the object go out of scope and cleanup happens automatically. It's central to modern C++ because it prevents the resource leaks that plague manual management with raw new/delete or manual lock/unlock, especially when a function has multiple early returns or can throw partway through."},"follow_up_hint":"Ask them to explain what would go wrong with manual delete-based cleanup if an exception was thrown between the allocation and the delete call."},
-  {"id":"cppd-0002","question":"What is the difference between a unique_ptr and a shared_ptr in modern C++?","type":"conceptual","difficulty":3,"roles":["backend"],"topics":["cpp"],"tech_keywords":["cpp","smart-pointers"],"companies_common":["Google","Microsoft"],"source_style":"faang-common","reference_solution":{"key_points":["unique_ptr represents exclusive ownership of a resource — it can't be copied (only moved), so there's always exactly one owner responsible for eventually deleting it","shared_ptr uses reference counting to allow multiple owners; the resource is deleted only once the last shared_ptr referencing it is destroyed","unique_ptr has essentially zero overhead compared to a raw pointer; shared_ptr has overhead from atomic reference counting (thread-safe increments/decrements)","A shared_ptr cycle (two objects holding shared_ptrs to each other) leaks memory, since the reference count never reaches zero — weak_ptr is used to break such cycles"],"sample_answer":"unique_ptr represents exclusive ownership of a resource — it can't be copied, only moved, so there's always exactly one owner responsible for eventually freeing it, and it has essentially zero performance overhead compared to a raw pointer. shared_ptr instead uses atomic reference counting to allow multiple owners of the same resource, deleting it only once the very last shared_ptr referencing it goes out of scope — this flexibility comes with real overhead from those atomic increment/decrement operations needed for thread safety. One important pitfall with shared_ptr is a reference cycle: if two objects hold shared_ptrs to each other, their reference counts never reach zero even when nothing else references either of them, causing a memory leak — the standard fix is using weak_ptr for one side of that relationship, which observes an object without contributing to its reference count."},"follow_up_hint":"Ask them to identify and fix a shared_ptr cycle in a doubly-linked list or parent-child relationship example."},
-  {"id":"cppd-0003","question":"Explain what a virtual function is in C++ and how virtual function dispatch (vtable) works at runtime.","type":"conceptual","difficulty":4,"roles":["backend","general_sde"],"topics":["cpp","oop"],"tech_keywords":["cpp","virtual-functions"],"companies_common":["Microsoft","Google"],"source_style":"faang-common","reference_solution":{"key_points":["A virtual function allows a derived class to override a base class's method, and the correct overridden version is called based on the object's actual runtime type, not the static type of the pointer/reference used to call it","Implemented via a vtable (virtual method table): each class with virtual functions has a table of function pointers, and each object instance stores a hidden pointer to its class's vtable","A call through a base class pointer/reference to a virtual function looks up the actual function to call via the object's vtable pointer at runtime, rather than being resolved at compile time — this is what enables polymorphism","This indirection has a small runtime performance cost (an extra pointer dereference) compared to a non-virtual (statically resolved) function call, which is why virtual functions aren't used by default for every method"],"sample_answer":"A virtual function lets a derived class override a base class method, and crucially, the version that actually gets called is determined by the object's real runtime type, not by the static, compile-time type of the pointer or reference used to call it — this is what enables runtime polymorphism. Under the hood, this is implemented via a vtable: any class that has virtual functions gets a table of function pointers, one per virtual function, and every instance of that class carries a hidden pointer to its class's vtable. When you call a virtual function through a base class pointer, the compiler generates code that looks up the actual function address through that object's vtable pointer at runtime, rather than resolving the call at compile time the way a normal function call would be. This indirection — an extra pointer dereference to look up the vtable, then another to call the function — has a small but real runtime cost, which is why C++ requires you to opt in explicitly with the 'virtual' keyword rather than making every method virtual by default."},"follow_up_hint":"Ask them what happens if a base class destructor isn't marked virtual, and you delete a derived object through a base class pointer."}
+  {
+    "id": "cppd-0001",
+    "question": "Explain RAII (Resource Acquisition Is Initialization) in C++ and why it's central to modern C++ resource management.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "cpp"
+    ],
+    "tech_keywords": [
+      "cpp",
+      "raii"
+    ],
+    "companies_common": [
+      "Google",
+      "Microsoft",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "RAII ties a resource's lifetime (memory, file handle, lock, socket) to an object's lifetime — acquired in the constructor, released in the destructor",
+        "When the object goes out of scope, its destructor runs automatically (even during stack unwinding from an exception), guaranteeing cleanup without needing explicit manual release calls",
+        "This is what smart pointers (unique_ptr, shared_ptr), std::lock_guard, and std::fstream are built on — no manual delete/unlock/close needed in normal control flow",
+        "Prevents resource leaks that plague manual resource management, especially in the presence of early returns or exceptions that could otherwise skip a cleanup call"
+      ],
+      "sample_answer": "RAII ties the lifetime of a resource — memory, a file handle, a mutex lock, a socket — directly to the lifetime of an object: the resource is acquired in the object's constructor and released in its destructor. Because C++ guarantees destructors run automatically when an object goes out of scope, including during stack unwinding triggered by an exception, this guarantees cleanup happens reliably without needing an explicit manual release call scattered through every possible exit path of a function. This is exactly what smart pointers like unique_ptr and shared_ptr, std::lock_guard for mutexes, and std::fstream for files are built on — you just let the object go out of scope and cleanup happens automatically. It's central to modern C++ because it prevents the resource leaks that plague manual management with raw new/delete or manual lock/unlock, especially when a function has multiple early returns or can throw partway through."
+    },
+    "follow_up_hint": "Ask them to explain what would go wrong with manual delete-based cleanup if an exception was thrown between the allocation and the delete call.",
+    "concept": "RAII",
+    "sub_concept": "Resource Lifetime Management",
+    "expected_reasoning": "A strong candidate begins by defining the core acronym and how object scope dictates resource lifecycle. They then analyze how stack unwinding guarantees destructor execution during exceptions, eliminating manual cleanup boilerplate. Next, they connect this mechanism directly to standard library primitives like smart pointers and locks. Finally, they contrast this with manual resource management to highlight how RAII prevents leaks across complex control flows.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely defining the acronym without explaining the mechanics.",
+      "Confuses initialization with garbage collection, failing to understand deterministic destruction.",
+      "Only discusses memory management and forgets other resources like file handles and mutexes.",
+      "Misses the critical connection to exception safety and stack unwinding.",
+      "Thinks RAII requires explicit release calls inside try-catch blocks."
+    ],
+    "progressive_hints": [
+      "Think about what happens to local variables when a function exits, whether normally or via an exception.",
+      "Consider how tying resource acquisition to an object's birth and death affects when that resource is cleaned up.",
+      "If destructors are guaranteed to run when an object leaves scope, what does that imply for releasing files, locks, or memory without writing manual cleanup code?"
+    ],
+    "learning_objective": "Understand how tying resource lifecycles to automatic object scopes guarantees deterministic cleanup and exception safety in modern C++."
+  },
+  {
+    "id": "cppd-0002",
+    "question": "What is the difference between a unique_ptr and a shared_ptr in modern C++?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "cpp"
+    ],
+    "tech_keywords": [
+      "cpp",
+      "smart-pointers"
+    ],
+    "companies_common": [
+      "Google",
+      "Microsoft"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "unique_ptr represents exclusive ownership of a resource — it can't be copied (only moved), so there's always exactly one owner responsible for eventually deleting it",
+        "shared_ptr uses reference counting to allow multiple owners; the resource is deleted only once the last shared_ptr referencing it is destroyed",
+        "unique_ptr has essentially zero overhead compared to a raw pointer; shared_ptr has overhead from atomic reference counting (thread-safe increments/decrements)",
+        "A shared_ptr cycle (two objects holding shared_ptrs to each other) leaks memory, since the reference count never reaches zero — weak_ptr is used to break such cycles"
+      ],
+      "sample_answer": "unique_ptr represents exclusive ownership of a resource — it can't be copied, only moved, so there's always exactly one owner responsible for eventually freeing it, and it has essentially zero performance overhead compared to a raw pointer. shared_ptr instead uses atomic reference counting to allow multiple owners of the same resource, deleting it only once the very last shared_ptr referencing it goes out of scope — this flexibility comes with real overhead from those atomic increment/decrement operations needed for thread safety. One important pitfall with shared_ptr is a reference cycle: if two objects hold shared_ptrs to each other, their reference counts never reach zero even when nothing else references either of them, causing a memory leak — the standard fix is using weak_ptr for one side of that relationship, which observes an object without contributing to its reference count."
+    },
+    "follow_up_hint": "Ask them to identify and fix a shared_ptr cycle in a doubly-linked list or parent-child relationship example.",
+    "concept": "Smart Pointers",
+    "sub_concept": "Ownership Models and Memory Management",
+    "expected_reasoning": "A strong candidate begins by analyzing how memory ownership is defined and shared in application design. They evaluate the trade-off between strict exclusive ownership versus shared access models, considering the operational overhead each incurs. They contrast zero-cost abstractions like single ownership with the synchronization costs required for multi-threaded reference tracking. Finally, they reason about structural lifecycle risks such as cyclic references and how auxiliary pointer types mitigate them.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as just saying one allows sharing and the other doesn't.",
+      "Claims unique_ptr can be copied if you use the right syntax.",
+      "Ignores the performance and memory overhead differences, assuming both smart pointers are identical under the hood.",
+      "Fails to mention how shared_ptr handles reference counting or thread safety.",
+      "Omits the memory leak danger of circular references when using shared_ptr."
+    ],
+    "progressive_hints": [
+      "Consider what happens to the responsibility of deleting a resource when multiple parts of a program need to reference it simultaneously.",
+      "Think about the runtime mechanism required to know when a dynamically allocated object should be automatically destroyed if multiple owners are involved.",
+      "Reflect on the performance implications of tracking multiple owners across threads, and what happens when two objects reference each other cyclically."
+    ],
+    "learning_objective": "The candidate should understand how to choose between exclusive and shared ownership models in C++ based on ownership semantics, performance overhead, and lifecycle safety."
+  },
+  {
+    "id": "cppd-0003",
+    "question": "Explain what a virtual function is in C++ and how virtual function dispatch (vtable) works at runtime.",
+    "type": "conceptual",
+    "difficulty": 4,
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "cpp",
+      "oop"
+    ],
+    "tech_keywords": [
+      "cpp",
+      "virtual-functions"
+    ],
+    "companies_common": [
+      "Microsoft",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "A virtual function allows a derived class to override a base class's method, and the correct overridden version is called based on the object's actual runtime type, not the static type of the pointer/reference used to call it",
+        "Implemented via a vtable (virtual method table): each class with virtual functions has a table of function pointers, and each object instance stores a hidden pointer to its class's vtable",
+        "A call through a base class pointer/reference to a virtual function looks up the actual function to call via the object's vtable pointer at runtime, rather than being resolved at compile time — this is what enables polymorphism",
+        "This indirection has a small runtime performance cost (an extra pointer dereference) compared to a non-virtual (statically resolved) function call, which is why virtual functions aren't used by default for every method"
+      ],
+      "sample_answer": "A virtual function lets a derived class override a base class method, and crucially, the version that actually gets called is determined by the object's real runtime type, not by the static, compile-time type of the pointer or reference used to call it — this is what enables runtime polymorphism. Under the hood, this is implemented via a vtable: any class that has virtual functions gets a table of function pointers, one per virtual function, and every instance of that class carries a hidden pointer to its class's vtable. When you call a virtual function through a base class pointer, the compiler generates code that looks up the actual function address through that object's vtable pointer at runtime, rather than resolving the call at compile time the way a normal function call would be. This indirection — an extra pointer dereference to look up the vtable, then another to call the function — has a small but real runtime cost, which is why C++ requires you to opt in explicitly with the 'virtual' keyword rather than making every method virtual by default."
+    },
+    "follow_up_hint": "Ask them what happens if a base class destructor isn't marked virtual, and you delete a derived object through a base class pointer.",
+    "concept": "Virtual Functions",
+    "sub_concept": "Runtime Polymorphism and Vtable Dispatch",
+    "expected_reasoning": "A strong candidate begins by contrasting static binding with runtime polymorphism, explaining why compile-time resolution fails when dealing with base pointers pointing to derived objects. They then derive the underlying mechanism by describing how object layout changes—specifically the inclusion of a hidden pointer—and how that pointer references a class-wide table of function pointers. Finally, they weigh the architectural benefits of dynamic dispatch against its minor runtime performance overhead and memory cost.",
+    "common_mistakes": [
+      "States that virtual functions use compile-time resolution with no runtime overhead",
+      "Confuses the vtable (table of function pointers per class) with the vptr (pointer per object instance)",
+      "Claims every class automatically has a vtable regardless of whether it defines virtual functions",
+      "Believes virtual function dispatch works correctly when calling methods through value-based objects rather than pointers or references",
+      "Omits the performance tradeoff of indirect pointer dereferencing during runtime dispatch"
+    ],
+    "progressive_hints": [
+      "Consider what happens when you call a member function through a pointer to a base class that actually holds a derived class object at runtime.",
+      "Think about how the program knows which version of the overridden function to execute when the type is only known at runtime. What data structures might the compiler need to attach to the class and the object instance?",
+      "If every object of a class with virtual functions contains a hidden pointer, what does that pointer reference, and how does the compiler use it during a function call instruction?"
+    ],
+    "learning_objective": "Understand how C++ achieves runtime polymorphism through vtable indirection and how to weigh its performance tradeoffs against static function dispatch."
+  }
 ]

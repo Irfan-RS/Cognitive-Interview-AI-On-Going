@@ -1,7 +1,235 @@
 [
-  {"id":"dk-0001","question":"What is the difference between a Docker container and a virtual machine?","type":"conceptual","difficulty":1,"roles":["devops","backend"],"topics":["docker","devops"],"tech_keywords":["docker"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["A VM virtualizes hardware and runs a full separate OS kernel per VM, managed by a hypervisor — heavier resource footprint","A container shares the host OS kernel and isolates processes using kernel features (namespaces, cgroups), making it much lighter weight and faster to start","Containers are more portable (package app + dependencies) but provide weaker isolation than VMs since they share the kernel","Explains typical use: containers for fast, dense application deployment; VMs when you need full OS-level isolation or different kernels/OSes on the same host"],"sample_answer":"A virtual machine virtualizes hardware and runs its own complete guest operating system with its own kernel, managed by a hypervisor — this gives strong isolation but is comparatively heavyweight and slow to boot. A container shares the host machine's OS kernel and achieves isolation through kernel features like namespaces and cgroups, making it much lighter weight, faster to start, and more efficient to run many of on one host. The trade-off is containers provide weaker isolation than VMs since they share a kernel, so if isolation from potentially hostile workloads is critical, VMs (or a VM-based container runtime like gVisor/Firecracker) are safer. In practice, containers are preferred for packaging and deploying applications efficiently, while VMs are used when you need full OS-level isolation or to run different operating systems on the same physical hardware."},"follow_up_hint":"Ask what namespaces and cgroups each specifically provide for container isolation."},
-  {"id":"dk-0002","question":"What is a Kubernetes Pod, and why does Kubernetes use Pods instead of scheduling containers directly?","type":"conceptual","difficulty":2,"roles":["devops","backend"],"topics":["kubernetes"],"tech_keywords":["kubernetes"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["A Pod is the smallest deployable unit in Kubernetes — one or more containers that share network namespace (same IP/port space) and storage volumes","Containers within a Pod are always co-scheduled onto the same node and share a lifecycle","Enables the 'sidecar' pattern: a helper container (logging agent, proxy) tightly coupled to the main container, sharing localhost networking and volumes","Explains most Pods run a single container, with multi-container Pods reserved for genuinely tightly-coupled helper processes"],"sample_answer":"A Pod is the smallest deployable unit in Kubernetes, consisting of one or more containers that are always scheduled together onto the same node, sharing the same network namespace — so they can talk to each other over localhost — and optionally shared storage volumes. This grouping enables the sidecar pattern, where a helper container like a logging agent or a proxy runs alongside the main application container, tightly coupled to it and sharing its network and lifecycle. Most Pods just run a single container; multi-container Pods are reserved for cases where two processes genuinely need to be co-located and share resources like that."},"follow_up_hint":"Ask them to describe a real use case for the sidecar pattern, like an Istio service mesh proxy."},
-  {"id":"dk-0003","question":"Explain the difference between a Kubernetes Deployment and a StatefulSet.","type":"conceptual","difficulty":3,"roles":["devops"],"topics":["kubernetes"],"tech_keywords":["kubernetes"],"companies_common":["Amazon","Google"],"source_style":"faang-common","reference_solution":{"key_points":["Deployment manages stateless, interchangeable Pod replicas — Pods get arbitrary names/IPs and can be freely replaced/rescheduled in any order","StatefulSet manages Pods that need stable, unique identities (predictable names like pod-0, pod-1) and stable storage (each gets its own persistent volume that survives rescheduling)","StatefulSet also guarantees ordered, sequential deployment/scaling/termination (pod-0 starts before pod-1, etc.), which matters for clustered stateful systems (databases, Kafka, Zookeeper)","Explains when to use which: stateless web servers/APIs → Deployment; databases/clustered systems needing stable identity/storage → StatefulSet"],"sample_answer":"A Deployment manages a set of stateless, interchangeable Pod replicas — any replica can be killed and replaced with a new one with a new name and IP, and there's no ordering guarantee among them, which fits stateless web servers or APIs. A StatefulSet is for workloads that need stable, unique identity and storage — each Pod gets a predictable, sticky name like myapp-0, myapp-1, and its own persistent volume that follows it even if it's rescheduled to a different node, rather than a shared or randomly-assigned one. StatefulSets also start, scale, and terminate Pods in a defined sequential order, which matters for clustered stateful systems like databases, Kafka, or Zookeeper, where node identity and startup order affect cluster formation and data integrity."},"follow_up_hint":"Ask why running a database directly in Kubernetes via StatefulSet is still considered operationally harder than using a managed database service."},
-  {"id":"dk-0004","question":"What is a Kubernetes readiness probe versus a liveness probe, and why do you need both?","type":"conceptual","difficulty":2,"roles":["devops"],"topics":["kubernetes"],"tech_keywords":["kubernetes"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["Liveness probe checks if a container is still running/healthy; if it fails repeatedly, Kubernetes restarts the container","Readiness probe checks if a container is ready to accept traffic; if it fails, the Pod is removed from the Service's load-balancing pool (but not restarted)","Distinguishes them: a container can be alive but not ready (e.g. still warming up caches, or temporarily overloaded and wanting to shed traffic) — restarting it in that case would be wrong and disruptive","Without a readiness probe, traffic could be routed to a Pod that isn't actually ready to serve requests, causing errors"],"sample_answer":"A liveness probe checks whether a container is still healthy and running correctly; if it fails repeatedly, Kubernetes kills and restarts the container, since something is presumably stuck or broken. A readiness probe checks whether the container is currently ready to serve traffic; if it fails, Kubernetes just removes that Pod from the Service's load-balanced endpoints without restarting it. You need both because a container can be alive but not ready — for example, still loading a large cache on startup, or temporarily overloaded and wanting to shed incoming traffic — restarting it in that situation would be wrong and just cause more disruption. Without a readiness probe at all, Kubernetes might route live traffic to a Pod that isn't actually able to handle it correctly yet, causing user-visible errors."},"follow_up_hint":"Ask what happens during a rolling deployment if the new Pods' readiness probes never succeed."},
-  {"id":"dk-0005","question":"What is a multi-stage Docker build, and why would you use one?","type":"practical_implementation","difficulty":2,"roles":["devops","backend"],"topics":["docker"],"tech_keywords":["docker"],"companies_common":["Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["A multi-stage build uses multiple FROM statements in one Dockerfile, where later stages can selectively copy artifacts from earlier stages","Lets you use a full build toolchain (compilers, dev dependencies) in an early stage, but ship only the compiled output in a minimal final runtime image","Reduces final image size significantly and avoids shipping build tools/source code/secrets used only during compilation into production","Common pattern: a 'builder' stage with full SDK/dependencies, then a final stage FROM a minimal base image (e.g. alpine or distroless) COPYing just the compiled binary/artifacts"],"sample_answer":"A multi-stage Docker build uses multiple FROM statements within a single Dockerfile, where each stage can copy specific files or build artifacts from a previous stage. This lets you use a full build environment — compilers, dev dependencies, build tools — in an early 'builder' stage, but then start a final stage from a minimal runtime base image and copy over only the compiled output, like a binary or built static files, discarding everything else. The benefit is a much smaller and more secure final production image, since it doesn't carry the build toolchain, source code, or any build-time secrets that were only needed to produce the artifact, not to run it."},"follow_up_hint":"Ask them to sketch a multi-stage Dockerfile for a Go or Node.js app that builds in one stage and runs from a minimal image in the next."}
+  {
+    "id": "dk-0001",
+    "question": "What is the difference between a Docker container and a virtual machine?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "devops",
+      "backend"
+    ],
+    "topics": [
+      "docker",
+      "devops"
+    ],
+    "tech_keywords": [
+      "docker"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A VM virtualizes hardware and runs a full separate OS kernel per VM, managed by a hypervisor — heavier resource footprint",
+        "A container shares the host OS kernel and isolates processes using kernel features (namespaces, cgroups), making it much lighter weight and faster to start",
+        "Containers are more portable (package app + dependencies) but provide weaker isolation than VMs since they share the kernel",
+        "Explains typical use: containers for fast, dense application deployment; VMs when you need full OS-level isolation or different kernels/OSes on the same host"
+      ],
+      "sample_answer": "A virtual machine virtualizes hardware and runs its own complete guest operating system with its own kernel, managed by a hypervisor — this gives strong isolation but is comparatively heavyweight and slow to boot. A container shares the host machine's OS kernel and achieves isolation through kernel features like namespaces and cgroups, making it much lighter weight, faster to start, and more efficient to run many of on one host. The trade-off is containers provide weaker isolation than VMs since they share a kernel, so if isolation from potentially hostile workloads is critical, VMs (or a VM-based container runtime like gVisor/Firecracker) are safer. In practice, containers are preferred for packaging and deploying applications efficiently, while VMs are used when you need full OS-level isolation or to run different operating systems on the same physical hardware."
+    },
+    "follow_up_hint": "Ask what namespaces and cgroups each specifically provide for container isolation.",
+    "concept": "Containerization vs Virtualization",
+    "sub_concept": "OS Kernel Sharing vs Hardware Emulation",
+    "expected_reasoning": "A strong candidate begins by identifying the core architectural difference at the system layer—specifically how each approach handles operating system resources and hardware. They then contrast the heavyweight approach of hypervisors virtualizing entire hardware stacks with the lightweight, process-isolated nature of container runtimes. Next, they weigh the operational trade-offs, balancing the startup speed and density of containers against the strict security boundaries and OS-flexibility of virtual machines. Finally, they synthesize these architectural distinctions into practical guidelines for when to choose one technology over the other.",
+    "common_mistakes": [
+      "States that containers are just 'lightweight virtual machines' without explaining why they are lighter or how they differ structurally.",
+      "Claims containers run entirely without an operating system, misunderstanding how they share the host kernel.",
+      "Believes containers provide the exact same level of hardware and kernel isolation as a virtual machine.",
+      "Focuses solely on file size or startup speed while ignoring security isolation and multi-OS support differences.",
+      "Provides a superficial answer listing buzzwords like 'fast' and 'portable' with zero justification regarding underlying Linux kernel namespaces or cgroups."
+    ],
+    "progressive_hints": [
+      "What underlying system resources do you boot up when you start a traditional virtual machine versus an application in a container?",
+      "Think about what happens underneath the application layer: does each container need its own operating system kernel to run?",
+      "Consider how the host operating system's kernel is shared among containers using namespaces and cgroups versus being fully duplicated per hypervisor guest."
+    ],
+    "learning_objective": "Understand that virtual machines emulate hardware to run separate OS instances, whereas containers isolate application processes while sharing a single host kernel, leading to radically different resource profiles and isolation boundaries."
+  },
+  {
+    "id": "dk-0002",
+    "question": "What is a Kubernetes Pod, and why does Kubernetes use Pods instead of scheduling containers directly?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "devops",
+      "backend"
+    ],
+    "topics": [
+      "kubernetes"
+    ],
+    "tech_keywords": [
+      "kubernetes"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A Pod is the smallest deployable unit in Kubernetes — one or more containers that share network namespace (same IP/port space) and storage volumes",
+        "Containers within a Pod are always co-scheduled onto the same node and share a lifecycle",
+        "Enables the 'sidecar' pattern: a helper container (logging agent, proxy) tightly coupled to the main container, sharing localhost networking and volumes",
+        "Explains most Pods run a single container, with multi-container Pods reserved for genuinely tightly-coupled helper processes"
+      ],
+      "sample_answer": "A Pod is the smallest deployable unit in Kubernetes, consisting of one or more containers that are always scheduled together onto the same node, sharing the same network namespace — so they can talk to each other over localhost — and optionally shared storage volumes. This grouping enables the sidecar pattern, where a helper container like a logging agent or a proxy runs alongside the main application container, tightly coupled to it and sharing its network and lifecycle. Most Pods just run a single container; multi-container Pods are reserved for cases where two processes genuinely need to be co-located and share resources like that."
+    },
+    "follow_up_hint": "Ask them to describe a real use case for the sidecar pattern, like an Istio service mesh proxy.",
+    "concept": "Kubernetes Pods",
+    "sub_concept": "Container encapsulation and co-location architecture",
+    "expected_reasoning": "A strong candidate begins by identifying containers as the atomic units of execution, then questions why an abstraction layer is needed above them. They analyze how containers naturally isolate resources and realize that real-world applications often require multiple processes to communicate and share data intimately. By reasoning through the mechanics of networking and storage sharing on a single host, they derive the necessity of grouping containers into a shared context. Finally, they weigh the single-container versus multi-container use cases to justify the architectural choice of the Pod.",
+    "common_mistakes": [
+      "Stating that a Pod is just another word for a container without recognizing the multi-container capability",
+      "Believing that containers in different Pods on the same node share a network namespace",
+      "Claiming that Pods can be split across multiple physical nodes",
+      "Assuming every Pod must run multiple containers rather than mostly single containers with optional sidecars",
+      "Failing to mention how shared storage and localhost networking enable the sidecar pattern"
+    ],
+    "progressive_hints": [
+      "Think about what happens when an application requires a helper process, like a log forwarder, that needs constant, direct access to the main application's filesystem and network.",
+      "Consider how two separate Docker containers running on the same host normally communicate and isolate their network interfaces, and what limitations that creates for tightly coupled processes.",
+      "If you wanted to guarantee that a primary application container and a helper container always land on the exact same machine and share an IP address, what wrapper object would you need?"
+    ],
+    "learning_objective": "Understand that Kubernetes uses Pods rather than raw containers to provide a shared networking and storage context that enables tightly coupled multi-container design patterns."
+  },
+  {
+    "id": "dk-0003",
+    "question": "Explain the difference between a Kubernetes Deployment and a StatefulSet.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "devops"
+    ],
+    "topics": [
+      "kubernetes"
+    ],
+    "tech_keywords": [
+      "kubernetes"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Deployment manages stateless, interchangeable Pod replicas — Pods get arbitrary names/IPs and can be freely replaced/rescheduled in any order",
+        "StatefulSet manages Pods that need stable, unique identities (predictable names like pod-0, pod-1) and stable storage (each gets its own persistent volume that survives rescheduling)",
+        "StatefulSet also guarantees ordered, sequential deployment/scaling/termination (pod-0 starts before pod-1, etc.), which matters for clustered stateful systems (databases, Kafka, Zookeeper)",
+        "Explains when to use which: stateless web servers/APIs → Deployment; databases/clustered systems needing stable identity/storage → StatefulSet"
+      ],
+      "sample_answer": "A Deployment manages a set of stateless, interchangeable Pod replicas — any replica can be killed and replaced with a new one with a new name and IP, and there's no ordering guarantee among them, which fits stateless web servers or APIs. A StatefulSet is for workloads that need stable, unique identity and storage — each Pod gets a predictable, sticky name like myapp-0, myapp-1, and its own persistent volume that follows it even if it's rescheduled to a different node, rather than a shared or randomly-assigned one. StatefulSets also start, scale, and terminate Pods in a defined sequential order, which matters for clustered stateful systems like databases, Kafka, or Zookeeper, where node identity and startup order affect cluster formation and data integrity."
+    },
+    "follow_up_hint": "Ask why running a database directly in Kubernetes via StatefulSet is still considered operationally harder than using a managed database service.",
+    "concept": "Kubernetes Workload Management",
+    "sub_concept": "Stateful vs Stateless Workload Primitives",
+    "expected_reasoning": "A strong candidate begins by identifying the fundamental constraint that separates the two controllers: state management versus ephemeral execution. They proceed to analyze how identity, network stability, and persistent storage requirements dictate which controller to use. Rather than listing features, they derive the necessity of ordered operations and persistent volumes from the operational requirements of distributed databases or consensus-based clusters. Finally, they contrast this with the loose coupling and interchangeability required for horizontal scaling of stateless applications.",
+    "common_mistakes": [
+      "Stateing that StatefulSets are just Deployments with persistent volumes attached, missing the critical aspect of stable network identity.",
+      "Claiming Deployments cannot use persistent storage at all, ignoring that ReadWriteMany volumes can be shared across stateless pods.",
+      "Failing to mention ordering guarantees during scaling and rolling updates in StatefulSets.",
+      "Providing a shallow definition without explaining the underlying business or architectural use cases (e.g., web servers vs databases).",
+      "Confusing pod identity persistence with data persistence across rescheduling."
+    ],
+    "progressive_hints": [
+      "Think about what happens to a web server pod versus a database pod when it gets abruptly deleted and rescheduled on another node.",
+      "Consider how network communication and data persistence differ when every replica in a cluster needs to know its specific rank or retain its exact local disk.",
+      "Reflect on why clustered systems like ZooKeeper require predictable pod naming conventions and strict sequential startup order, which standard Deployments do not provide."
+    ],
+    "learning_objective": "Understand how to select the appropriate Kubernetes workload controller based on an application's requirements for identity, ordering, and state persistence."
+  },
+  {
+    "id": "dk-0004",
+    "question": "What is a Kubernetes readiness probe versus a liveness probe, and why do you need both?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "devops"
+    ],
+    "topics": [
+      "kubernetes"
+    ],
+    "tech_keywords": [
+      "kubernetes"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Liveness probe checks if a container is still running/healthy; if it fails repeatedly, Kubernetes restarts the container",
+        "Readiness probe checks if a container is ready to accept traffic; if it fails, the Pod is removed from the Service's load-balancing pool (but not restarted)",
+        "Distinguishes them: a container can be alive but not ready (e.g. still warming up caches, or temporarily overloaded and wanting to shed traffic) — restarting it in that case would be wrong and disruptive",
+        "Without a readiness probe, traffic could be routed to a Pod that isn't actually ready to serve requests, causing errors"
+      ],
+      "sample_answer": "A liveness probe checks whether a container is still healthy and running correctly; if it fails repeatedly, Kubernetes kills and restarts the container, since something is presumably stuck or broken. A readiness probe checks whether the container is currently ready to serve traffic; if it fails, Kubernetes just removes that Pod from the Service's load-balanced endpoints without restarting it. You need both because a container can be alive but not ready — for example, still loading a large cache on startup, or temporarily overloaded and wanting to shed incoming traffic — restarting it in that situation would be wrong and just cause more disruption. Without a readiness probe at all, Kubernetes might route live traffic to a Pod that isn't actually able to handle it correctly yet, causing user-visible errors."
+    },
+    "follow_up_hint": "Ask what happens during a rolling deployment if the new Pods' readiness probes never succeed.",
+    "concept": "Kubernetes Health Probes",
+    "sub_concept": "Distinction between liveness and readiness mechanics and routing lifecycle impact",
+    "expected_reasoning": "A strong candidate begins by identifying the fundamental failure modes a container can experience: either it is permanently deadlocked and needs a hard reset, or it is temporarily unable to serve traffic while remaining functional. They analyze the control loop of Kubernetes to trace how a failure in each probe alters the Pod's lifecycle—distinguishing between container recreation via restarts versus endpoint exclusion from service endpoints. Finally, they weigh the operational risks of conflating the two, noting that restarting a slow-starting or temporarily overwhelmed pod introduces cascading latency and instability.",
+    "common_mistakes": [
+      "States that both probes do the same thing and restarts the container upon failure.",
+      "Claims readiness probes restart the container when they fail.",
+      "Confuses startup probes with readiness probes.",
+      "Provides a superficial answer like 'liveness means it's alive and readiness means it's ready' with no mechanistic explanation.",
+      "Fails to explain why you need both, missing the scenario where a live container should not receive traffic."
+    ],
+    "progressive_hints": [
+      "Consider the two different ways a container can fail: it could be completely deadlocked and unresponsive, or it could be running fine but temporarily unable to handle requests. How might Kubernetes need to treat those two situations differently?",
+      "Think about what happens to the load balancer when a container is still loading large datasets into memory upon startup. Does it need a restart, or just time before it receives traffic?",
+      "If a probe fails, one mechanism restarts the container pod from scratch, while the other simply detaches it from the Service's endpoint list so it stops getting traffic. Which probe corresponds to which action?"
+    ],
+    "learning_objective": "Understand that Kubernetes separates container health recovery from traffic routing control, ensuring containers are restarted only when truly broken and shielded from traffic when temporarily busy."
+  },
+  {
+    "id": "dk-0005",
+    "question": "What is a multi-stage Docker build, and why would you use one?",
+    "type": "practical_implementation",
+    "difficulty": 2,
+    "roles": [
+      "devops",
+      "backend"
+    ],
+    "topics": [
+      "docker"
+    ],
+    "tech_keywords": [
+      "docker"
+    ],
+    "companies_common": [
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A multi-stage build uses multiple FROM statements in one Dockerfile, where later stages can selectively copy artifacts from earlier stages",
+        "Lets you use a full build toolchain (compilers, dev dependencies) in an early stage, but ship only the compiled output in a minimal final runtime image",
+        "Reduces final image size significantly and avoids shipping build tools/source code/secrets used only during compilation into production",
+        "Common pattern: a 'builder' stage with full SDK/dependencies, then a final stage FROM a minimal base image (e.g. alpine or distroless) COPYing just the compiled binary/artifacts"
+      ],
+      "sample_answer": "A multi-stage Docker build uses multiple FROM statements within a single Dockerfile, where each stage can copy specific files or build artifacts from a previous stage. This lets you use a full build environment — compilers, dev dependencies, build tools — in an early 'builder' stage, but then start a final stage from a minimal runtime base image and copy over only the compiled output, like a binary or built static files, discarding everything else. The benefit is a much smaller and more secure final production image, since it doesn't carry the build toolchain, source code, or any build-time secrets that were only needed to produce the artifact, not to run it."
+    },
+    "follow_up_hint": "Ask them to sketch a multi-stage Dockerfile for a Go or Node.js app that builds in one stage and runs from a minimal image in the next.",
+    "concept": "Docker Multi Stage Builds",
+    "sub_concept": "Separation of build-time dependencies from runtime artifacts",
+    "expected_reasoning": "A strong candidate begins by identifying the operational pain point of traditional Docker builds, where heavyweight compilers and development tools inflate production image sizes and introduce security vulnerabilities. They trace how a Dockerfile is typically structured with a single base image and recognize the inefficiency of keeping build-time dependencies around after compilation. They then deduce how introducing multiple intermediate build steps within a single file allows them to selectively isolate the compilation phase. Finally, they reason about copying only the necessary runtime artifacts into a pristine, minimal final image to achieve a secure, lightweight deployment artifact.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'it makes images smaller' without explaining how artifacts are moved between stages.",
+      "Confuses multi-stage builds with running multiple containers simultaneously via Docker Compose.",
+      "Assumes you have to write multiple separate Dockerfiles and manually script the file copying between them.",
+      "Forgets that the final image only contains what is explicitly copied into it, leading to broken images if a required asset or runtime dependency is missed.",
+      "Fails to mention security benefits, focusing entirely on disk space and image size reduction."
+    ],
+    "progressive_hints": [
+      "Think about what you typically need to install to compile or build an application versus what you actually need to run it in production.",
+      "Consider how you might use a heavy base image with all your build tools, but somehow leave those tools behind when you package the final application.",
+      "Look into how a single Dockerfile can contain multiple FROM instructions, allowing you to name intermediate steps and selectively transfer files between them."
+    ],
+    "learning_objective": "Understand how to leverage multi-stage Docker builds to isolate build toolchains from production runtimes, resulting in significantly smaller and more secure images."
+  }
 ]

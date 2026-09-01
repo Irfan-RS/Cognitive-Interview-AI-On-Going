@@ -1,10 +1,393 @@
 [
-  {"id":"micro-0001","question":"What is a microservices architecture, and what problems does it solve compared to a monolith?","type":"conceptual","difficulty":2,"roles":["backend","system_design"],"topics":["microservices","system-design"],"tech_keywords":["microservices"],"companies_common":["Amazon","Netflix","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["Microservices split an application into small, independently deployable services, each owning a bounded piece of business functionality and its own data","Solves: independent deployment/scaling per service, teams can work autonomously, failure isolation (one service crashing doesn't take down everything)","Trade-off: adds operational complexity — network calls replace function calls, distributed transactions, service discovery, monitoring across many services","Should mention it's not free — a monolith is simpler to develop/debug/deploy for small teams/early-stage products"],"sample_answer":"Microservices architecture splits an application into small, independently deployable services, each owning a specific piece of business capability and typically its own database. This solves problems monoliths have at scale: teams can deploy and scale services independently, a failure in one service doesn't necessarily crash the whole system, and different services can use different tech stacks suited to their needs. The trade-off is significant added complexity — what used to be an in-process function call becomes a network call that can fail, you need service discovery, distributed tracing, and handling for partial failures and data consistency across services. For a small team or early-stage product, a monolith is usually the better starting point."},"follow_up_hint":"Ask when they'd choose to start with a monolith versus microservices for a new product."},
-  {"id":"micro-0002","question":"How do microservices typically communicate with each other, and what are the trade-offs between synchronous and asynchronous communication?","type":"trade_off_questions","difficulty":2,"roles":["backend","system_design"],"topics":["microservices"],"tech_keywords":["microservices","rest","message-queue"],"companies_common":["Amazon","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["Synchronous: REST/gRPC calls — caller waits for a response; simple to reason about but couples services' availability together","Asynchronous: message queues/event streams (Kafka, RabbitMQ, SQS) — caller doesn't block, better resilience to downstream slowness/outages","Sync is easier for request/response flows needing an immediate answer; async fits background processing, fan-out, or decoupled workflows","Mentions the cascading-failure risk of long synchronous call chains, mitigated by timeouts/circuit breakers"],"sample_answer":"Services can communicate synchronously via REST or gRPC, where the caller blocks waiting for a response, or asynchronously via a message broker like Kafka, RabbitMQ, or SQS, where the caller publishes an event and moves on. Synchronous calls are simpler to reason about and fit flows that need an immediate answer, but they couple the availability of both services together — if the callee is slow, the caller is stuck waiting, and long synchronous chains can cause cascading failures without timeouts and circuit breakers. Asynchronous messaging decouples services in time, is more resilient to a downstream outage since messages just queue up, and suits background work or fan-out to multiple consumers, but adds complexity around eventual consistency and debugging."},"follow_up_hint":"Ask how they'd prevent a slow downstream service from taking down the entire call chain (circuit breaker pattern)."},
-  {"id":"micro-0003","question":"What is service discovery, and why is it needed in a microservices architecture?","type":"conceptual","difficulty":2,"roles":["backend","devops"],"topics":["microservices"],"tech_keywords":["microservices","service-discovery"],"companies_common":["Netflix","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["In a dynamic environment, service instances' IPs/ports change constantly (scaling, restarts, deployments) so hardcoding addresses doesn't work","Service discovery maintains a registry of currently-available service instances and their locations","Client-side discovery: caller queries the registry directly and picks an instance (e.g. Netflix Eureka)","Server-side discovery: a load balancer/router queries the registry on the caller's behalf (e.g. Kubernetes Service, AWS ALB)"],"sample_answer":"In a microservices deployment, instances of a service are constantly being created, destroyed, or rescheduled — by an autoscaler or a deployment — so their network addresses change all the time, making hardcoded IPs unworkable. Service discovery solves this with a registry that tracks currently healthy instances and their addresses; services register themselves on startup (or a health check confirms they're up) and consumers query the registry to find where to send a request. This can be client-side, where the caller itself queries the registry and load-balances (like Netflix Eureka), or server-side, where a proxy or load balancer does that lookup on the caller's behalf, which is how Kubernetes Services and cloud load balancers work."},"follow_up_hint":"Ask how Kubernetes implements service discovery under the hood."},
-  {"id":"micro-0004","question":"Explain the Saga pattern for handling distributed transactions across microservices.","type":"conceptual","difficulty":4,"roles":["backend","system_design"],"topics":["microservices","distributed-systems"],"tech_keywords":["microservices","saga"],"companies_common":["Amazon","Uber","Netflix"],"source_style":"faang-common","reference_solution":{"key_points":["Distributed transactions across services can't use a single ACID transaction/2PC easily at scale, since it requires locking resources across services and blocks on failures","Saga breaks a multi-step business transaction into a sequence of local transactions, each with a corresponding compensating action to undo it if a later step fails","Choreography: each service publishes events that trigger the next step, no central coordinator (more decoupled, harder to trace)","Orchestration: a central saga orchestrator explicitly tells each service what to do next and calls compensations on failure (easier to reason about, adds a coordinator dependency)"],"sample_answer":"A Saga breaks a business transaction spanning multiple services — like 'place order, reserve inventory, charge payment, schedule shipping' — into a sequence of local transactions, each service committing its own step independently, since a traditional distributed ACID transaction or two-phase commit doesn't scale well and creates tight coupling and blocking across services. If a later step fails, the saga runs compensating actions to undo the completed steps — e.g. refunding a payment if shipping scheduling fails. There are two coordination styles: choreography, where each service publishes an event that triggers the next service reactively with no central coordinator, and orchestration, where a central saga orchestrator explicitly directs each step and invokes compensations on failure — orchestration is easier to trace and reason about but introduces a coordinating component."},"follow_up_hint":"Ask them to design the saga and compensating actions for an e-commerce checkout flow."},
-  {"id":"micro-0005","question":"What is an API Gateway, and what responsibilities does it typically handle in a microservices system?","type":"conceptual","difficulty":2,"roles":["backend","system_design"],"topics":["microservices","api-design"],"tech_keywords":["api-gateway"],"companies_common":["Amazon","Netflix"],"source_style":"common-interview","reference_solution":{"key_points":["An API Gateway is a single entry point that routes external client requests to the appropriate backend microservice","Common responsibilities: authentication/authorization, rate limiting, request routing, response aggregation from multiple services, SSL termination, logging/metrics","Shields clients from needing to know internal service topology; lets internal services change without breaking external clients","Can become a bottleneck or single point of failure if not scaled/made highly available itself"],"sample_answer":"An API Gateway is the single entry point clients talk to, which then routes each request to the appropriate internal microservice, so external clients don't need to know the internal service topology. It commonly handles cross-cutting concerns centrally — authentication and authorization, rate limiting, SSL termination, request logging/metrics, and sometimes aggregating responses from multiple backend services into one response for the client. The trade-off is that it becomes a critical piece of infrastructure — if it's not made highly available and horizontally scalable itself, it becomes both a bottleneck and a single point of failure for the whole system."},"follow_up_hint":"Ask how they'd prevent the gateway itself from becoming a single point of failure."},
-  {"id":"micro-0006","question":"How would you handle data consistency when each microservice has its own database (database-per-service pattern)?","type":"trade_off_questions","difficulty":4,"roles":["backend","system_design"],"topics":["microservices","distributed-systems"],"tech_keywords":["microservices","eventual-consistency"],"companies_common":["Amazon","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["Database-per-service prevents services from being coupled at the schema level, but rules out simple cross-service SQL joins/transactions","Options: eventual consistency via events (a service publishes a change event, others update their own local copy/materialized view asynchronously)","CQRS-style read models can be built by consuming events from multiple services to serve queries needing cross-service data","Sagas (see above) handle multi-service writes that must all succeed or all compensate","Explains the trade-off: strong consistency is sacrificed for service autonomy and independent scaling/deployment"],"sample_answer":"With a database per service, you give up cross-service joins and single-transaction guarantees in exchange for service autonomy. The standard approach is eventual consistency: when a service's data changes, it publishes an event, and other services that need that data consume the event and update their own local copy or materialized view asynchronously — so there's a brief window of inconsistency, but the system converges. For read-heavy scenarios needing data across services, you can build a dedicated read model (CQRS-style) that subscribes to events from multiple services. For multi-service writes that all need to succeed together, you'd use a Saga with compensating actions rather than a two-phase commit. The core trade-off is accepting eventual consistency and added complexity in exchange for services not being tightly coupled at the database level."},"follow_up_hint":"Ask them to explain a concrete scenario where stale eventually-consistent data could cause a user-visible problem, and how they'd mitigate it."},
-  {"id":"micro-0007","question":"What is the strangler fig pattern, and when would you use it?","type":"scenario_based","difficulty":3,"roles":["backend","system_design"],"topics":["microservices"],"tech_keywords":["microservices","legacy-migration"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["A strategy for incrementally migrating a monolith to microservices (or replacing any legacy system) without a risky big-bang rewrite","New functionality is built as separate services; a routing layer/facade gradually redirects specific requests from the old system to the new services","Over time, more of the monolith's responsibilities are 'strangled' (replaced), until the old system can be fully retired","Advantage: continuous delivery of value, lower risk than a full rewrite, ability to roll back a single migrated piece if it has issues"],"sample_answer":"The strangler fig pattern is a way to incrementally migrate a legacy monolith to microservices (or replace any legacy system) without a risky big-bang rewrite. You put a routing layer or facade in front of the existing system, and build new functionality as separate services behind that facade; the router directs specific requests to the new services while everything else still goes to the old monolith. Over time, more responsibilities get pulled out into new services — 'strangling' the old system piece by piece — until eventually the old system handles little or nothing and can be decommissioned. This is preferable to a full rewrite because it delivers value continuously, keeps risk contained to one migrated piece at a time, and lets you roll back a single migration if it causes problems."},"follow_up_hint":"Ask how they'd decide which piece of the monolith to strangle first."},
-  {"id":"micro-0008","question":"Explain what a circuit breaker pattern does and why it's important in microservices.","type":"conceptual","difficulty":3,"roles":["backend","system_design"],"topics":["microservices"],"tech_keywords":["circuit-breaker","resilience"],"companies_common":["Netflix","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["A circuit breaker monitors calls to a downstream service and 'trips open' after repeated failures, immediately failing subsequent calls instead of letting them wait/time out","This prevents cascading failures — a struggling downstream service isn't further overwhelmed, and the caller isn't stuck waiting on doomed requests, freeing up its own threads/resources","After a cooldown period, the breaker moves to 'half-open' and allows a trial request through to check if the downstream service has recovered","Closed → Open → Half-open → Closed state machine (standard explanation, e.g. from Netflix Hystrix/resilience4j)"],"sample_answer":"A circuit breaker wraps calls to a downstream service and tracks failure rates; if failures exceed a threshold, it 'trips open' and immediately fails subsequent calls for a cooldown period instead of letting them time out slowly. This matters because it prevents cascading failures — without it, a struggling downstream service gets hammered with more requests it can't handle, while the calling service's own threads/connections get tied up waiting on doomed calls, which can bring the caller down too. After the cooldown, the breaker goes 'half-open' and lets a trial request through; if it succeeds, the breaker closes and normal traffic resumes, otherwise it reopens. This closed-open-half-open cycle is the standard pattern implemented by libraries like Netflix Hystrix or resilience4j."},"follow_up_hint":"Ask what a good fallback behavior looks like when the circuit is open (e.g. cached data, degraded response)."}
+  {
+    "id": "micro-0001",
+    "question": "What is a microservices architecture, and what problems does it solve compared to a monolith?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "microservices",
+      "system-design"
+    ],
+    "tech_keywords": [
+      "microservices"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Netflix",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Microservices split an application into small, independently deployable services, each owning a bounded piece of business functionality and its own data",
+        "Solves: independent deployment/scaling per service, teams can work autonomously, failure isolation (one service crashing doesn't take down everything)",
+        "Trade-off: adds operational complexity — network calls replace function calls, distributed transactions, service discovery, monitoring across many services",
+        "Should mention it's not free — a monolith is simpler to develop/debug/deploy for small teams/early-stage products"
+      ],
+      "sample_answer": "Microservices architecture splits an application into small, independently deployable services, each owning a specific piece of business capability and typically its own database. This solves problems monoliths have at scale: teams can deploy and scale services independently, a failure in one service doesn't necessarily crash the whole system, and different services can use different tech stacks suited to their needs. The trade-off is significant added complexity — what used to be an in-process function call becomes a network call that can fail, you need service discovery, distributed tracing, and handling for partial failures and data consistency across services. For a small team or early-stage product, a monolith is usually the better starting point."
+    },
+    "follow_up_hint": "Ask when they'd choose to start with a monolith versus microservices for a new product.",
+    "concept": "Microservices Architecture",
+    "sub_concept": "Architectural Trade-offs and Problem Solving",
+    "expected_reasoning": "A strong candidate begins by defining the core shift from a single monolithic unit to decoupled, domain-driven services with independent data stores. They then logically derive the specific organizational and technical problems this solves, such as independent scaling, localized fault tolerance, and team velocity. Rather than presenting microservices as a silver bullet, they systematically contrast these benefits with the distributed systems challenges introduced. Finally, they weigh these trade-offs against project context, recognizing that architectural decisions depend heavily on team size and product maturity.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply listing 'microservices are scalable' without explaining why or how",
+      "Confuses microservices with simple code modularization or packages inside a monolithic codebase",
+      "Presents microservices as an absolute upgrade with no downsides or hidden operational costs",
+      "Focuses solely on technical benefits while ignoring the organizational and team autonomy aspects",
+      "Assumes network communication and distributed data management are trivial to implement"
+    ],
+    "progressive_hints": [
+      "Consider what happens to a large development team and their deployment pipeline when everyone pushes code to the exact same codebase.",
+      "Think about what happens to your system's availability when a memory leak in an unrelated background worker crashes your entire application server.",
+      "If you break your application into separate independent services, what new kinds of problems do you introduce regarding network communication and data consistency across service boundaries?"
+    ],
+    "learning_objective": "Understand that microservices trade development simplicity and consistency for organizational scalability, fault isolation, and independent deployability."
+  },
+  {
+    "id": "micro-0002",
+    "question": "How do microservices typically communicate with each other, and what are the trade-offs between synchronous and asynchronous communication?",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "microservices"
+    ],
+    "tech_keywords": [
+      "microservices",
+      "rest",
+      "message-queue"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Synchronous: REST/gRPC calls — caller waits for a response; simple to reason about but couples services' availability together",
+        "Asynchronous: message queues/event streams (Kafka, RabbitMQ, SQS) — caller doesn't block, better resilience to downstream slowness/outages",
+        "Sync is easier for request/response flows needing an immediate answer; async fits background processing, fan-out, or decoupled workflows",
+        "Mentions the cascading-failure risk of long synchronous call chains, mitigated by timeouts/circuit breakers"
+      ],
+      "sample_answer": "Services can communicate synchronously via REST or gRPC, where the caller blocks waiting for a response, or asynchronously via a message broker like Kafka, RabbitMQ, or SQS, where the caller publishes an event and moves on. Synchronous calls are simpler to reason about and fit flows that need an immediate answer, but they couple the availability of both services together — if the callee is slow, the caller is stuck waiting, and long synchronous chains can cause cascading failures without timeouts and circuit breakers. Asynchronous messaging decouples services in time, is more resilient to a downstream outage since messages just queue up, and suits background work or fan-out to multiple consumers, but adds complexity around eventual consistency and debugging."
+    },
+    "follow_up_hint": "Ask how they'd prevent a slow downstream service from taking down the entire call chain (circuit breaker pattern).",
+    "concept": "Microservices Architecture",
+    "sub_concept": "Inter-service Communication and Trade-offs",
+    "expected_reasoning": "A strong candidate begins by categorizing microservice communication into synchronous and asynchronous paradigms, grounding them in concrete transport mechanisms like HTTP/REST, gRPC, and message brokers. They systematically evaluate these paradigms by analyzing temporal coupling, availability dependencies, and operational complexity. Instead of declaring one universally superior, they weigh how specific system requirements—such as immediate response needs versus decoupling and resilience—dictate the architectural choice. Finally, they anticipate failure modes, noting how synchronous chains risk cascading outages and require mitigation strategies like circuit breakers.",
+    "common_mistakes": [
+      "States that REST is always better because it is simpler, without addressing availability risks.",
+      "Claims asynchronous communication is always superior because of decoupling, ignoring the added complexity of eventual consistency and debugging.",
+      "Treats synchronous and asynchronous communication as interchangeable preferences rather than architectural trade-offs driven by use cases.",
+      "Fails to mention failure modes like cascading failures or the need for circuit breakers in synchronous chains.",
+      "Confuses transport protocols like gRPC with communication patterns like request-response."
+    ],
+    "progressive_hints": [
+      "Consider what happens to the calling service if the downstream service it depends on goes offline immediately during a request.",
+      "Think about how the timing of data delivery affects service coupling—does the caller need an answer right now, or can it fire and forget?",
+      "Compare the direct request-response dependency of blocking calls with a decoupled queue-based model where a broker buffers messages between services."
+    ],
+    "learning_objective": "Understand how to choose between synchronous and asynchronous communication models based on coupling, resilience, and system flow requirements."
+  },
+  {
+    "id": "micro-0003",
+    "question": "What is service discovery, and why is it needed in a microservices architecture?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "devops"
+    ],
+    "topics": [
+      "microservices"
+    ],
+    "tech_keywords": [
+      "microservices",
+      "service-discovery"
+    ],
+    "companies_common": [
+      "Netflix",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "In a dynamic environment, service instances' IPs/ports change constantly (scaling, restarts, deployments) so hardcoding addresses doesn't work",
+        "Service discovery maintains a registry of currently-available service instances and their locations",
+        "Client-side discovery: caller queries the registry directly and picks an instance (e.g. Netflix Eureka)",
+        "Server-side discovery: a load balancer/router queries the registry on the caller's behalf (e.g. Kubernetes Service, AWS ALB)"
+      ],
+      "sample_answer": "In a microservices deployment, instances of a service are constantly being created, destroyed, or rescheduled — by an autoscaler or a deployment — so their network addresses change all the time, making hardcoded IPs unworkable. Service discovery solves this with a registry that tracks currently healthy instances and their addresses; services register themselves on startup (or a health check confirms they're up) and consumers query the registry to find where to send a request. This can be client-side, where the caller itself queries the registry and load-balances (like Netflix Eureka), or server-side, where a proxy or load balancer does that lookup on the caller's behalf, which is how Kubernetes Services and cloud load balancers work."
+    },
+    "follow_up_hint": "Ask how Kubernetes implements service discovery under the hood.",
+    "concept": "Service Discovery",
+    "sub_concept": "Dynamic IP and Port Resolution",
+    "expected_reasoning": "A strong candidate begins by contrasting the static nature of monolithic architectures with the ephemeral reality of microservices. They analyze what happens when instances scale up, down, or fail, noting that hardcoded IP addresses or DNS become maintenance bottlenecks. Next, they deduce the need for a dynamic intermediary or registry that tracks live endpoints in real-time. Finally, they compare the two primary routing patterns—client-side versus server-side discovery—weighing the trade-offs of coupling the client to the registry versus introducing an extra networking hop via a load balancer.",
+    "common_mistakes": [
+      "States that it is just DNS without explaining the ephemeral and dynamic nature of containerized instances.",
+      "Confuses service discovery with static API gateways or basic load balancing without mentioning the underlying dynamic registry.",
+      "Fails to mention both client-side and server-side patterns, only describing one as the universal definition.",
+      "Gives a hand-waving answer that 'services need to find each other' without explaining how locations change during scaling or failures.",
+      "Conflates service discovery with service mesh traffic management features like mutual TLS or traffic splitting."
+    ],
+    "progressive_hints": [
+      "Think about what happens to the network address of a container or microservice instance when it scales up, restarts, or moves to a different host.",
+      "If hardcoding IP addresses or using standard static configuration files fails in a dynamic cloud environment, how can a client automatically know where to send requests?",
+      "Consider the two main architectural patterns where either the client queries a central registry directly before calling an instance, or a load balancer handles that lookup on the client's behalf."
+    ],
+    "learning_objective": "The candidate should understand how service registries decouple microservices from static network locations to ensure reliable communication in dynamic, scalable environments."
+  },
+  {
+    "id": "micro-0004",
+    "question": "Explain the Saga pattern for handling distributed transactions across microservices.",
+    "type": "conceptual",
+    "difficulty": 4,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "microservices",
+      "distributed-systems"
+    ],
+    "tech_keywords": [
+      "microservices",
+      "saga"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber",
+      "Netflix"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Distributed transactions across services can't use a single ACID transaction/2PC easily at scale, since it requires locking resources across services and blocks on failures",
+        "Saga breaks a multi-step business transaction into a sequence of local transactions, each with a corresponding compensating action to undo it if a later step fails",
+        "Choreography: each service publishes events that trigger the next step, no central coordinator (more decoupled, harder to trace)",
+        "Orchestration: a central saga orchestrator explicitly tells each service what to do next and calls compensations on failure (easier to reason about, adds a coordinator dependency)"
+      ],
+      "sample_answer": "A Saga breaks a business transaction spanning multiple services — like 'place order, reserve inventory, charge payment, schedule shipping' — into a sequence of local transactions, each service committing its own step independently, since a traditional distributed ACID transaction or two-phase commit doesn't scale well and creates tight coupling and blocking across services. If a later step fails, the saga runs compensating actions to undo the completed steps — e.g. refunding a payment if shipping scheduling fails. There are two coordination styles: choreography, where each service publishes an event that triggers the next service reactively with no central coordinator, and orchestration, where a central saga orchestrator explicitly directs each step and invokes compensations on failure — orchestration is easier to trace and reason about but introduces a coordinating component."
+    },
+    "follow_up_hint": "Ask them to design the saga and compensating actions for an e-commerce checkout flow.",
+    "concept": "Distributed Transactions",
+    "sub_concept": "Saga Pattern and Eventual Consistency",
+    "expected_reasoning": "A strong candidate begins by identifying why traditional ACID transactions fail in distributed microservice architectures due to network latency, resource locking, and scalability bottlenecks. They then analyze how to maintain data consistency without global locks, moving naturally toward the concept of breaking a monolithic transaction into a sequence of isolated local transactions. Following this, they weigh the architectural trade-offs between distributed coordination models, specifically contrasting decentralized event-driven flows against centralized workflow managers. Finally, they articulate how compensating actions achieve eventual consistency when a step halfway through the process fails.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply defining a saga as a series of local transactions without explaining why it replaces two-phase commit.",
+      "Confuses the Saga pattern with traditional ACID transactions, incorrectly claiming that sagas provide immediate rollback and isolation.",
+      "Fails to mention compensating transactions, ignoring how state is cleaned up or reversed when a failure occurs midway.",
+      "Treats choreography and orchestration as interchangeable without explaining the trade-offs in coupling and observability.",
+      "Assumes sagas are always the best choice, failing to discuss the complexity of eventual consistency and handling dirty reads or lost updates.",
+      "Believes sagas require a central database to coordinate state across services."
+    ],
+    "progressive_hints": [
+      "What limitation of traditional database locks makes them impractical for coordinating multi-step transactions across independent microservices?",
+      "If you cannot lock rows across multiple databases until the entire operation finishes, how can you guarantee that a failed final step can still undo the previous side effects?",
+      "Consider the two primary ways to coordinate these sequential steps: having services react to events independently versus having a dedicated controller direct the workflow. What are the failure visibility trade-offs of each?"
+    ],
+    "learning_objective": "Understand how the Saga pattern replaces traditional distributed locking with a sequence of local transactions and compensating actions to achieve eventual consistency across microservices."
+  },
+  {
+    "id": "micro-0005",
+    "question": "What is an API Gateway, and what responsibilities does it typically handle in a microservices system?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "microservices",
+      "api-design"
+    ],
+    "tech_keywords": [
+      "api-gateway"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Netflix"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "An API Gateway is a single entry point that routes external client requests to the appropriate backend microservice",
+        "Common responsibilities: authentication/authorization, rate limiting, request routing, response aggregation from multiple services, SSL termination, logging/metrics",
+        "Shields clients from needing to know internal service topology; lets internal services change without breaking external clients",
+        "Can become a bottleneck or single point of failure if not scaled/made highly available itself"
+      ],
+      "sample_answer": "An API Gateway is the single entry point clients talk to, which then routes each request to the appropriate internal microservice, so external clients don't need to know the internal service topology. It commonly handles cross-cutting concerns centrally — authentication and authorization, rate limiting, SSL termination, request logging/metrics, and sometimes aggregating responses from multiple backend services into one response for the client. The trade-off is that it becomes a critical piece of infrastructure — if it's not made highly available and horizontally scalable itself, it becomes both a bottleneck and a single point of failure for the whole system."
+    },
+    "follow_up_hint": "Ask how they'd prevent the gateway itself from becoming a single point of failure.",
+    "concept": "API Gateway",
+    "sub_concept": "Microservices Request Routing and Cross-Cutting Concerns",
+    "expected_reasoning": "A strong candidate begins by identifying the fundamental decoupling problem in microservices: how external clients interact with dozens of scattered internal services without direct exposure to network topology. They reason about the architectural boundary between the public internet and internal networks, realizing that repeating cross-cutting concerns like authentication and rate limiting inside every microservice creates massive duplication. They derive the need for a centralized entry point and systematically weigh its operational trade-offs, such as becoming a potential bottleneck or single point of failure against the immense benefit of unified protocol translation and client simplification.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely listing it as a reverse proxy without explaining architectural motivations.",
+      "Confounds an API Gateway with an internal service mesh, missing its role as the ingress point for external clients.",
+      "Focuses solely on routing while completely ignoring cross-cutting concerns like rate limiting, authentication, and SSL termination.",
+      "Treats the gateway as a business logic layer rather than an infrastructure and routing layer, suggesting it should query databases directly.",
+      "Fails to mention or evaluate the single point of failure and bottleneck risks inherent to a centralized entry point."
+    ],
+    "progressive_hints": [
+      "Consider what happens to client applications when they have to talk directly to fifty different internal microservices over the public internet.",
+      "Think about how repeating security checks, SSL termination, and rate-limiting logic across every single microservice is inefficient, and where you might consolidate those tasks.",
+      "If a single client action requires data from three different microservices, what architectural component could sit at the edge to orchestrate that and present a unified interface?"
+    ],
+    "learning_objective": "Understand how an API Gateway decouples external clients from internal microservice topologies while centralizing critical cross-cutting concerns at the edge."
+  },
+  {
+    "id": "micro-0006",
+    "question": "How would you handle data consistency when each microservice has its own database (database-per-service pattern)?",
+    "type": "trade_off_questions",
+    "difficulty": 4,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "microservices",
+      "distributed-systems"
+    ],
+    "tech_keywords": [
+      "microservices",
+      "eventual-consistency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Database-per-service prevents services from being coupled at the schema level, but rules out simple cross-service SQL joins/transactions",
+        "Options: eventual consistency via events (a service publishes a change event, others update their own local copy/materialized view asynchronously)",
+        "CQRS-style read models can be built by consuming events from multiple services to serve queries needing cross-service data",
+        "Sagas (see above) handle multi-service writes that must all succeed or all compensate",
+        "Explains the trade-off: strong consistency is sacrificed for service autonomy and independent scaling/deployment"
+      ],
+      "sample_answer": "With a database per service, you give up cross-service joins and single-transaction guarantees in exchange for service autonomy. The standard approach is eventual consistency: when a service's data changes, it publishes an event, and other services that need that data consume the event and update their own local copy or materialized view asynchronously — so there's a brief window of inconsistency, but the system converges. For read-heavy scenarios needing data across services, you can build a dedicated read model (CQRS-style) that subscribes to events from multiple services. For multi-service writes that all need to succeed together, you'd use a Saga with compensating actions rather than a two-phase commit. The core trade-off is accepting eventual consistency and added complexity in exchange for services not being tightly coupled at the database level."
+    },
+    "follow_up_hint": "Ask them to explain a concrete scenario where stale eventually-consistent data could cause a user-visible problem, and how they'd mitigate it.",
+    "concept": "Distributed Data Consistency",
+    "sub_concept": "Database-per-service pattern and distributed transactions",
+    "expected_reasoning": "A strong candidate begins by acknowledging that the database-per-service pattern eliminates tight schema coupling and enables independent scaling, but inherently breaks ACID guarantees across service boundaries. They proceed to categorize operations into reads and writes, recognizing that reads can be satisfied asynchronously via CQRS or materialized views populated by domain events. For write operations spanning multiple services, they evaluate architectural patterns like orchestration- or choreography-based Sagas to manage distributed transactions. Finally, they weigh the operational complexity and eventual consistency trade-offs against the benefits of service autonomy.",
+    "common_mistakes": [
+      "Suggesting a distributed lock or distributed two-phase commit (2PC) across microservices without acknowledging availability and latency bottlenecks",
+      "Proposing direct database-to-database queries or shared databases to bypass consistency issues, defeating the purpose of the pattern",
+      "Stating 'use eventual consistency' as a buzzword without explaining how race conditions or stale reads are handled",
+      "Ignoring the read-side entirely and assuming cross-service data can simply be joined via application code on the fly",
+      "Failing to mention compensating transactions or failure recovery mechanisms when a multi-step workflow fails halfway through"
+    ],
+    "progressive_hints": [
+      "What fundamental database guarantee do you lose immediately when you split one monolithic database into separate databases per service?",
+      "If you cannot use standard database transactions or SQL joins across services, how can services communicate state changes or assemble read data asynchronously?",
+      "When a single business operation requires updates across three different services, how do you ensure that either all succeed or compensating actions are taken if one fails?"
+    ],
+    "learning_objective": "The candidate should understand how to architect read and write paths across microservices by trading strong consistency for eventual consistency and service autonomy."
+  },
+  {
+    "id": "micro-0007",
+    "question": "What is the strangler fig pattern, and when would you use it?",
+    "type": "scenario_based",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "microservices"
+    ],
+    "tech_keywords": [
+      "microservices",
+      "legacy-migration"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A strategy for incrementally migrating a monolith to microservices (or replacing any legacy system) without a risky big-bang rewrite",
+        "New functionality is built as separate services; a routing layer/facade gradually redirects specific requests from the old system to the new services",
+        "Over time, more of the monolith's responsibilities are 'strangled' (replaced), until the old system can be fully retired",
+        "Advantage: continuous delivery of value, lower risk than a full rewrite, ability to roll back a single migrated piece if it has issues"
+      ],
+      "sample_answer": "The strangler fig pattern is a way to incrementally migrate a legacy monolith to microservices (or replace any legacy system) without a risky big-bang rewrite. You put a routing layer or facade in front of the existing system, and build new functionality as separate services behind that facade; the router directs specific requests to the new services while everything else still goes to the old monolith. Over time, more responsibilities get pulled out into new services — 'strangling' the old system piece by piece — until eventually the old system handles little or nothing and can be decommissioned. This is preferable to a full rewrite because it delivers value continuously, keeps risk contained to one migrated piece at a time, and lets you roll back a single migration if it causes problems."
+    },
+    "follow_up_hint": "Ask how they'd decide which piece of the monolith to strangle first.",
+    "concept": "Strangler Fig Pattern",
+    "sub_concept": "Monolith to Microservices Migration",
+    "expected_reasoning": "A strong candidate begins by identifying the core risk of legacy rewrites, specifically the dangers of 'big bang' migrations that attempt to replace everything at once. They then articulate how the metaphor of the strangler fig vine applies to software architecture, where new functionality grows around the existing legacy core. They describe the introduction of a routing or interception layer (like an API gateway or proxy) that sits between clients and the backend. Finally, they reason about how routing traffic incrementally allows teams to safely peel away domain responsibilities one by one while maintaining system availability.",
+    "common_mistakes": [
+      "States the conclusion or definition with no justification of why it reduces risk compared to a rewrite.",
+      "Confuses the strangler fig pattern with a simple database migration or data replication strategy.",
+      "Fails to mention the routing layer or proxy needed to direct traffic between the old and new systems.",
+      "Assumes the entire monolith is replaced at once rather than understanding the incremental nature of the pattern.",
+      "Focuses solely on code refactoring inside the monolith rather than building separate replacement services."
+    ],
+    "progressive_hints": [
+      "Think about the massive risks associated with rewriting a complex production system all at once. How could you approach replacing it in smaller pieces?",
+      "Consider how you would intercept client requests before they hit the backend, allowing you to selectively send some traffic to a new service while the rest still goes to the old monolith.",
+      "If you build new features as separate services and use a routing layer to gradually shift domain responsibilities away from the legacy system over months, what is this specific migration strategy called?"
+    ],
+    "learning_objective": "The candidate should understand how to safely and incrementally migrate a legacy monolith to a microservices architecture by routing traffic domain by domain without risking a full system rewrite."
+  },
+  {
+    "id": "micro-0008",
+    "question": "Explain what a circuit breaker pattern does and why it's important in microservices.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "microservices"
+    ],
+    "tech_keywords": [
+      "circuit-breaker",
+      "resilience"
+    ],
+    "companies_common": [
+      "Netflix",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "A circuit breaker monitors calls to a downstream service and 'trips open' after repeated failures, immediately failing subsequent calls instead of letting them wait/time out",
+        "This prevents cascading failures — a struggling downstream service isn't further overwhelmed, and the caller isn't stuck waiting on doomed requests, freeing up its own threads/resources",
+        "After a cooldown period, the breaker moves to 'half-open' and allows a trial request through to check if the downstream service has recovered",
+        "Closed → Open → Half-open → Closed state machine (standard explanation, e.g. from Netflix Hystrix/resilience4j)"
+      ],
+      "sample_answer": "A circuit breaker wraps calls to a downstream service and tracks failure rates; if failures exceed a threshold, it 'trips open' and immediately fails subsequent calls for a cooldown period instead of letting them time out slowly. This matters because it prevents cascading failures — without it, a struggling downstream service gets hammered with more requests it can't handle, while the calling service's own threads/connections get tied up waiting on doomed calls, which can bring the caller down too. After the cooldown, the breaker goes 'half-open' and lets a trial request through; if it succeeds, the breaker closes and normal traffic resumes, otherwise it reopens. This closed-open-half-open cycle is the standard pattern implemented by libraries like Netflix Hystrix or resilience4j."
+    },
+    "follow_up_hint": "Ask what a good fallback behavior looks like when the circuit is open (e.g. cached data, degraded response).",
+    "concept": "Circuit Breaker Pattern",
+    "sub_concept": "Fault Tolerance in Distributed Systems",
+    "expected_reasoning": "A strong candidate begins by identifying the fragility inherent in synchronous microservice calls, noting how a single slow or failing dependency can saturate a caller's thread pool. They then derive the necessity of failing fast rather than hanging indefinitely, mapping out the state transitions from normal operation to tripped and probing states. Finally, they explain how this mechanism acts as an isolation barrier, protecting both the downstream service from being overwhelmed and the upstream service from resource exhaustion.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'it stops cascading failures' without explaining how threads or resources are saved",
+      "Confuses a circuit breaker with a rate limiter, load balancer, or simple retry mechanism",
+      "Omits the 'half-open' state or fails to explain how recovery is tested after a trip",
+      "Focuses only on protecting the downstream service while ignoring the upstream caller's resource exhaustion",
+      "Treats the circuit breaker as a permanent shutdown rather than a temporary, self-healing state machine"
+    ],
+    "progressive_hints": [
+      "What usually happens to a caller's thread pool when a downstream dependency starts responding very slowly?",
+      "Think about how you can prevent your application from wasting resources on calls that are guaranteed to fail right now.",
+      "Consider how the pattern models an electrical circuit breaker: when it trips, it blocks requests temporarily, but how does it eventually test if the underlying issue is fixed?"
+    ],
+    "learning_objective": "Understand how the circuit breaker pattern isolates failures and prevents resource exhaustion across distributed microservice architectures."
+  }
 ]

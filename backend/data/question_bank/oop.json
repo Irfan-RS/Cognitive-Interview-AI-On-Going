@@ -4,10 +4,27 @@
     "question": "Explain the four pillars of object-oriented programming with a concrete example of each.",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["general_sde", "backend", "fullstack"],
-    "topics": ["oop-fundamentals"],
-    "tech_keywords": ["oop", "java", "c++", "python"],
-    "companies_common": ["Amazon", "Microsoft", "Infosys", "TCS", "Adobe"],
+    "roles": [
+      "general_sde",
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "oop-fundamentals"
+    ],
+    "tech_keywords": [
+      "oop",
+      "java",
+      "c++",
+      "python"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Infosys",
+      "TCS",
+      "Adobe"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -19,17 +36,47 @@
       ],
       "sample_answer": "Encapsulation hides an object's internal state behind private fields and public getters/setters, like a BankAccount hiding its balance. Abstraction exposes only what's needed, e.g. a Shape interface with a computeArea() method without exposing how each shape calculates it. Inheritance lets a SavingsAccount class extend Account to reuse and extend behavior. Polymorphism lets a single computeArea() call behave differently depending on whether the actual object is a Circle or Square."
     },
-    "follow_up_hint": "Ask them to explain the difference between compile-time and runtime polymorphism."
+    "follow_up_hint": "Ask them to explain the difference between compile-time and runtime polymorphism.",
+    "concept": "Object Oriented Programming",
+    "sub_concept": "Four Pillars of OOP",
+    "expected_reasoning": "A strong candidate structures their response by systematically defining each pillar and immediately grounding it in a single, cohesive domain model, such as a banking or vehicle system, to show how they work in concert. They first clarify how data and methods are bundled and protected via visibility modifiers for encapsulation, then explain how complex subsystems are hidden behind simplified interfaces for abstraction. Next, they articulate how code is shared across hierarchies through inheritance, and finally demonstrate how runtime behavior adapts dynamically through polymorphism. Rather than reciting textbook definitions, they emphasize the design trade-offs and practical motivations behind using each principle.",
+    "common_mistakes": [
+      "Reciting rote textbook definitions without providing concrete examples for each pillar",
+      "Using the exact same example or class for all four pillars, leading to confusion",
+      "Confusing abstraction with encapsulation, treating them as interchangeable terms",
+      "Failing to explain the practical benefit or 'why' behind each architectural principle",
+      "Conflating inheritance with composition or misrepresenting polymorphism strictly as method overloading"
+    ],
+    "progressive_hints": [
+      "Consider starting with how you group related data and functions together, and how you might restrict access to sensitive parts of that data.",
+      "Think about the difference between hiding internal complexity behind a clean public interface versus bundling state and behavior.",
+      "For the remaining two pillars, focus on how a child class can inherit shared traits from a parent, and how different classes can implement the same method in unique ways."
+    ],
+    "learning_objective": "Understand how the four pillars of object-oriented programming work together to build modular, maintainable, and extensible software systems."
   },
   {
     "id": "oop-0002",
     "question": "What is the difference between an abstract class and an interface? When would you choose one over the other?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["oop-fundamentals", "design"],
-    "tech_keywords": ["oop", "java", "c++"],
-    "companies_common": ["Amazon", "Microsoft", "Oracle"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "oop-fundamentals",
+      "design"
+    ],
+    "tech_keywords": [
+      "oop",
+      "java",
+      "c++"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Oracle"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -41,17 +88,48 @@
       ],
       "sample_answer": "An abstract class can hold shared state and partially implemented methods, and is extended by subclasses that share a common identity — good when there's real shared implementation. An interface defines a pure contract with no state, and a class can implement several of them — good for expressing that unrelated classes share a capability, like Comparable or Serializable. Use an abstract class for 'is-a' hierarchies with shared code, an interface for 'can-do' capabilities across unrelated types."
     },
-    "follow_up_hint": "Ask about default methods in interfaces (Java 8+) and how they change this distinction."
+    "follow_up_hint": "Ask about default methods in interfaces (Java 8+) and how they change this distinction.",
+    "concept": "Object-Oriented Design",
+    "sub_concept": "Abstract Classes vs Interfaces",
+    "expected_reasoning": "A strong candidate begins by defining the core structural difference regarding state containment and implementation sharing. They then analyze the architectural constraints, such as single inheritance versus multiple implementation capabilities. Next, they contrast the semantic design intent, specifically differentiating between an 'is-a' hierarchy and a 'can-do' capability contract. Finally, they account for modern language evolutions like default interface methods, and synthesize these factors into a practical decision framework for real-world scenarios.",
+    "common_mistakes": [
+      "States that abstract classes cannot have any concrete methods.",
+      "Claims interfaces can never contain any implementation code, ignoring modern default methods.",
+      "Confuses multiple inheritance of state with multiple inheritance of type.",
+      "Gives a purely syntactic definition without explaining the design or architectural implications.",
+      "Treats the choice as arbitrary or purely a matter of personal preference."
+    ],
+    "progressive_hints": [
+      "Think about what happens when multiple unrelated classes need to share both a common capability and some pre-written helper logic.",
+      "Consider the structural limitations a subclass faces regarding inheritance when it extends a base class versus when it implements a contract.",
+      "Reflect on the semantic difference between defining what an object *is* versus what an object *can do*, and how state management affects that choice."
+    ],
+    "learning_objective": "Understand how to choose between abstract classes and interfaces based on state sharing, inheritance limits, and design intent."
   },
   {
     "id": "oop-0003",
     "question": "Explain the SOLID principles and give an example of a design that violates the Single Responsibility Principle.",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["design-principles", "solid"],
-    "tech_keywords": ["oop", "design-patterns", "clean-code"],
-    "companies_common": ["Amazon", "Microsoft", "ThoughtWorks", "Adobe"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "design-principles",
+      "solid"
+    ],
+    "tech_keywords": [
+      "oop",
+      "design-patterns",
+      "clean-code"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "ThoughtWorks",
+      "Adobe"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -64,17 +142,48 @@
       ],
       "sample_answer": "SOLID is Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion. A common SRP violation is a UserService class that both validates business rules AND directly writes SQL to persist users — it has two reasons to change (a validation-rule change or a database-schema change), so it should be split into a UserService and a UserRepository."
     },
-    "follow_up_hint": "Ask for a real violation of the Liskov Substitution Principle, such as a Square extending Rectangle."
+    "follow_up_hint": "Ask for a real violation of the Liskov Substitution Principle, such as a Square extending Rectangle.",
+    "concept": "SOLID Principles",
+    "sub_concept": "Single Responsibility Principle Violation and Design Cohesion",
+    "expected_reasoning": "A strong candidate systematically defines each of the five principles to demonstrate a holistic understanding of object-oriented design. When transitioning to the SRP violation, they identify a class that couples multiple distinct actors or business reasons to change, such as mixing data persistence with core domain logic. They explain the negative consequences of this coupling, such as brittleness during testing or maintenance, before briefly sketching how to refactor it by separating concerns into distinct classes.",
+    "common_mistakes": [
+      "Reciting acronym definitions without providing any concrete explanation or examples.",
+      "Confusing the Single Responsibility Principle with having a single method or function.",
+      "Giving an SRP violation example that is just a large class rather than one with multiple independent reasons to change.",
+      "Failing to explain *why* the violation causes practical issues like maintenance overhead or tight coupling.",
+      "Conflating Dependency Inversion with simple dependency injection."
+    ],
+    "progressive_hints": [
+      "What does 'reason to change' actually mean in the context of a software system's stakeholders?",
+      "Think about a class that handles both business rules and database queries. Which parts of that class would need to change if the database vendor changes versus if the business logic changes?",
+      "If a class has to be modified every time the database schema changes AND every time the UI layout updates, how does that violate the first principle, and how would you split those responsibilities?"
+    ],
+    "learning_objective": "Understand how to identify, isolate, and refactor tightly coupled code that violates the Single Responsibility Principle to improve software maintainability."
   },
   {
     "id": "oop-0004",
     "question": "What is method overloading versus method overriding? Explain with examples.",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["general_sde", "backend"],
-    "topics": ["oop-fundamentals", "polymorphism"],
-    "tech_keywords": ["oop", "java", "c++"],
-    "companies_common": ["Amazon", "Infosys", "TCS", "Wipro"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "oop-fundamentals",
+      "polymorphism"
+    ],
+    "tech_keywords": [
+      "oop",
+      "java",
+      "c++"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys",
+      "TCS",
+      "Wipro"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -86,17 +195,46 @@
       ],
       "sample_answer": "Overloading is having multiple methods with the same name but different parameters in the same class, e.g. add(int, int) and add(double, double) — resolved at compile time based on argument types. Overriding is a subclass providing its own implementation of a method inherited from its parent with the exact same signature, e.g. Dog overriding Animal's makeSound() — resolved at runtime based on the actual object type."
     },
-    "follow_up_hint": "Ask what happens if you try to override a method but change only its return type incompatibly."
+    "follow_up_hint": "Ask what happens if you try to override a method but change only its return type incompatibly.",
+    "concept": "Polymorphism",
+    "sub_concept": "Method Overloading vs Method Overriding",
+    "expected_reasoning": "A strong candidate begins by defining the scope of both terms within Object-Oriented Programming, clearly separating compile-time behavior from runtime behavior. They systematically compare them across four key dimensions: the relationship between classes (same class versus inheritance), signature rules, and when the binding occurs. To anchor their explanation, they construct concrete examples—such as a math utility for overloading and a shape hierarchy for overriding—to illustrate the mechanical differences. Finally, they highlight subtle constraints like return types and access modifiers to demonstrate a deep, production-level understanding.",
+    "common_mistakes": [
+      "Confusing the two terms or using them interchangeably",
+      "Stating that overloading happens across inheritance hierarchies",
+      "Claiming that overloading is resolved at runtime via dynamic dispatch",
+      "Forgetting to mention that overriding requires the exact same method signature in the child class",
+      "Giving code examples that fail to compile or do not clearly distinguish the two concepts",
+      "Stating the definitions with no code or conceptual justification"
+    ],
+    "progressive_hints": [
+      "Think about where each mechanism is applied—are they within the same class or across parent-child relationships?",
+      "Consider when the compiler versus the runtime determines which specific method body to execute for each case.",
+      "Contrast how method signatures must change for overloading (different parameters) versus staying identical for overriding."
+    ],
+    "learning_objective": "Understand the distinct mechanical, structural, and timing differences between static polymorphism via overloading and dynamic polymorphism via overriding."
   },
   {
     "id": "oop-0005",
     "question": "Explain composition versus inheritance, and why 'favor composition over inheritance' is common advice.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["design-principles"],
-    "tech_keywords": ["oop", "design-patterns"],
-    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "design-principles"
+    ],
+    "tech_keywords": [
+      "oop",
+      "design-patterns"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -108,17 +246,47 @@
       ],
       "sample_answer": "Inheritance expresses 'is-a' and reuses code by extending a parent class, but tightly couples the subclass to the parent's implementation and can create fragile, deep hierarchies. Composition expresses 'has-a' — a Car has an Engine rather than being one — and lets you swap the Engine implementation at runtime, which also makes unit testing easier since you can inject a mock Engine. This flexibility is why composition is generally preferred unless there's a genuine, stable 'is-a' relationship."
     },
-    "follow_up_hint": "Ask for an example of the fragile base class problem in a real codebase."
+    "follow_up_hint": "Ask for an example of the fragile base class problem in a real codebase.",
+    "concept": "Object-Oriented Design",
+    "sub_concept": "Composition Versus Inheritance",
+    "expected_reasoning": "A strong candidate begins by defining the core relational difference between the two paradigms, establishing that inheritance models structural hierarchies while composition builds behavior through aggregation. They then analyze the maintenance implications, identifying how deep inheritance chains lock in rigid coupling and create the fragile base class problem. Next, they contrast this with how composition provides decoupled flexibility, allowing behaviors to be swapped or mocked dynamically. Finally, they synthesize why industry best practices prioritize composition, highlighting testability and adaptability to changing requirements.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as just saying 'composition is more modern' without explaining coupling.",
+      "Confuses the relationship definitions, claiming inheritance is 'has-a' and composition is 'is-a'.",
+      "Treats the choice as a binary rule with no context, ignoring cases where interface inheritance or subclassing is actually useful.",
+      "Gives an abstract definition without providing a concrete real-world example like a Car and an Engine.",
+      "Fails to mention how testing and mocking are impacted by tightly coupled parent classes."
+    ],
+    "progressive_hints": [
+      "How do the two approaches fundamentally differ in how they model the relationship between two entities?",
+      "Think about what happens to a child class when the internal implementation of a deeply nested parent class changes.",
+      "Consider how injecting interfaces or objects into a class allows you to swap out behavior at runtime compared to locking it in via a class hierarchy."
+    ],
+    "learning_objective": "The candidate should understand how to choose between building rigid class hierarchies and assembling flexible object behaviors to reduce tight coupling and improve testability."
   },
   {
     "id": "oop-0006",
     "question": "What is a virtual function in C++/Java, and how does dynamic dispatch (the vtable) work under the hood?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["oop-fundamentals", "internals"],
-    "tech_keywords": ["c++", "java", "oop"],
-    "companies_common": ["Amazon", "Microsoft", "Nvidia"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "oop-fundamentals",
+      "internals"
+    ],
+    "tech_keywords": [
+      "c++",
+      "java",
+      "oop"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Nvidia"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -130,17 +298,46 @@
       ],
       "sample_answer": "A virtual function's actual implementation is chosen at runtime based on the object's real type, enabling polymorphism. In C++, the compiler generates a vtable per class containing function pointers to its virtual methods; every object of that class holds a hidden vptr pointing to its class's vtable. A virtual call dereferences the vptr, looks up the right function pointer, and calls it — one extra indirection compared to a direct call. Java methods are virtual by default unless marked static or final."
     },
-    "follow_up_hint": "Ask why marking a method 'final' in Java can allow the JIT to skip virtual dispatch."
+    "follow_up_hint": "Ask why marking a method 'final' in Java can allow the JIT to skip virtual dispatch.",
+    "concept": "Virtual Functions",
+    "sub_concept": "Dynamic Dispatch and Vtable Mechanics",
+    "expected_reasoning": "A strong candidate starts by defining the problem dynamic dispatch solves: enabling polymorphic behavior when calling methods through base-class pointers or references. They reason through the limitations of static binding and explain how runtime polymorphism requires an additional mechanism to inspect the object's actual type. They then derive the internal implementation by describing how a table of function pointers and a hidden object-level pointer work together to resolve method calls. Finally, they weigh the minor runtime overhead of pointer indirection against the architectural flexibility gained.",
+    "common_mistakes": [
+      "States that every object gets a full copy of the vtable instead of just a pointer to a shared class vtable.",
+      "Confuses compile-time overloading with runtime overriding via virtual functions.",
+      "Claims that C++ methods are virtual by default, mixing up C++ and Java semantics.",
+      "Forgets to mention the hidden vptr overhead on object size.",
+      "Provides a hand-wavy explanation of 'runtime magic' without explaining the actual vtable lookup mechanism."
+    ],
+    "progressive_hints": [
+      "Consider what happens when you call a overridden method through a base class pointer where the compiler doesn't know the exact object type ahead of time.",
+      "Think about how an object needs to store a reference to its actual runtime type so that a function call can be resolved at runtime rather than compile-time.",
+      "If the compiler creates a shared lookup table of function addresses for a class, what does an individual object instance need to carry to access that table?"
+    ],
+    "learning_objective": "Understand how object-oriented languages implement runtime polymorphism under the hood using vtables and vptrs to resolve overridden methods."
   },
   {
     "id": "oop-0007",
     "question": "Explain the Singleton design pattern, how to implement it thread-safely, and its drawbacks.",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["design-patterns"],
-    "tech_keywords": ["oop", "design-patterns", "concurrency"],
-    "companies_common": ["Amazon", "Microsoft", "Oracle"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "design-patterns"
+    ],
+    "tech_keywords": [
+      "oop",
+      "design-patterns",
+      "concurrency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Oracle"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -152,17 +349,47 @@
       ],
       "sample_answer": "A Singleton restricts a class to one instance, accessed globally. A naive lazy getInstance() with a null check isn't thread-safe — two threads could both see null and create two instances. Fixes include synchronizing the whole method (correct but slow), double-checked locking with a volatile field, or the static holder idiom that relies on the JVM's class-loading guarantees. Drawbacks are that Singletons introduce hidden global state, make unit testing harder (can't easily substitute a mock), and can become a hidden bottleneck; dependency injection is often a cleaner alternative."
     },
-    "follow_up_hint": "Ask them to actually write the double-checked locking implementation with the correct memory-visibility keyword."
+    "follow_up_hint": "Ask them to actually write the double-checked locking implementation with the correct memory-visibility keyword.",
+    "concept": "Singleton Design Pattern",
+    "sub_concept": "Thread-safe lazy initialization and architectural drawbacks",
+    "expected_reasoning": "A strong candidate begins by defining the core purpose of a Singleton: restricting instantiation to a single instance while offering a global point of access. They then walk through the evolution of its implementation, moving from a simple lazy initialization that fails under concurrency to more robust solutions like double-checked locking with volatile fields or the static holder idiom. Finally, they analyze the architectural implications, identifying how global state complicates unit testing, obscures dependencies, and leads to tight coupling, concluding with modern alternatives like dependency injection.",
+    "common_mistakes": [
+      "States the definition of a Singleton without explaining how to implement it thread-safely.",
+      "Provides a naive lazy initialization example and fails to recognize the race condition during concurrent first access.",
+      "Suggests synchronizing every access method without realizing the performance bottleneck it introduces.",
+      "Omits the 'volatile' keyword when implementing double-checked locking, missing instruction reordering issues.",
+      "Ignores the downsides of the pattern, treating it as a universally good practice for global variables.",
+      "Fails to mention modern alternatives like dependency injection frameworks."
+    ],
+    "progressive_hints": [
+      "Think about what happens if two threads attempt to create the instance at the exact same millisecond.",
+      "You need to protect the initialization block from race conditions, but synchronizing every single read call is too slow. How can you limit synchronization to only the creation phase, and what language keyword prevents memory visibility issues there?",
+      "Consider the idiom that uses a private static inner class loaded on demand by the JVM, which guarantees thread safety without explicit synchronization primitives."
+    ],
+    "learning_objective": "The candidate should understand how to implement the Singleton pattern safely in multi-threaded environments while recognizing when global state introduces architectural and testing anti-patterns."
   },
   {
     "id": "oop-0008",
     "question": "What is the difference between a shallow copy and a deep copy of an object?",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["general_sde"],
-    "topics": ["oop-fundamentals"],
-    "tech_keywords": ["oop", "java", "python", "c++"],
-    "companies_common": ["Amazon", "Infosys", "Cognizant"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "oop-fundamentals"
+    ],
+    "tech_keywords": [
+      "oop",
+      "java",
+      "python",
+      "c++"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys",
+      "Cognizant"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -174,17 +401,46 @@
       ],
       "sample_answer": "A shallow copy creates a new top-level object but its fields still point to the exact same nested objects as the original — so mutating a nested object through the copy also changes the original. A deep copy recursively duplicates every nested object too, giving two fully independent object graphs. For example, copying a list containing another list: shallow copy gives two outer lists sharing the same inner list; deep copy gives two completely separate inner lists as well."
     },
-    "follow_up_hint": "Ask how they'd implement a correct deep copy for an object graph containing cycles."
+    "follow_up_hint": "Ask how they'd implement a correct deep copy for an object graph containing cycles.",
+    "concept": "Object Copying",
+    "sub_concept": "Shallow versus deep memory allocation for nested structures",
+    "expected_reasoning": "A strong candidate begins by analyzing how memory is structured for objects that contain references to other objects. They distinguish between the surface-level container and the underlying nested objects it points to. Next, they trace what happens during assignment versus duplication, identifying the exact point where memory sharing occurs. Finally, they contrast the implications of modifying a shared nested reference versus an entirely independent cloned tree.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying 'deep copy copies everything and shallow copy doesn't.'",
+      "Confuses object assignment (reference copying) with a shallow copy.",
+      "Fails to mention what happens to nested objects when a shallow copy is mutated.",
+      "Thinks a shallow copy creates a brand new copy of all inner data structures.",
+      "Assumes primitive types behave differently in shallow and deep copies without explaining why."
+    ],
+    "progressive_hints": [
+      "Think about what happens to memory addresses when an object contains another object inside it.",
+      "Consider what gets duplicated when you only copy the outer shell versus when you traverse inside the object.",
+      "Imagine modifying a nested list inside a copied object: if the change affects the original, what kind of copy was it?"
+    ],
+    "learning_objective": "Understand the fundamental memory-management difference between duplicating object references versus recursively duplicating entire object graphs."
   },
   {
     "id": "oop-0009",
     "question": "Explain the Observer design pattern and where you've seen it used in a real system (e.g. UI frameworks, event systems).",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "frontend"],
-    "topics": ["design-patterns"],
-    "tech_keywords": ["oop", "design-patterns", "event-driven"],
-    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "frontend"
+    ],
+    "topics": [
+      "design-patterns"
+    ],
+    "tech_keywords": [
+      "oop",
+      "design-patterns",
+      "event-driven"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -196,17 +452,48 @@
       ],
       "sample_answer": "The Observer pattern lets a subject maintain a list of observers and notify them all automatically when its state changes, without knowing their concrete types. A classic example is a DOM element's event listeners, or a React component subscribing to a store's state changes — the store doesn't need to know what the subscribing components do with the update. A common pitfall is forgetting to unsubscribe observers, causing memory leaks."
     },
-    "follow_up_hint": "Ask them to distinguish Observer from Pub/Sub, which typically has a broker decoupling publishers from subscribers entirely."
+    "follow_up_hint": "Ask them to distinguish Observer from Pub/Sub, which typically has a broker decoupling publishers from subscribers entirely.",
+    "concept": "Observer Pattern",
+    "sub_concept": "Event-driven decoupling and state synchronization",
+    "expected_reasoning": "A strong candidate begins by identifying the core architectural problem the pattern solves: synchronizing state across multiple components without tightly coupling them. They then derive the structure by separating the subject managing the state from the observers reacting to changes via an abstract interface. Next, they ground this in a real-world system like DOM event listeners or MVC frameworks to demonstrate practical application. Finally, they analyze the trade-offs, specifically addressing memory management risks like dangling references and the ordering complexities of notification cascades.",
+    "common_mistakes": [
+      "States the definition as 'one object tells another what to do' without mentioning the one-to-many relationship or decoupling.",
+      "Confuses the Observer pattern directly with Pub/Sub without noting the presence or absence of an intermediary broker.",
+      "Fails to mention the necessity of an abstract interface, assuming the subject communicates with concrete observer implementations.",
+      "Omits real-world examples or relies on overly abstract, non-technical metaphors instead of concrete UI or event system use cases.",
+      "Ignores critical production pitfalls such as memory leaks from failing to unregister observers or unexpected notification ordering issues."
+    ],
+    "progressive_hints": [
+      "Think about how multiple UI components need to react when a single piece of core application data changes, without the data source knowing about every component.",
+      "Consider how the core data source can maintain a dynamic list of dependent objects while remaining completely agnostic of their specific implementation details.",
+      "If your objects register to receive updates whenever a state variable changes, what happens if an observer goes out of scope or is destroyed without telling the publisher?"
+    ],
+    "learning_objective": "Understand how to decouple state-changing subjects from dependent listeners using a one-to-many interface, while recognizing the necessary trade-offs around memory management and notification order."
   },
   {
     "id": "oop-0010",
     "question": "What is dependency injection, and what problem does it solve compared to a class constructing its own dependencies?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["design-principles", "design-patterns"],
-    "tech_keywords": ["oop", "dependency-injection", "spring", "testing"],
-    "companies_common": ["Amazon", "Microsoft", "Adobe"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "design-principles",
+      "design-patterns"
+    ],
+    "tech_keywords": [
+      "oop",
+      "dependency-injection",
+      "spring",
+      "testing"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Adobe"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -218,17 +505,45 @@
       ],
       "sample_answer": "Dependency injection means a class receives its dependencies from outside — via constructor or setter — instead of instantiating them itself. If a class does 'new StripeGateway()' internally, it's hardcoded to that implementation and hard to test. Injecting a PaymentGateway interface lets production code pass a real Stripe implementation while tests pass a fake one, without changing the class. Frameworks like Spring automate wiring these dependencies together."
     },
-    "follow_up_hint": "Ask about constructor injection versus field/setter injection, and which is generally preferred and why."
+    "follow_up_hint": "Ask about constructor injection versus field/setter injection, and which is generally preferred and why.",
+    "concept": "Dependency Injection",
+    "sub_concept": "Inversion of Control and Loose Coupling",
+    "expected_reasoning": "A strong candidate begins by defining the core mechanism of supplying a dependency from the outside rather than having an object instantiate it internally. They then analyze the direct consequence of self-construction—tight coupling to concrete implementations—and explain why this makes unit testing and swapping implementations difficult. Next, they connect this pattern to the Dependency Inversion Principle, emphasizing programming against abstractions or interfaces. Finally, they contrast the manual wiring approach with automated containers to illustrate how scaling this pattern is handled in large codebases.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'it makes code better' without explaining decoupling.",
+      "Confuses dependency injection with dependency inversion, treating them as synonyms rather than a pattern and a principle.",
+      "Claims dependency injection is just a framework feature (like Spring or Angular) rather than a fundamental design principle that can be done manually.",
+      "Focuses entirely on configuration complexity without mentioning unit testing or mockability.",
+      "Assumes dependency injection eliminates all dependencies rather than managing how they are bound."
+    ],
+    "progressive_hints": [
+      "Consider what happens to your ability to test a class if it hardcodes the creation of its database connection using the 'new' keyword inside its constructor.",
+      "Think about who should be responsible for deciding which concrete implementation of a service a class uses, and how moving that responsibility outward changes flexibility.",
+      "If a class depends only on an interface and receives its implementation from the environment, what design principle are you fulfilling and how does that help when writing unit tests?"
+    ],
+    "learning_objective": "Understand how passing dependencies from the outside decouples classes from concrete implementations to enable easier testing, maintenance, and adherence to design principles."
   },
   {
     "id": "oop-0011",
     "question": "Explain the Factory Method and Abstract Factory design patterns, and how they differ.",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["design-patterns"],
-    "tech_keywords": ["oop", "design-patterns"],
-    "companies_common": ["Amazon", "Microsoft", "Oracle"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "design-patterns"
+    ],
+    "tech_keywords": [
+      "oop",
+      "design-patterns"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Oracle"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -240,17 +555,47 @@
       ],
       "sample_answer": "Factory Method defines a single creation method that subclasses override to produce different concrete types of one product, e.g. a Dialog subclass deciding which Button subtype to create. Abstract Factory goes further, producing entire families of related objects together — e.g. a WindowsUIFactory producing a matching WindowsButton, WindowsCheckbox, and WindowsScrollbar so they're all visually consistent. Both let client code depend only on interfaces, so adding a new product family doesn't require touching existing code."
     },
-    "follow_up_hint": "Ask them to design an Abstract Factory for supporting multiple database backends (MySQL vs PostgreSQL)."
+    "follow_up_hint": "Ask them to design an Abstract Factory for supporting multiple database backends (MySQL vs PostgreSQL).",
+    "concept": "Creational Design Patterns",
+    "sub_concept": "Factory Method versus Abstract Factory distinction",
+    "expected_reasoning": "A strong candidate starts by anchoring both patterns within the broader goal of decoupling object creation from business logic. They systematically contrast the scope of creation, noting that Factory Method focuses on a single product type via subclassing, whereas Abstract Factory manages families of related products through composition. They validate this distinction by mapping each pattern to a concrete architectural scenario, such as UI theming versus document generation. Finally, they weigh the trade-offs regarding extensibility, highlighting how each pattern adheres to the Open/Closed Principle differently.",
+    "common_mistakes": [
+      "Confusing the two patterns and treating Abstract Factory as merely a bigger version of Factory Method",
+      "Stating definitions or code structures without explaining the underlying architectural motivations or trade-offs",
+      "Failing to mention the concept of product families and how they interact in Abstract Factory",
+      "Assuming both patterns rely solely on inheritance rather than distinguishing inheritance versus composition",
+      "Stating that both patterns solve the exact same problem with no difference in scale or complexity"
+    ],
+    "progressive_hints": [
+      "Consider the scope of what is being created: are you dealing with a single interchangeable object, or a cohesive group of objects that must work together?",
+      "Think about how the client code interacts with the creators in terms of class hierarchy versus object composition.",
+      "Focus on how adding a brand new product type differs from adding an entirely new family of matching products across both patterns."
+    ],
+    "learning_objective": "The candidate should understand when to use a single-product creation method versus managing entire families of interdependent product types."
   },
   {
     "id": "oop-0012",
     "question": "What are access modifiers (public, private, protected, package-private), and why does encapsulation matter in practice?",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["general_sde"],
-    "topics": ["oop-fundamentals", "encapsulation"],
-    "tech_keywords": ["oop", "java", "c++"],
-    "companies_common": ["Infosys", "TCS", "Wipro", "Amazon"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "oop-fundamentals",
+      "encapsulation"
+    ],
+    "tech_keywords": [
+      "oop",
+      "java",
+      "c++"
+    ],
+    "companies_common": [
+      "Infosys",
+      "TCS",
+      "Wipro",
+      "Amazon"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -262,17 +607,47 @@
       ],
       "sample_answer": "Public members are accessible from any code; private members only within the declaring class; protected members within the class, its subclasses, and (in Java) the same package. Encapsulating fields as private and only exposing validated methods — like a BankAccount exposing deposit()/withdraw() instead of a public balance field — prevents external code from setting an account to an invalid state, and lets the internal representation change later without breaking callers."
     },
-    "follow_up_hint": "Ask about the difference between protected access in Java versus C++."
+    "follow_up_hint": "Ask about the difference between protected access in Java versus C++.",
+    "concept": "Object Oriented Programming",
+    "sub_concept": "Access Modifiers and Encapsulation",
+    "expected_reasoning": "A strong candidate begins by defining the visibility scope of each modifier from broadest to narrowest, clearly distinguishing between public, private, protected, and package-private. They then pivot from syntax to design intent, explaining that these modifiers enforce information hiding rather than just access control. They illustrate this with a practical domain example, such as a bank account where direct balance mutation is prohibited to protect invariant rules. Finally, they articulate the maintenance benefit, noting how locking down internals allows developers to refactor implementation details freely without breaking consumer code.",
+    "common_mistakes": [
+      "Listing the definitions of access modifiers without explaining the 'why' behind encapsulation",
+      "Confusing protected access with private access or package-private rules",
+      "Claiming encapsulation is purely a security mechanism to stop malicious actors rather than a design tool for managing dependencies and invariants",
+      "Failing to provide a concrete, real-world code example involving state invariants",
+      "Stating that access modifiers are just syntax rules imposed by the compiler without architectural purpose"
+    ],
+    "progressive_hints": [
+      "Think about what happens when multiple parts of a large codebase can directly modify an object's internal fields without its knowledge.",
+      "Consider how restricting direct field access allows you to enforce business rules, like ensuring a balance never drops below zero.",
+      "Think about what happens to dependent code if you need to completely rewrite how an object stores its internal data tomorrow."
+    ],
+    "learning_objective": "Understand that access modifiers are architectural tools for encapsulation that protect object state invariants and decouple public interfaces from internal implementations."
   },
   {
     "id": "oop-0013",
     "question": "Explain what a constructor and destructor are, and when RAII (Resource Acquisition Is Initialization) is used in C++.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["oop-fundamentals", "memory-management"],
-    "tech_keywords": ["c++", "oop", "memory-management"],
-    "companies_common": ["Nvidia", "Microsoft", "Amazon"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "oop-fundamentals",
+      "memory-management"
+    ],
+    "tech_keywords": [
+      "c++",
+      "oop",
+      "memory-management"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Microsoft",
+      "Amazon"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -284,17 +659,46 @@
       ],
       "sample_answer": "A constructor sets up an object's initial state when it's created; a destructor releases resources when the object's lifetime ends. RAII wraps a resource — like a file handle, mutex, or heap allocation — inside an object that acquires it in the constructor and releases it in the destructor, so the resource is automatically freed when the object goes out of scope, even if an exception is thrown in between. std::lock_guard and std::unique_ptr are standard-library examples of this pattern."
     },
-    "follow_up_hint": "Ask how RAII compares to Java's try-with-resources or Python's context managers."
+    "follow_up_hint": "Ask how RAII compares to Java's try-with-resources or Python's context managers.",
+    "concept": "Resource Acquisition Is Initialization",
+    "sub_concept": "Lifetime management of resources via object scope in C++",
+    "expected_reasoning": "A strong candidate begins by defining the operational mechanics of constructors and destructors as fundamental tools for lifecycle management. They then connect these lifecycle hooks directly to resource management, explaining how binding acquisition to initialization guarantees determinism. Next, they analyze why this pattern is superior to manual cleanup by introducing the complication of exceptions and early returns. Finally, they solidify the explanation with a concrete example like a smart pointer or lock guard to illustrate automatic stack unwinding.",
+    "common_mistakes": [
+      "States the definitions of constructors and destructors without linking them to resource management.",
+      "Claims RAII is about thread synchronization rather than resource lifetime binding.",
+      "Believes garbage collection handles RAII cleanup in C++.",
+      "Fails to mention exceptions or stack unwinding as the primary driver for why RAII is crucial.",
+      "Thinks RAII stands for 'Resource Allocation In Initialization' instead of Acquisition."
+    ],
+    "progressive_hints": [
+      "Think about what happens to local objects when they go out of scope or when an exception is thrown.",
+      "Consider how you could automate the pairing of resource allocation and deallocation functions so you never forget to call the cleanup function.",
+      "If an object's constructor acquires a resource, what method automatically runs when that object dies, and how does that guarantee cleanup during stack unwinding?"
+    ],
+    "learning_objective": "Understand how tying resource lifecycles to automatic object scoping eliminates memory leaks and simplifies exception safety in C++."
   },
   {
     "id": "oop-0014",
     "question": "What is the diamond problem in multiple inheritance, and how do different languages resolve it?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde"],
-    "topics": ["oop-fundamentals", "inheritance"],
-    "tech_keywords": ["c++", "java", "oop"],
-    "companies_common": ["Nvidia", "Microsoft", "Amazon"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "oop-fundamentals",
+      "inheritance"
+    ],
+    "tech_keywords": [
+      "c++",
+      "java",
+      "oop"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Microsoft",
+      "Amazon"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -306,17 +710,46 @@
       ],
       "sample_answer": "The diamond problem occurs when class D inherits from both B and C, which both inherit from A — if D calls a method defined in A, it's ambiguous whether it comes via B's or C's path, and without care D could end up with two separate copies of A's state. C++ allows multiple inheritance and lets you resolve the ambiguity explicitly, or use 'virtual inheritance' to share a single A subobject. Java sidesteps this by only allowing single class inheritance, though default methods in interfaces (Java 8+) can create a similar conflict that the implementing class must explicitly override to resolve."
     },
-    "follow_up_hint": "Ask them to demonstrate resolving a Java default-method conflict by overriding and explicitly choosing an interface's implementation."
+    "follow_up_hint": "Ask them to demonstrate resolving a Java default-method conflict by overriding and explicitly choosing an interface's implementation.",
+    "concept": "Multiple Inheritance",
+    "sub_concept": "The Diamond Problem",
+    "expected_reasoning": "A strong candidate first defines the structural shape of the diamond problem by tracing a class inheriting from two classes that share a common grandparent. They then articulate the core ambiguity this creates regarding method invocation and state duplication. Next, they contrast how statically typed languages like C++ and Java handle this architectural challenge through different mechanisms—such as virtual inheritance or explicit interface default method overrides. Finally, they evaluate the trade-offs each language makes between flexibility, language complexity, and safety.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'Java doesn't have it and C++ does' without explaining the underlying ambiguity.",
+      "Confuses interface inheritance with implementation inheritance when discussing Java.",
+      "Forgets to mention data/state duplication as part of the C++ problem and only focuses on method calls.",
+      "Fails to provide a concrete structural example (like a class diagram or code scenario) to ground the explanation.",
+      "Overlooks how Java 8 default methods reintroduce a form of the diamond problem and how it forces explicit resolution."
+    ],
+    "progressive_hints": [
+      "Consider the structural relationship in a class hierarchy when a child class inherits from two parent classes that share the same ancestor.",
+      "Think about what happens to state and method lookup if both parent classes override a method from that shared ancestor differently.",
+      "Compare how C++ handles shared base class paths via virtual keywords versus how modern Java forces classes to override conflicting default methods from interfaces."
+    ],
+    "learning_objective": "Understand how the diamond problem creates ambiguity in multiple inheritance hierarchies and how different object-oriented languages systematically prevent or resolve those conflicts."
   },
   {
     "id": "oop-0015",
     "question": "Explain the Strategy design pattern and how it helps avoid large conditional (if/else or switch) blocks.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["design-patterns"],
-    "tech_keywords": ["oop", "design-patterns", "clean-code"],
-    "companies_common": ["Amazon", "Microsoft", "Adobe"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "design-patterns"
+    ],
+    "tech_keywords": [
+      "oop",
+      "design-patterns",
+      "clean-code"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Adobe"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -328,17 +761,47 @@
       ],
       "sample_answer": "The Strategy pattern encapsulates each variant of an algorithm as its own class implementing a shared interface, and the context object holds a reference to whichever strategy is currently active, delegating to it. Instead of a giant switch statement picking pricing logic based on a customer type, you'd inject a PricingStrategy object — RegularPricing, VipPricing, etc. — and call strategy.calculatePrice(). Adding a new pricing tier means adding a new class, not touching the existing switch."
     },
-    "follow_up_hint": "Ask them to compare Strategy with the State pattern, which looks structurally similar but solves a different problem."
+    "follow_up_hint": "Ask them to compare Strategy with the State pattern, which looks structurally similar but solves a different problem.",
+    "concept": "Strategy Pattern",
+    "sub_concept": "Replacing Conditional Logic with Polymorphism",
+    "expected_reasoning": "A strong candidate starts by identifying why large conditional blocks become a maintenance bottleneck as business rules evolve. They analyze how executing different logic branches based on a type flag violates the Open/Closed Principle because every new rule requires modifying existing code. They then derive the pattern by decoupling the algorithm variations into separate classes sharing a uniform interface. Finally, they weigh the architectural trade-off of introducing multiple class files against the cleanliness of polymorphic dispatch and easier unit testing.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely saying 'it replaces if-else with objects.'",
+      "Confuses the Strategy pattern with the State pattern, missing that strategies are usually chosen by the client rather than managing internal state transitions.",
+      "Fails to mention the Open/Closed Principle, missing the core architectural motivation for the pattern.",
+      "Forgets to discuss the trade-offs, ignoring the proliferation of small classes and increased boilerplate.",
+      "Provides a theoretical definition without grounding it in a concrete, relatable example like pricing or routing."
+    ],
+    "progressive_hints": [
+      "What part of a codebase tends to grow uncontrollably when you add new business rules or types?",
+      "Think about how you could turn each branch of a large switch statement into its own independent unit that shares the same signature.",
+      "If every algorithm has the exact same input and output contract, how can you invoke the right one without checking a type flag?"
+    ],
+    "learning_objective": "Understand how to replace rigid conditional blocks with polymorphic strategy objects to make systems extensible and adherent to the Open/Closed Principle."
   },
   {
     "id": "oop-0016",
     "question": "What does it mean for a class to be immutable, and how would you design an immutable class in Java?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["oop-fundamentals", "immutability"],
-    "tech_keywords": ["java", "oop", "concurrency"],
-    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "oop-fundamentals",
+      "immutability"
+    ],
+    "tech_keywords": [
+      "java",
+      "oop",
+      "concurrency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -350,17 +813,44 @@
       ],
       "sample_answer": "An immutable object can't have its state changed after construction; operations that seem to modify it actually return a new object. In Java, you'd make the class final (so it can't be subclassed to add mutability), make all fields private and final, provide no setters, and if a field is itself a mutable type like a List, defensively copy it both when accepted in the constructor and when returned from a getter. This makes the object inherently thread-safe since no synchronization is needed — multiple threads can read it freely."
     },
-    "follow_up_hint": "Ask why defensive copying is necessary even if a field is marked final."
+    "follow_up_hint": "Ask why defensive copying is necessary even if a field is marked final.",
+    "concept": "Object Oriented Design",
+    "sub_concept": "Immutability and Thread Safety",
+    "expected_reasoning": "A strong candidate first defines what immutability means at an object lifecycle level, noting that state is fixed at instantiation. They then reason backward from the ways state can leak out or be modified post-construction, systematically covering modifiers, field visibility, and reference types. They identify the trap of shallow final references pointing to mutable objects, explaining why defensive copying is required for deep immutability. Finally, they connect these design mechanics to higher-order benefits like thread safety and hash-based collection stability.",
+    "common_mistakes": [
+      "States that marking a class final and fields private is sufficient without addressing mutable reference fields like Date or arrays",
+      "Confuses a final reference variable with an immutable object it points to",
+      "Forgets to perform defensive copying in the constructor or getters, allowing external code to mutate internal state",
+      "Provides a list of rules from memory without explaining the underlying security and concurrency motivations",
+      "Claims immutable objects have no performance overhead without discussing object allocation trade-offs"
+    ],
+    "progressive_hints": [
+      "What does it mean for an object's state to be truly unchangeable from the perspective of any caller holding a reference to it?",
+      "If your class has a field that is a reference type, like a Date or an array, does making the reference final prevent the contents from changing?",
+      "You need to ensure that callers cannot pass in a mutable object to your constructor and modify it later, nor can they alter internal state through your getter methods."
+    ],
+    "learning_objective": "To understand that true immutability in Java requires controlling not just class modifiers and field visibility, but also managing reference types through defensive copying to prevent state leaks."
   },
   {
     "id": "oop-0017",
     "question": "Explain the difference between 'has-a', 'is-a', and 'uses-a' relationships in object-oriented design, with an example of each.",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["general_sde"],
-    "topics": ["oop-fundamentals", "design"],
-    "tech_keywords": ["oop"],
-    "companies_common": ["Infosys", "TCS", "Amazon"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "oop-fundamentals",
+      "design"
+    ],
+    "tech_keywords": [
+      "oop"
+    ],
+    "companies_common": [
+      "Infosys",
+      "TCS",
+      "Amazon"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -372,17 +862,45 @@
       ],
       "sample_answer": "'Is-a' is inheritance — a Car is-a Vehicle, sharing its interface and being substitutable for it. 'Has-a' is composition or aggregation — a Car has-a Engine as a component it owns. 'Uses-a' is a dependency — a Car uses-a NavigationService to get directions, without owning or being composed of it. Mixing these up, like inheriting from a class purely for code reuse when there's no real 'is-a' relationship, is a common design mistake."
     },
-    "follow_up_hint": "Ask them to identify which relationship type is being misused in a flawed example, like a Stack extending Vector in early Java."
+    "follow_up_hint": "Ask them to identify which relationship type is being misused in a flawed example, like a Stack extending Vector in early Java.",
+    "concept": "Object Oriented Design",
+    "sub_concept": "Class Relationships",
+    "expected_reasoning": "A strong candidate begins by identifying that object-oriented design relies on modeling real-world relationships to determine how classes interact and structure data. They systematically differentiate these relationships by examining the lifetime ownership, dependency, and type hierarchy between entities. They reason that 'is-a' defines an inheritance hierarchy for polymorphism, 'has-a' handles structural composition where parts belong to a whole, and 'uses-a' represents temporary behavioral dependencies. Finally, they validate their definitions by providing distinct, intuitive examples for each to illustrate code reuse and coupling.",
+    "common_mistakes": [
+      "States the definitions or examples with no justification or code context",
+      "Confuses 'is-a' inheritance with 'has-a' composition, leading to rigid class hierarchies",
+      "Fails to explain 'uses-a' as a dependency, wrongly treating it as a permanent member variable",
+      "Provides overlapping or ambiguous examples where the relationship type is unclear",
+      "Ignores how these relationships impact code coupling and maintainability"
+    ],
+    "progressive_hints": [
+      "Think about how objects relate to one another in terms of ownership and categorization. What questions would you ask about two classes to figure out how they connect?",
+      "Consider the difference between a class inheriting a type, containing another class as a field, and merely calling a method on another class during an operation.",
+      "Look closely at the lifecycle and ownership: which relationship implies that the child object's existence depends entirely on the parent, versus one that is just passed temporarily into a method?"
+    ],
+    "learning_objective": "The candidate should understand how to correctly identify and apply inheritance, composition, and dependency relationships to build maintainable, loosely coupled object-oriented systems."
   },
   {
     "id": "oop-0018",
     "question": "What is operator overloading, and what are its potential pitfalls?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde"],
-    "topics": ["oop-fundamentals"],
-    "tech_keywords": ["c++", "python", "oop"],
-    "companies_common": ["Nvidia", "Microsoft", "Amazon"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "oop-fundamentals"
+    ],
+    "tech_keywords": [
+      "c++",
+      "python",
+      "oop"
+    ],
+    "companies_common": [
+      "Nvidia",
+      "Microsoft",
+      "Amazon"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -394,17 +912,47 @@
       ],
       "sample_answer": "Operator overloading lets a custom type define what operators like +, ==, or < mean for it, so a Vector class can support v1 + v2 naturally instead of v1.add(v2). The main pitfall is 'surprising' overloads — using an operator for something unrelated to its usual meaning confuses readers. Another common pitfall is inconsistent overloads, like overriding equals() without hashCode() in Java, which breaks hash-based collections. Java deliberately disallows operator overloading to avoid this class of confusion; C++ and Python both allow it."
     },
-    "follow_up_hint": "Ask why overriding equals() without hashCode() breaks HashMap/HashSet behavior in Java."
+    "follow_up_hint": "Ask why overriding equals() without hashCode() breaks HashMap/HashSet behavior in Java.",
+    "concept": "Operator Overloading",
+    "sub_concept": "Custom Behavior for Built-In Operators",
+    "expected_reasoning": "A strong candidate first defines operator overloading in the context of object-oriented programming as syntactic sugar that maps standard operators to custom methods for user-defined types. They immediately transition to use cases where domain-specific math or collection classes benefit from natural arithmetic expression, such as vector additions. Next, they critically evaluate trade-offs, distinguishing between intuitive mathematical mappings and misleading semantic overloads that obfuscate code. Finally, they address language-specific design choices and completeness requirements, such as maintaining consistency between paired operators like equality and inequality.",
+    "common_mistakes": [
+      "States the definition without giving any concrete examples or code-like scenarios.",
+      "Claims all object-oriented languages support operator overloading universally.",
+      "Fails to mention any readability or maintenance pitfalls of misuse.",
+      "Confounds operator overloading with method overloading or polymorphism.",
+      "Ignores the importance of semantic consistency when overriding relational operators."
+    ],
+    "progressive_hints": [
+      "Think about how primitive types use symbols like '+' and '==', and how custom classes might want to use those same symbols.",
+      "Consider what happens when a developer uses an operator like '+' to perform an operation completely unrelated to addition, and how that affects code readability.",
+      "Reflect on linguistic completeness: if a class implements an equality operator, what other relational or hash-based checks usually need to accompany it to prevent subtle bugs?"
+    ],
+    "learning_objective": "Understand how operator overloading bridges user-defined types with intuitive built-in syntax while balancing readability against the risk of semantic misuse."
   },
   {
     "id": "oop-0019",
     "question": "Explain polymorphism through the lens of the Liskov Substitution Principle: why does a Square extending Rectangle often break correctness?",
     "type": "scenario",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["oop-fundamentals", "solid", "polymorphism"],
-    "tech_keywords": ["oop", "design-principles"],
-    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "oop-fundamentals",
+      "solid",
+      "polymorphism"
+    ],
+    "tech_keywords": [
+      "oop",
+      "design-principles"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -416,17 +964,45 @@
       ],
       "sample_answer": "Liskov Substitution says subclass instances must be usable anywhere the base class is expected, without surprising behavior. A Square extending Rectangle usually overrides setWidth/setHeight so both dimensions change together, which breaks a caller that sets width and height independently and expects the area to reflect exactly those two values. The real problem is that geometrically a square 'is-a' rectangle, but behaviorally it isn't substitutable in a mutable Rectangle's API — the fix is to model both as separate implementations of a Shape interface, or make the shape hierarchy immutable so there's no setWidth/setHeight to conflict."
     },
-    "follow_up_hint": "Ask how making the Rectangle class immutable would sidestep this problem entirely."
+    "follow_up_hint": "Ask how making the Rectangle class immutable would sidestep this problem entirely.",
+    "concept": "Liskov Substitution Principle",
+    "sub_concept": "Behavioral Subtyping and Inheritance Pitfalls",
+    "expected_reasoning": "A strong candidate begins by defining the Liskov Substitution Principle, emphasizing that subtypes must preserve the behavioral expectations of the base type, not just share a lexical 'is-a' relationship. They then trace a concrete scenario where a client treats a Square as a Rectangle, independently mutating width and height while assuming orthogonal dimensions. They analyze how the Square's overriding behavior violates these assumptions by mutating both dimensions simultaneously, leading to invariant violations like incorrect area calculations. Finally, they propose architectural corrections, such as abandoning subclassing in favor of a shared interface or using immutability.",
+    "common_mistakes": [
+      "Stating that Square is a Rectangle in real life, so inheritance is naturally correct without considering behavior.",
+      "Focusing entirely on memory layout or code reuse rather than client expectations and behavioral contracts.",
+      "Giving a superficial definition of polymorphism without linking it directly to subtype substitutability.",
+      "Proposing a fix that still uses inheritance between Square and Rectangle by overriding internal fields incorrectly.",
+      "Failing to provide a concrete client code example that actually breaks when a Square is substituted for a Rectangle."
+    ],
+    "progressive_hints": [
+      "What does a client code typically assume about a Rectangle when it independently modifies its width and height?",
+      "Think about what happens to the height when the client calls setWidth on an instance that is actually a Square.",
+      "If a caller expects a Rectangle's width and height to be independently variable, how does a Square's constraint break the base class's postconditions?"
+    ],
+    "learning_objective": "Inheritance must be driven by behavioral substitutability and invariant preservation rather than superficial real-world taxonomies."
   },
   {
     "id": "oop-0020",
     "question": "What is the Decorator pattern, and how does it differ from simply subclassing to add behavior?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["design-patterns"],
-    "tech_keywords": ["oop", "design-patterns"],
-    "companies_common": ["Amazon", "Microsoft", "Adobe"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "design-patterns"
+    ],
+    "tech_keywords": [
+      "oop",
+      "design-patterns"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Adobe"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -438,6 +1014,22 @@
       ],
       "sample_answer": "A Decorator wraps an object implementing the same interface, adding its own behavior and then delegating the actual work to the wrapped object. This lets you compose behaviors at runtime — like Java's BufferedInputStream wrapping a FileInputStream to add buffering — without needing a new subclass for every combination of features. Plain subclassing would require a separate class for every feature combination (e.g. MilkAndSugarCoffee, MilkAndCreamCoffee), whereas decorators can be stacked dynamically."
     },
-    "follow_up_hint": "Ask them to compare Decorator with the Proxy pattern, which has a structurally similar wrapping approach but a different intent."
+    "follow_up_hint": "Ask them to compare Decorator with the Proxy pattern, which has a structurally similar wrapping approach but a different intent.",
+    "concept": "Decorator Pattern",
+    "sub_concept": "Runtime Behavior Extension vs Compile-Time Inheritance",
+    "expected_reasoning": "A strong candidate begins by defining the core structural relationship where the wrapper shares an interface with the wrapped component, preserving transparency. They then analyze why static inheritance falls short when multiple independent features need to be mixed and matched arbitrarily, identifying the combinatorial explosion of subclasses. Next, they contrast static inheritance's compile-time binding with the decorator's ability to stack behaviors dynamically at runtime. Finally, they validate this reasoning by citing a classic real-world architecture, such as I/O streams, where wrapping provides flexible composition without modifying existing code.",
+    "common_mistakes": [
+      "States that decorators are just a fancy name for subclassing without explaining the difference in runtime flexibility.",
+      "Confuses the Decorator design pattern with the Python or JavaScript @decorator syntactic sugar syntax without understanding the underlying object-oriented principle.",
+      "Claims decorators modify the original object's code in place rather than wrapping it transparently.",
+      "Forgets to mention that the decorator must implement the same interface as the component it wraps.",
+      "Provides a vague definition of adding functionality without explaining how behavior is delegated and extended before or after delegation."
+    ],
+    "progressive_hints": [
+      "Think about how you would model a coffee shop where customers can add any combination of milk, sugar, and whipped cream to their drinks using only subclasses.",
+      "Notice how the number of subclasses grows if every feature combination requires its own class, and consider how composition instead of inheritance might solve this at runtime.",
+      "What if the wrapper implemented the exact same interface as the object it contains, allowing you to nest them infinitely?"
+    ],
+    "learning_objective": "Understand how the Decorator pattern uses object composition and shared interfaces to combine behaviors dynamically at runtime, avoiding the rigidity and combinatorial explosion of deep subclass hierarchies."
   }
 ]

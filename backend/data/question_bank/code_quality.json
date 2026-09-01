@@ -1,5 +1,129 @@
 [
-  {"id":"cq-0001","question":"What makes a good code review, and what would you focus on when reviewing a teammate's pull request?","type":"behavioral","difficulty":2,"roles":["general_sde","backend","frontend"],"topics":["engineering-practices"],"tech_keywords":["code-review"],"companies_common":["Google","Amazon","Meta"],"source_style":"behavioral","reference_solution":{"key_points":["Focus on correctness first: does the logic actually do what it's supposed to, are edge cases handled, is there adequate test coverage","Look for maintainability: is the code understandable to someone unfamiliar with it, are names clear, is complexity justified","Distinguish must-fix issues (bugs, security problems, missing tests) from nice-to-have style preferences — don't block a PR over the latter","Give feedback constructively and specifically, explaining WHY a change is suggested, not just WHAT to change; also acknowledge good decisions, not just criticize"],"sample_answer":"I'd focus first on correctness — does the logic actually do what it's meant to, are edge cases and error conditions handled, and is there adequate test coverage for the new behavior. Then I'd look at maintainability — would someone unfamiliar with this change be able to understand it, are names and structure clear, and is any added complexity actually justified by the problem being solved. It's important to distinguish must-fix issues, like bugs, security problems, or missing test coverage, from purely stylistic preferences, and not block a PR over the latter just because I'd have written it slightly differently. When leaving feedback, I try to explain why I'm suggesting a change, not just what to change, since that helps the author learn rather than just comply, and I also try to call out good decisions in the PR, not just point out problems, since review shouldn't feel purely critical."},"follow_up_hint":"Ask them how they'd handle a disagreement with the PR author about a suggested change that isn't a clear-cut correctness issue."},
-  {"id":"cq-0002","question":"What is technical debt, and how would you decide whether to pay it down now or defer it?","type":"scenario_based","difficulty":3,"roles":["general_sde","backend"],"topics":["engineering-practices"],"tech_keywords":["technical-debt"],"companies_common":["Amazon","Google","Meta"],"source_style":"behavioral","reference_solution":{"key_points":["Technical debt: shortcuts or suboptimal design decisions taken to move faster now, which will cost more time/effort to properly address later, similar to financial debt accruing 'interest'","Not all technical debt is bad — deliberately taking some on to hit a real deadline or validate an idea quickly can be a reasonable, informed trade-off, as long as it's tracked and revisited","Deciding factors: how much is this debt actually slowing the team down right now (interest rate), how risky/costly would it be to leave it longer, and what's the actual cost/effort to fix it now versus later","Approach: make the trade-off explicit and visible (not silently accumulated), and prioritize paying down debt that's actively causing bugs or significantly slowing feature velocity over debt that's merely aesthetically imperfect but stable"],"sample_answer":"Technical debt is a shortcut or suboptimal design decision taken to move faster in the short term, which then costs more effort to properly fix later — much like financial debt accruing interest the longer it's left unpaid. Not all technical debt is bad; deliberately taking some on to hit a genuine deadline or to quickly validate an idea before over-investing in it can be a reasonable, informed trade-off, as long as it's consciously tracked rather than silently forgotten. When deciding whether to pay it down now, I'd look at how much that debt is actually slowing the team down currently — is it causing recurring bugs or significantly increasing the time to ship related features — versus how much effort it would take to fix now compared to later, and whether the risk of leaving it is growing over time. I'd prioritize paying down debt that's actively causing problems or blocking upcoming work over debt that's aesthetically imperfect but genuinely stable and not causing real issues, and I'd try to make that trade-off decision visible to the team rather than letting debt accumulate silently and invisibly."},"follow_up_hint":"Ask them to describe a real instance where they consciously chose to take on technical debt, and how/when they eventually paid it down."},
-  {"id":"cq-0003","question":"Describe a time you had to give difficult feedback to a teammate about their code or approach. How did you handle it?","type":"behavioral","difficulty":3,"roles":["general_sde"],"topics":["engineering-practices","communication"],"tech_keywords":[],"companies_common":["Amazon","Google","Meta"],"source_style":"behavioral","reference_solution":{"key_points":["Uses a structured behavioral answer (STAR: Situation, Task, Action, Result) rather than a vague generality","Focuses on the SPECIFIC issue/behavior rather than making it feel like a personal judgment of the person","Explains the reasoning/impact behind the feedback (why it mattered), not just asserting a preference","Reflects on the outcome and what they learned about giving feedback effectively going forward"],"sample_answer":"A strong answer here would walk through a specific real situation using something like the STAR structure — describing the concrete situation and why feedback was needed, the specific action taken to deliver that feedback constructively and privately where appropriate, focusing on the specific technical issue and its actual impact (like a security gap, a performance problem, or a maintainability concern) rather than framing it as a judgment of the person's ability, and then the result — how the teammate responded and what changed afterward. A candidate should show they explained the reasoning behind the feedback so it landed as genuinely helpful rather than arbitrary, and ideally reflect on what they learned about delivering feedback effectively, showing growth rather than just recounting the incident."},"follow_up_hint":"Ask them what they would do differently if the same situation happened again."}
+  {
+    "id": "cq-0001",
+    "question": "What makes a good code review, and what would you focus on when reviewing a teammate's pull request?",
+    "type": "behavioral",
+    "difficulty": 2,
+    "roles": [
+      "general_sde",
+      "backend",
+      "frontend"
+    ],
+    "topics": [
+      "engineering-practices"
+    ],
+    "tech_keywords": [
+      "code-review"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "source_style": "behavioral",
+    "reference_solution": {
+      "key_points": [
+        "Focus on correctness first: does the logic actually do what it's supposed to, are edge cases handled, is there adequate test coverage",
+        "Look for maintainability: is the code understandable to someone unfamiliar with it, are names clear, is complexity justified",
+        "Distinguish must-fix issues (bugs, security problems, missing tests) from nice-to-have style preferences — don't block a PR over the latter",
+        "Give feedback constructively and specifically, explaining WHY a change is suggested, not just WHAT to change; also acknowledge good decisions, not just criticize"
+      ],
+      "sample_answer": "I'd focus first on correctness — does the logic actually do what it's meant to, are edge cases and error conditions handled, and is there adequate test coverage for the new behavior. Then I'd look at maintainability — would someone unfamiliar with this change be able to understand it, are names and structure clear, and is any added complexity actually justified by the problem being solved. It's important to distinguish must-fix issues, like bugs, security problems, or missing test coverage, from purely stylistic preferences, and not block a PR over the latter just because I'd have written it slightly differently. When leaving feedback, I try to explain why I'm suggesting a change, not just what to change, since that helps the author learn rather than just comply, and I also try to call out good decisions in the PR, not just point out problems, since review shouldn't feel purely critical."
+    },
+    "follow_up_hint": "Ask them how they'd handle a disagreement with the PR author about a suggested change that isn't a clear-cut correctness issue.",
+    "concept": "Code Review",
+    "sub_concept": "Pull Request Evaluation Priorities",
+    "expected_reasoning": "A strong candidate begins by establishing the primary purpose of a code review, balancing shipping velocity with code health and team alignment. They systematically prioritize correctness and risk mitigation—such as logic errors, security vulnerabilities, and test coverage—before addressing maintainability and architectural fit. They then articulate how they distinguish objective defects from subjective style preferences, emphasizing the importance of automated linters to prevent bike-shedding. Finally, they frame the review process as a collaborative mentorship opportunity, stressing empathy, constructive rationale, and acknowledging well-crafted code.",
+    "common_mistakes": [
+      "Focusing entirely on superficial style, indentation, or variable naming while missing critical logic bugs.",
+      "Stating 'just make sure it works and tests pass' with no structured methodology or prioritization.",
+      "Treating the code review as an adversarial gatekeeping exercise rather than a collaborative team effort.",
+      "Failing to distinguish between blocking issues and minor suggestions, leading to unnecessary friction.",
+      "Reviewing code in isolation without considering system-level maintainability, readability, or long-term ownership."
+    ],
+    "progressive_hints": [
+      "Beyond finding bugs, what are the competing goals you have to balance when looking at a teammate's pull request?",
+      "Think about the hierarchy of feedback you can leave: how do you decide what requires a blocking change versus a stylistic suggestion?",
+      "Consider how your approach changes when reviewing a critical security fix versus a routine refactor, and how you communicate your reasoning to the author."
+    ],
+    "learning_objective": "Understand that an effective code review prioritizes correctness, maintainability, and psychological safety over subjective nitpicks."
+  },
+  {
+    "id": "cq-0002",
+    "question": "What is technical debt, and how would you decide whether to pay it down now or defer it?",
+    "type": "scenario_based",
+    "difficulty": 3,
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "engineering-practices"
+    ],
+    "tech_keywords": [
+      "technical-debt"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Meta"
+    ],
+    "source_style": "behavioral",
+    "reference_solution": {
+      "key_points": [
+        "Technical debt: shortcuts or suboptimal design decisions taken to move faster now, which will cost more time/effort to properly address later, similar to financial debt accruing 'interest'",
+        "Not all technical debt is bad — deliberately taking some on to hit a real deadline or validate an idea quickly can be a reasonable, informed trade-off, as long as it's tracked and revisited",
+        "Deciding factors: how much is this debt actually slowing the team down right now (interest rate), how risky/costly would it be to leave it longer, and what's the actual cost/effort to fix it now versus later",
+        "Approach: make the trade-off explicit and visible (not silently accumulated), and prioritize paying down debt that's actively causing bugs or significantly slowing feature velocity over debt that's merely aesthetically imperfect but stable"
+      ],
+      "sample_answer": "Technical debt is a shortcut or suboptimal design decision taken to move faster in the short term, which then costs more effort to properly fix later — much like financial debt accruing interest the longer it's left unpaid. Not all technical debt is bad; deliberately taking some on to hit a genuine deadline or to quickly validate an idea before over-investing in it can be a reasonable, informed trade-off, as long as it's consciously tracked rather than silently forgotten. When deciding whether to pay it down now, I'd look at how much that debt is actually slowing the team down currently — is it causing recurring bugs or significantly increasing the time to ship related features — versus how much effort it would take to fix now compared to later, and whether the risk of leaving it is growing over time. I'd prioritize paying down debt that's actively causing problems or blocking upcoming work over debt that's aesthetically imperfect but genuinely stable and not causing real issues, and I'd try to make that trade-off decision visible to the team rather than letting debt accumulate silently and invisibly."
+    },
+    "follow_up_hint": "Ask them to describe a real instance where they consciously chose to take on technical debt, and how/when they eventually paid it down.",
+    "concept": "Technical Debt Management",
+    "sub_concept": "Cost Benefit Tradeoffs",
+    "expected_reasoning": "A strong candidate first defines technical debt as a deliberate or accidental trade-off of speed for future maintainability, drawing an analogy to financial interest. They then evaluate when incurring this debt is strategically valid, such as for crucial deadlines or rapid prototyping. When deciding whether to pay it down, they weigh the 'interest rate'—how much it slows velocity or causes bugs—against the remediation cost and opportunity cost of delayed features. Finally, they emphasize making this debt visible and prioritizing refactoring based on business impact rather than aesthetic perfection.",
+    "common_mistakes": [
+      "States that all technical debt is bad and must be avoided at all costs",
+      "Defines technical debt purely as sloppy coding or bugs rather than a design trade-off",
+      "Argues for paying down debt based solely on how old or ugly the code is, without considering business impact",
+      "Fails to mention the concept of interest or compounding costs over time",
+      "Treats technical debt as a purely engineering problem without tying it to product delivery or business value"
+    ],
+    "progressive_hints": [
+      "What factors should an engineering team balance when deciding whether to ship a messy solution quickly versus spending extra time cleaning it up?",
+      "Think about how debt behaves over time: why do some shortcuts become much more painful to fix later while others do not?",
+      "Consider how you would quantify the 'cost' of leaving the debt in place versus the 'cost' of fixing it right now, and how that guides your prioritization."
+    ],
+    "learning_objective": "The candidate should understand that technical debt is a tool for managing strategic velocity, and decisions to incur or repay it must be driven by explicit ROI trade-offs rather than aesthetic perfection."
+  },
+  {
+    "id": "cq-0003",
+    "question": "Describe a time you had to give difficult feedback to a teammate about their code or approach. How did you handle it?",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "engineering-practices",
+      "communication"
+    ],
+    "tech_keywords": [],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Meta"
+    ],
+    "source_style": "behavioral",
+    "reference_solution": {
+      "key_points": [
+        "Uses a structured behavioral answer (STAR: Situation, Task, Action, Result) rather than a vague generality",
+        "Focuses on the SPECIFIC issue/behavior rather than making it feel like a personal judgment of the person",
+        "Explains the reasoning/impact behind the feedback (why it mattered), not just asserting a preference",
+        "Reflects on the outcome and what they learned about giving feedback effectively going forward"
+      ],
+      "sample_answer": "A strong answer here would walk through a specific real situation using something like the STAR structure — describing the concrete situation and why feedback was needed, the specific action taken to deliver that feedback constructively and privately where appropriate, focusing on the specific technical issue and its actual impact (like a security gap, a performance problem, or a maintainability concern) rather than framing it as a judgment of the person's ability, and then the result — how the teammate responded and what changed afterward. A candidate should show they explained the reasoning behind the feedback so it landed as genuinely helpful rather than arbitrary, and ideally reflect on what they learned about delivering feedback effectively, showing growth rather than just recounting the incident."
+    },
+    "follow_up_hint": "Ask them what they would do differently if the same situation happened again."
+  }
 ]

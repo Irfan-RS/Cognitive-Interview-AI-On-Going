@@ -1,7 +1,236 @@
 [
-  {"id":"gql-0001","question":"What is GraphQL, and what problem does it solve compared to a traditional REST API?","type":"conceptual","difficulty":2,"roles":["backend","frontend"],"topics":["graphql","api-design"],"tech_keywords":["graphql"],"companies_common":["Meta","GitHub"],"source_style":"common-interview","reference_solution":{"key_points":["GraphQL lets clients request exactly the fields they need in a single query, avoiding over-fetching (getting unused fields) and under-fetching (needing multiple round trips) common with fixed REST endpoints","A single GraphQL endpoint typically serves all queries, versus REST's many resource-specific endpoints","Explains a schema defines all available types/fields, and clients compose queries against that schema, validated at query time","Trade-off: added complexity on the server (resolvers, N+1 query risks), and harder HTTP-level caching since most requests are POST to one endpoint"],"sample_answer":"GraphQL lets a client specify exactly which fields it needs in a single query, rather than being stuck with whatever fixed shape a REST endpoint returns. This solves over-fetching, where a REST response includes fields the client doesn't need, and under-fetching, where the client has to make several round trips to different REST endpoints to assemble the data it actually wants for one screen. Instead of many resource-specific endpoints, GraphQL typically exposes one endpoint backed by a strongly-typed schema describing all available types and fields, and the server validates and resolves each query against that schema. The trade-offs are added server-side complexity — resolvers need care to avoid the N+1 query problem — and it's harder to use standard HTTP caching since most requests are POSTs to the same URL."},"follow_up_hint":"Ask them to explain the N+1 query problem in GraphQL and how DataLoader solves it."},
-  {"id":"gql-0002","question":"What is the N+1 query problem in GraphQL, and how does a DataLoader/batching pattern solve it?","type":"trade_off_questions","difficulty":4,"roles":["backend"],"topics":["graphql"],"tech_keywords":["graphql","dataloader"],"companies_common":["Meta","GitHub"],"source_style":"faang-common","reference_solution":{"key_points":["A naive resolver for a nested field (e.g. each 'author' of each post in a list) issues one separate DB query per parent item, resulting in 1 query for the list + N queries for each item's related data","This scales terribly as list size grows, hammering the database with redundant round trips","DataLoader batches all the individual key lookups requested within a single tick/request into one combined query, then distributes results back to each original caller","Also caches repeated lookups for the same key within a single request to avoid duplicate fetches"],"sample_answer":"If you have a GraphQL query returning a list of posts, each with a nested 'author' field, a naive resolver implementation fetches the list of posts with one query, then for each post individually queries the database for its author — for 100 posts, that's 1 plus 100 database queries, the N+1 problem, which scales terribly. DataLoader solves this by batching: within a single request, instead of immediately executing each individual author lookup, it collects all the requested author IDs during that tick and issues one combined query like 'get authors where id IN (...)', then distributes the right author back to each original caller. It also deduplicates and caches lookups for the same key within a single request, so if the same author ID is requested twice, only one fetch happens."},"follow_up_hint":"Ask them how DataLoader's caching is scoped — does it persist across separate GraphQL requests, and why or why not?"},
-  {"id":"gql-0003","question":"What is REST's use of HTTP methods and status codes, and what makes an API 'RESTful'?","type":"conceptual","difficulty":1,"roles":["backend"],"topics":["api-design"],"tech_keywords":["rest"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["REST uses HTTP verbs semantically: GET (read, safe/idempotent), POST (create, not idempotent), PUT (full replace, idempotent), PATCH (partial update), DELETE (remove, idempotent)","Resources are identified by URLs/nouns (e.g. /users/123), not verbs in the path","Statelessness: each request contains all information needed to process it, server doesn't rely on stored client session state between requests","Uses standard HTTP status codes meaningfully (200, 201, 204, 400, 401, 403, 404, 409, 500) rather than always returning 200 with an error in the body"],"sample_answer":"A RESTful API models resources as nouns identified by URLs, like /users/123, and uses HTTP verbs semantically to act on them: GET to read (safe, idempotent), POST to create a new resource (not idempotent — calling it twice creates two resources), PUT to fully replace a resource (idempotent), PATCH for a partial update, and DELETE to remove it. It should be stateless — each request carries everything needed to process it, without the server relying on some previously stored session state tied to that specific client connection. And it uses HTTP status codes meaningfully — 201 for created, 204 for a successful action with no body, 404 for not found, 409 for a conflict — rather than always returning 200 and putting error details only in the response body."},"follow_up_hint":"Ask why PUT is expected to be idempotent but POST is not, with a concrete example."},
-  {"id":"gql-0004","question":"How would you design pagination for an API returning a large list of results?","type":"trade_off_questions","difficulty":3,"roles":["backend","system_design"],"topics":["api-design"],"tech_keywords":["pagination"],"companies_common":["Amazon","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["Offset-based pagination (LIMIT/OFFSET): simple to implement, but gets slower on large offsets (DB still scans/skips all preceding rows), and is prone to skipped/duplicated items if rows are inserted/deleted between page requests","Cursor-based pagination: uses a pointer (typically an encoded value from the last item, like its ID or a sort key) to fetch the next page starting after that point — consistent performance regardless of depth, and resilient to concurrent inserts/deletes","Cursor-based is generally preferred for large or frequently-changing datasets, and is what most large-scale APIs (Twitter, GitHub, Slack) use","Offset pagination is fine for smaller, relatively static datasets, or where jumping to an arbitrary page number is a hard UX requirement"],"sample_answer":"Offset-based pagination using LIMIT and OFFSET is the simplest to implement, but has two real problems at scale: performance degrades as the offset grows since the database still has to scan past all the skipped rows, and if rows are inserted or deleted between page requests, users can see duplicated or skipped items as the underlying result set shifts. Cursor-based pagination instead uses an opaque pointer — often an encoded value derived from the last item's sort key or ID — to say 'give me the next page starting after this point,' which gives consistent performance regardless of how deep you paginate and is much more resilient to concurrent writes, since it's anchored to a specific item rather than a numeric position. I'd default to cursor-based pagination for any large or frequently-changing dataset, and only use offset pagination for smaller, relatively static lists or when the UI genuinely needs to jump to an arbitrary page number."},"follow_up_hint":"Ask how they'd encode a cursor that combines a non-unique sort field (like 'created_at') with a unique tiebreaker to avoid ambiguity."},
-  {"id":"gql-0005","question":"What is API versioning, and what are common strategies for versioning a public REST API?","type":"trade_off_questions","difficulty":2,"roles":["backend"],"topics":["api-design"],"tech_keywords":["api-versioning"],"companies_common":["Amazon","Stripe"],"source_style":"common-interview","reference_solution":{"key_points":["API versioning lets an API evolve (breaking changes) without breaking existing clients that haven't migrated yet","URL versioning (/v1/users, /v2/users): simple, visible, but can lead to duplicated logic across versions","Header versioning (Accept: application/vnd.api+json;version=2 or a custom header): keeps URLs clean, but less discoverable/harder to test manually","Explains preferring additive, backward-compatible changes (new optional fields) over introducing a new version whenever possible, since maintaining multiple live versions has real ongoing cost"],"sample_answer":"API versioning lets you make breaking changes to an API's contract without immediately breaking clients that are still using the older version. The most common approach is URL versioning, like /v1/users versus /v2/users — it's simple and very visible/discoverable, though maintaining parallel logic for multiple versions has real ongoing cost. An alternative is header-based versioning, specifying the version in an Accept header or a custom header, which keeps URLs clean but is less discoverable and harder to test casually in a browser. In practice, I'd try to avoid introducing a new version at all whenever possible by making changes additive and backward-compatible — like adding new optional fields rather than changing or removing existing ones — and only bump the version for genuinely breaking changes, since supporting multiple live versions simultaneously is expensive to maintain."},"follow_up_hint":"Ask how they'd decide when to finally deprecate and shut down an old API version that some clients still use."}
+  {
+    "id": "gql-0001",
+    "question": "What is GraphQL, and what problem does it solve compared to a traditional REST API?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "frontend"
+    ],
+    "topics": [
+      "graphql",
+      "api-design"
+    ],
+    "tech_keywords": [
+      "graphql"
+    ],
+    "companies_common": [
+      "Meta",
+      "GitHub"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "GraphQL lets clients request exactly the fields they need in a single query, avoiding over-fetching (getting unused fields) and under-fetching (needing multiple round trips) common with fixed REST endpoints",
+        "A single GraphQL endpoint typically serves all queries, versus REST's many resource-specific endpoints",
+        "Explains a schema defines all available types/fields, and clients compose queries against that schema, validated at query time",
+        "Trade-off: added complexity on the server (resolvers, N+1 query risks), and harder HTTP-level caching since most requests are POST to one endpoint"
+      ],
+      "sample_answer": "GraphQL lets a client specify exactly which fields it needs in a single query, rather than being stuck with whatever fixed shape a REST endpoint returns. This solves over-fetching, where a REST response includes fields the client doesn't need, and under-fetching, where the client has to make several round trips to different REST endpoints to assemble the data it actually wants for one screen. Instead of many resource-specific endpoints, GraphQL typically exposes one endpoint backed by a strongly-typed schema describing all available types and fields, and the server validates and resolves each query against that schema. The trade-offs are added server-side complexity — resolvers need care to avoid the N+1 query problem — and it's harder to use standard HTTP caching since most requests are POSTs to the same URL."
+    },
+    "follow_up_hint": "Ask them to explain the N+1 query problem in GraphQL and how DataLoader solves it.",
+    "concept": "API Design",
+    "sub_concept": "Query Languages vs Resource-Based Endpoints",
+    "expected_reasoning": "A strong candidate begins by identifying the core structural limitation of REST, which is fixed resource endpoints that often lead to data mismatch. They derive the client-driven query model of GraphQL, explaining how it shifts control of the payload shape from the server to the client. Next, they weigh the architectural benefits, such as reduced network round trips and elimination of over-fetching, against the operational trade-offs. Finally, they discuss the server-side complexity introduced by this model, specifically regarding query resolution and caching challenges.",
+    "common_mistakes": [
+      "States that GraphQL completely replaces databases or backend logic without explaining the query layer",
+      "Claims REST APIs cannot return nested data at all, missing that it is a matter of multiple round trips or rigid endpoint design",
+      "Focuses solely on the syntax of queries without mentioning the architectural shift in endpoint structure",
+      "Fails to mention the trade-offs like increased server complexity, N+1 query problems, or caching difficulties",
+      "Assumes GraphQL runs over WebSockets by default instead of standard HTTP POST requests"
+    ],
+    "progressive_hints": [
+      "Think about how a mobile app fetches a user profile along with their last five posts in a traditional REST setup versus how many network requests that requires.",
+      "Consider who dictates the shape and size of the response payload in REST versus how GraphQL shifts that control to the client.",
+      "Reflect on how a single HTTP endpoint receiving arbitrary client-defined queries impacts traditional HTTP caching mechanisms and server-side complexity."
+    ],
+    "learning_objective": "Understand how client-driven query languages address the over-fetching and under-fetching limitations of resource-oriented REST architectures, along with the operational trade-offs they introduce."
+  },
+  {
+    "id": "gql-0002",
+    "question": "What is the N+1 query problem in GraphQL, and how does a DataLoader/batching pattern solve it?",
+    "type": "trade_off_questions",
+    "difficulty": 4,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "graphql"
+    ],
+    "tech_keywords": [
+      "graphql",
+      "dataloader"
+    ],
+    "companies_common": [
+      "Meta",
+      "GitHub"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "A naive resolver for a nested field (e.g. each 'author' of each post in a list) issues one separate DB query per parent item, resulting in 1 query for the list + N queries for each item's related data",
+        "This scales terribly as list size grows, hammering the database with redundant round trips",
+        "DataLoader batches all the individual key lookups requested within a single tick/request into one combined query, then distributes results back to each original caller",
+        "Also caches repeated lookups for the same key within a single request to avoid duplicate fetches"
+      ],
+      "sample_answer": "If you have a GraphQL query returning a list of posts, each with a nested 'author' field, a naive resolver implementation fetches the list of posts with one query, then for each post individually queries the database for its author — for 100 posts, that's 1 plus 100 database queries, the N+1 problem, which scales terribly. DataLoader solves this by batching: within a single request, instead of immediately executing each individual author lookup, it collects all the requested author IDs during that tick and issues one combined query like 'get authors where id IN (...)', then distributes the right author back to each original caller. It also deduplicates and caches lookups for the same key within a single request, so if the same author ID is requested twice, only one fetch happens."
+    },
+    "follow_up_hint": "Ask them how DataLoader's caching is scoped — does it persist across separate GraphQL requests, and why or why not?",
+    "concept": "GraphQL Data Loading",
+    "sub_concept": "N+1 Query Problem and Batching Resolution",
+    "expected_reasoning": "A strong candidate begins by analyzing how a nested schema executes resolvers independently for every item in a collection. They trace the database interaction to show how a single root query snowballs into N subsequent individual queries, highlighting the performance bottleneck of network and disk latency. Next, they derive the need for an intermediary layer that can accumulate all requested IDs within a single event loop tick. Finally, they explain how this batched execution pattern combined with a request-scoped cache eliminates redundant round trips and duplicate lookups.",
+    "common_mistakes": [
+      "States the conclusion that 'DataLoader fixes N+1' with no explanation of how resolvers trigger queries or how batching works.",
+      "Confuses GraphQL execution with SQL JOINs, claiming GraphQL automatically optimizes database calls.",
+      "Thinks DataLoader is a persistent global cache rather than a request-scoped batching and caching mechanism.",
+      "Explains database indexing instead of application-level query batching.",
+      "Believes async/await alone resolves the N+1 problem without collecting and batching keys."
+    ],
+    "progressive_hints": [
+      "What happens to the number of database queries when you request a list of 50 posts, and each post resolves its own author?",
+      "You are executing separate database calls per item inside an asynchronous loop. How could you collect all those individual lookup IDs together before hitting the database?",
+      "If you aggregate all requested keys during a single tick of the event loop, how can a single query fetch all their data at once, and how do you ensure each original resolver still gets its correct matching result?"
+    ],
+    "learning_objective": "Understand how nested resolvers cause the N+1 query problem in GraphQL and how batching and caching patterns like DataLoader efficiently consolidate database round trips within a single request lifecycle."
+  },
+  {
+    "id": "gql-0003",
+    "question": "What is REST's use of HTTP methods and status codes, and what makes an API 'RESTful'?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "api-design"
+    ],
+    "tech_keywords": [
+      "rest"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "REST uses HTTP verbs semantically: GET (read, safe/idempotent), POST (create, not idempotent), PUT (full replace, idempotent), PATCH (partial update), DELETE (remove, idempotent)",
+        "Resources are identified by URLs/nouns (e.g. /users/123), not verbs in the path",
+        "Statelessness: each request contains all information needed to process it, server doesn't rely on stored client session state between requests",
+        "Uses standard HTTP status codes meaningfully (200, 201, 204, 400, 401, 403, 404, 409, 500) rather than always returning 200 with an error in the body"
+      ],
+      "sample_answer": "A RESTful API models resources as nouns identified by URLs, like /users/123, and uses HTTP verbs semantically to act on them: GET to read (safe, idempotent), POST to create a new resource (not idempotent — calling it twice creates two resources), PUT to fully replace a resource (idempotent), PATCH for a partial update, and DELETE to remove it. It should be stateless — each request carries everything needed to process it, without the server relying on some previously stored session state tied to that specific client connection. And it uses HTTP status codes meaningfully — 201 for created, 204 for a successful action with no body, 404 for not found, 409 for a conflict — rather than always returning 200 and putting error details only in the response body."
+    },
+    "follow_up_hint": "Ask why PUT is expected to be idempotent but POST is not, with a concrete example.",
+    "concept": "RESTful API Design",
+    "sub_concept": "Semantic HTTP Methods and Stateless Resource Representation",
+    "expected_reasoning": "A strong candidate begins by defining REST through its foundational architectural constraints, specifically resource identification and statelessness, rather than just listing HTTP methods. They connect HTTP verbs to their semantic definitions and safety/idempotency properties, explaining why these guarantees matter for distributed system reliability. Next, they discuss how uniform resource naming using nouns and proper status code categorization replace ad-hoc error handling. Finally, they tie these constraints together to explain how adherence to these principles enables decoupled, scalable client-server architectures.",
+    "common_mistakes": [
+      "Listing HTTP methods without explaining their idempotency or safety guarantees",
+      "Conflating REST with simply 'returning JSON over HTTP'",
+      "Suggesting that putting verbs in the URL path (e.g., /getUser) is acceptable in REST",
+      "Claiming that returning 200 OK with an error message in the JSON body is valid REST as long as the status code is technically HTTP",
+      "Stating that APIs are RESTful simply because they use HTTP protocols"
+    ],
+    "progressive_hints": [
+      "Think about how a client interacts with a web resource when it doesn't know the internal implementation details.",
+      "Consider how the choice of HTTP verbs and status codes communicates intent and outcome uniformly across different servers.",
+      "Focus on the constraints of statelessness, resource identification via nouns, and the specific mathematical properties like idempotency that verbs require."
+    ],
+    "learning_objective": "Understand how REST leverages the existing semantics of the HTTP protocol—specifically methods, status codes, and stateless resource paths—to build scalable and predictable distributed systems."
+  },
+  {
+    "id": "gql-0004",
+    "question": "How would you design pagination for an API returning a large list of results?",
+    "type": "trade_off_questions",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "api-design"
+    ],
+    "tech_keywords": [
+      "pagination"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Offset-based pagination (LIMIT/OFFSET): simple to implement, but gets slower on large offsets (DB still scans/skips all preceding rows), and is prone to skipped/duplicated items if rows are inserted/deleted between page requests",
+        "Cursor-based pagination: uses a pointer (typically an encoded value from the last item, like its ID or a sort key) to fetch the next page starting after that point — consistent performance regardless of depth, and resilient to concurrent inserts/deletes",
+        "Cursor-based is generally preferred for large or frequently-changing datasets, and is what most large-scale APIs (Twitter, GitHub, Slack) use",
+        "Offset pagination is fine for smaller, relatively static datasets, or where jumping to an arbitrary page number is a hard UX requirement"
+      ],
+      "sample_answer": "Offset-based pagination using LIMIT and OFFSET is the simplest to implement, but has two real problems at scale: performance degrades as the offset grows since the database still has to scan past all the skipped rows, and if rows are inserted or deleted between page requests, users can see duplicated or skipped items as the underlying result set shifts. Cursor-based pagination instead uses an opaque pointer — often an encoded value derived from the last item's sort key or ID — to say 'give me the next page starting after this point,' which gives consistent performance regardless of how deep you paginate and is much more resilient to concurrent writes, since it's anchored to a specific item rather than a numeric position. I'd default to cursor-based pagination for any large or frequently-changing dataset, and only use offset pagination for smaller, relatively static lists or when the UI genuinely needs to jump to an arbitrary page number."
+    },
+    "follow_up_hint": "Ask how they'd encode a cursor that combines a non-unique sort field (like 'created_at') with a unique tiebreaker to avoid ambiguity.",
+    "concept": "API Pagination",
+    "sub_concept": "Offset versus Cursor-Based Pagination Trade-offs",
+    "expected_reasoning": "A strong candidate begins by clarifying the nature of the dataset, including its size, rate of mutation, and required user experience. They evaluate offset-based pagination first, recognizing its simplicity and support for random page access, but quickly surface its degradation at scale and vulnerability to data drift. They then derive the cursor-based approach, analyzing how a persistent pointer solves performance bottlenecks and guarantees consistency during concurrent writes. Finally, they weigh these approaches to recommend the appropriate strategy based on operational constraints.",
+    "common_mistakes": [
+      "Recommends offset pagination universally without discussing its O(N) database performance degradation on deep pages.",
+      "Fails to mention the duplicate or missing item bug that occurs when rows are inserted or deleted during offset pagination.",
+      "Treats cursor pagination as just passing an ID without explaining how it avoids scanning preceding rows.",
+      "Assumes random page jumping (e.g. 'go to page 50') is always a requirement without challenging its actual necessity.",
+      "States that offset is 'simpler' without explaining why or when that simplicity actually justifies the trade-offs."
+    ],
+    "progressive_hints": [
+      "What happens to the performance of a database query using LIMIT and OFFSET when a user requests page 10,000?",
+      "Consider what happens to items shifting up or down in the result set if a new record is inserted while a user is paginating through pages using offsets.",
+      "If you couldn't rely on an offset number to skip rows, what property of the last item on the current page could you use to fetch the exact next set of records?"
+    ],
+    "learning_objective": "Understand that cursor-based pagination provides superior performance and consistency for large, dynamic datasets at the expense of arbitrary page jumping, whereas offset pagination should only be used for small, static data."
+  },
+  {
+    "id": "gql-0005",
+    "question": "What is API versioning, and what are common strategies for versioning a public REST API?",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "api-design"
+    ],
+    "tech_keywords": [
+      "api-versioning"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Stripe"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "API versioning lets an API evolve (breaking changes) without breaking existing clients that haven't migrated yet",
+        "URL versioning (/v1/users, /v2/users): simple, visible, but can lead to duplicated logic across versions",
+        "Header versioning (Accept: application/vnd.api+json;version=2 or a custom header): keeps URLs clean, but less discoverable/harder to test manually",
+        "Explains preferring additive, backward-compatible changes (new optional fields) over introducing a new version whenever possible, since maintaining multiple live versions has real ongoing cost"
+      ],
+      "sample_answer": "API versioning lets you make breaking changes to an API's contract without immediately breaking clients that are still using the older version. The most common approach is URL versioning, like /v1/users versus /v2/users — it's simple and very visible/discoverable, though maintaining parallel logic for multiple versions has real ongoing cost. An alternative is header-based versioning, specifying the version in an Accept header or a custom header, which keeps URLs clean but is less discoverable and harder to test casually in a browser. In practice, I'd try to avoid introducing a new version at all whenever possible by making changes additive and backward-compatible — like adding new optional fields rather than changing or removing existing ones — and only bump the version for genuinely breaking changes, since supporting multiple live versions simultaneously is expensive to maintain."
+    },
+    "follow_up_hint": "Ask how they'd decide when to finally deprecate and shut down an old API version that some clients still use.",
+    "concept": "API Versioning",
+    "sub_concept": "Strategies and Trade-offs for Public REST APIs",
+    "expected_reasoning": "A strong candidate begins by explaining why versioning is necessary when API consumers and producers evolve at different rates, highlighting the cost of breaking changes. They then evaluate primary routing strategies like URL paths versus custom headers or content negotiation, systematically comparing their impacts on caching, discoverability, and client integration ergonomics. Rather than treating versioning as a default mechanism, they argue for minimizing version proliferation through strictly backward-compatible, additive design patterns. Finally, they acknowledge the operational overhead of maintaining multiple active API versions concurrently over long lifecycles.",
+    "common_mistakes": [
+      "States that API versioning is needed with no justification or discussion of breaking changes",
+      "Lists URL versioning and header versioning without analyzing their architectural trade-offs",
+      "Claims versioning is always mandatory for every schema modification instead of favoring additive changes",
+      "Ignores the maintenance and operational cost of supporting multiple concurrent API versions",
+      "Conflates HTTP status codes or query parameters with proper API versioning strategies"
+    ],
+    "progressive_hints": [
+      "What fundamental problem arises when a public API needs to change its response format while existing clients are still relying on the old structure?",
+      "Consider where the version identifier lives in the HTTP request—how does placing it in the URL path compare to placing it in request headers regarding caching and client integration?",
+      "Think about the lifecycle cost of maintaining older versions; what principle can you apply to design changes so you avoid creating a new version entirely?"
+    ],
+    "learning_objective": "Understand how to safely evolve public REST APIs by balancing client integration experience, architectural trade-offs of different versioning locations, and the operational cost of maintaining multiple versions."
+  }
 ]

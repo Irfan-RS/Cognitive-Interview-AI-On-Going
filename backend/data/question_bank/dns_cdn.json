@@ -1,4 +1,101 @@
 [
-  {"id":"dns-0001","question":"Explain how DNS resolution works, from a user's browser request to getting an IP address.","type":"conceptual","difficulty":2,"roles":["backend","devops","system_design"],"topics":["networking","dns"],"tech_keywords":["dns"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["Browser first checks its own cache, then the OS cache, for a previously resolved answer","If not cached, the request goes to a recursive resolver (often the ISP's or a public one like 8.8.8.8), which does the actual lookup work on the client's behalf","The resolver queries a root nameserver, which points to the TLD (.com, .org) nameserver, which points to the authoritative nameserver for the specific domain, which finally returns the actual IP","Results are cached at multiple levels (browser, OS, resolver) according to a TTL set by the domain's DNS records, to avoid repeating this lookup chain on every single request"],"sample_answer":"The browser first checks its own local cache, and then the operating system's cache, to see if it already knows the IP for that domain from a recent lookup. If not, it sends a query to a recursive resolver — often provided by the ISP, or a public one like Google's 8.8.8.8 — which does the actual multi-step lookup on the client's behalf. That resolver queries a root nameserver, which doesn't know the answer directly but points it toward the nameserver responsible for the top-level domain, like .com; that TLD nameserver in turn points to the authoritative nameserver for the specific domain, which finally returns the actual IP address. That result then gets cached at multiple levels — the resolver, the OS, the browser — according to a TTL value specified in the domain's DNS records, so this whole chain doesn't need to repeat for every subsequent request within that TTL window."},"follow_up_hint":"Ask what happens differently if the domain uses DNS-based load balancing, returning multiple IP addresses for the same domain."},
-  {"id":"cdn-0001","question":"What is a CDN, and how does it improve website performance?","type":"conceptual","difficulty":1,"roles":["backend","devops","frontend"],"topics":["networking","cdn"],"tech_keywords":["cdn"],"companies_common":["Amazon","Google","Cloudflare"],"source_style":"common-interview","reference_solution":{"key_points":["A CDN (Content Delivery Network) caches static content (images, CSS, JS, video) on servers ('edge nodes') distributed geographically close to end users","Reduces latency by serving content from a nearby edge server instead of a potentially distant origin server, since network round-trip time is largely dictated by physical distance","Reduces load on the origin server, since the CDN absorbs most of the traffic for cached content, letting the origin focus on dynamic/uncacheable requests","Also improves resilience/availability (absorbing traffic spikes, some DDoS mitigation) since load is spread across many edge locations rather than hitting one origin"],"sample_answer":"A CDN, or Content Delivery Network, caches static content like images, CSS, JavaScript, and video on servers, called edge nodes, that are distributed geographically close to end users around the world. This improves performance mainly by reducing latency: a user in Asia requesting a website hosted in the US gets that content served from a nearby edge server instead of making a long round trip to the distant origin server, and network latency is largely a function of physical distance and number of hops. It also reduces load on the origin server itself, since the CDN absorbs the bulk of traffic for anything it has cached, letting the origin server focus its capacity on dynamic requests that actually need to hit it. As a side benefit, spreading traffic across many edge locations also improves resilience and can help absorb sudden traffic spikes or even some denial-of-service attack traffic before it ever reaches the origin."},"follow_up_hint":"Ask how a CDN decides when cached content has become stale and needs to be refreshed from the origin (cache invalidation/TTL)."}
+  {
+    "id": "dns-0001",
+    "question": "Explain how DNS resolution works, from a user's browser request to getting an IP address.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "devops",
+      "system_design"
+    ],
+    "topics": [
+      "networking",
+      "dns"
+    ],
+    "tech_keywords": [
+      "dns"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Browser first checks its own cache, then the OS cache, for a previously resolved answer",
+        "If not cached, the request goes to a recursive resolver (often the ISP's or a public one like 8.8.8.8), which does the actual lookup work on the client's behalf",
+        "The resolver queries a root nameserver, which points to the TLD (.com, .org) nameserver, which points to the authoritative nameserver for the specific domain, which finally returns the actual IP",
+        "Results are cached at multiple levels (browser, OS, resolver) according to a TTL set by the domain's DNS records, to avoid repeating this lookup chain on every single request"
+      ],
+      "sample_answer": "The browser first checks its own local cache, and then the operating system's cache, to see if it already knows the IP for that domain from a recent lookup. If not, it sends a query to a recursive resolver — often provided by the ISP, or a public one like Google's 8.8.8.8 — which does the actual multi-step lookup on the client's behalf. That resolver queries a root nameserver, which doesn't know the answer directly but points it toward the nameserver responsible for the top-level domain, like .com; that TLD nameserver in turn points to the authoritative nameserver for the specific domain, which finally returns the actual IP address. That result then gets cached at multiple levels — the resolver, the OS, the browser — according to a TTL value specified in the domain's DNS records, so this whole chain doesn't need to repeat for every subsequent request within that TTL window."
+    },
+    "follow_up_hint": "Ask what happens differently if the domain uses DNS-based load balancing, returning multiple IP addresses for the same domain.",
+    "concept": "Domain Name System",
+    "sub_concept": "Iterative and Recursive Name Resolution Hierarchy",
+    "expected_reasoning": "A strong candidate begins by tracing the client-side lookup path, checking local caches before escalating the request outward. They then explain the delegation chain, detailing how a recursive resolver queries root, TLD, and authoritative nameservers step-by-step. Throughout the explanation, they emphasize the role of TTLs and caching in minimizing global latency for repeated queries.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely listing the nameservers without explaining the delegation flow",
+      "Confuses recursive resolvers with authoritative nameservers, treating them as the same entity",
+      "Fails to mention client-side caching (browser and OS level), assuming every lookup hits the network",
+      "Skips the root or TLD servers, incorrectly implying the resolver queries the final server directly",
+      "Ignores the concept of TTLs and how expiration governs cache validity"
+    ],
+    "progressive_hints": [
+      "What happens on your device before a network packet is ever sent out to find an IP address?",
+      "If your local machine doesn't know the IP, who takes over the heavy lifting of asking multiple servers, and what is the hierarchical order of those servers?",
+      "Think about the sequence: if a resolver doesn't know a .com address, it starts at the absolute beginning of the namespace tree—what are the three distinct server tiers it consults in order?"
+    ],
+    "learning_objective": "The candidate should understand how hierarchical name resolution and multi-level caching collaborate to translate human-readable domains into IP addresses efficiently."
+  },
+  {
+    "id": "cdn-0001",
+    "question": "What is a CDN, and how does it improve website performance?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "backend",
+      "devops",
+      "frontend"
+    ],
+    "topics": [
+      "networking",
+      "cdn"
+    ],
+    "tech_keywords": [
+      "cdn"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Cloudflare"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A CDN (Content Delivery Network) caches static content (images, CSS, JS, video) on servers ('edge nodes') distributed geographically close to end users",
+        "Reduces latency by serving content from a nearby edge server instead of a potentially distant origin server, since network round-trip time is largely dictated by physical distance",
+        "Reduces load on the origin server, since the CDN absorbs most of the traffic for cached content, letting the origin focus on dynamic/uncacheable requests",
+        "Also improves resilience/availability (absorbing traffic spikes, some DDoS mitigation) since load is spread across many edge locations rather than hitting one origin"
+      ],
+      "sample_answer": "A CDN, or Content Delivery Network, caches static content like images, CSS, JavaScript, and video on servers, called edge nodes, that are distributed geographically close to end users around the world. This improves performance mainly by reducing latency: a user in Asia requesting a website hosted in the US gets that content served from a nearby edge server instead of making a long round trip to the distant origin server, and network latency is largely a function of physical distance and number of hops. It also reduces load on the origin server itself, since the CDN absorbs the bulk of traffic for anything it has cached, letting the origin server focus its capacity on dynamic requests that actually need to hit it. As a side benefit, spreading traffic across many edge locations also improves resilience and can help absorb sudden traffic spikes or even some denial-of-service attack traffic before it ever reaches the origin."
+    },
+    "follow_up_hint": "Ask how a CDN decides when cached content has become stale and needs to be refreshed from the origin (cache invalidation/TTL).",
+    "concept": "Content Delivery Network",
+    "sub_concept": "Geographic Caching and Latency Reduction",
+    "expected_reasoning": "A strong candidate begins by defining the core architecture of a CDN, emphasizing its distributed network of edge servers deployed close to end users. They then reason about the physical limitations of network latency, connecting geographic distance to round-trip time and explaining how caching static assets locally bypasses the distant origin server. Next, they analyze the systems-level impact, noting how offloading traffic protects the origin from high load and traffic spikes. Finally, they tie these infrastructure benefits back to overall user experience and application resilience.",
+    "common_mistakes": [
+      "States that a CDN stores the entire database and application logic, confusing it with backend infrastructure replication",
+      "Claims a CDN speeds up dynamic, personalized requests like user checkouts without mentioning caching limitations",
+      "Provides a vague definition like 'it makes websites faster' without explaining the underlying mechanism of geographic edge servers",
+      "Focuses solely on bandwidth savings while ignoring the primary factor of latency and physical distance",
+      "Confuses a CDN with a load balancer or a DNS provider without distinguishing their core caching functions"
+    ],
+    "progressive_hints": [
+      "Consider what happens when a user halfway across the world tries to load heavy images and style sheets from your single server.",
+      "Think about what a network round-trip time depends on physically, and what you could place closer to the user to avoid that long trip.",
+      "If you placed static copies of your website assets in data centers globally, how would that affect both user load times and the traffic hitting your main application server?"
+    ],
+    "learning_objective": "Understand how geographic edge caching reduces latency and offloads origin infrastructure to improve global website performance and availability."
+  }
 ]

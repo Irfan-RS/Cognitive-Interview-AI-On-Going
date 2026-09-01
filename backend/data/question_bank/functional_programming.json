@@ -1,5 +1,143 @@
 [
-  {"id":"fp-0001","question":"What is a pure function, and why are pure functions valued in functional programming?","type":"conceptual","difficulty":2,"roles":["general_sde","frontend"],"topics":["functional-programming"],"tech_keywords":["functional-programming"],"companies_common":["Meta","Google"],"source_style":"common-interview","reference_solution":{"key_points":["A pure function's output depends only on its inputs (no hidden dependency on external/mutable state), and it produces no side effects (no mutating external state, no I/O)","Same input always produces the same output — this makes pure functions easy to test in isolation (no setup/mocking of external state needed) and to reason about","Pure functions are trivially safe to run in parallel/any order, and easy to memoize, since there's no hidden state to worry about invalidating","Contrast with an impure function that reads/writes a global variable or performs I/O, whose behavior can depend on when/how many times it's called"],"sample_answer":"A pure function's return value depends only on its input arguments, with no reliance on external or mutable state, and it produces no observable side effects like mutating a variable outside its scope or performing I/O. This means the same inputs always produce the same output, no matter when or how many times it's called, which makes pure functions much easier to test in isolation — no need to set up or mock any external state — and easier to reason about generally, since you don't have to track what else might be affected by calling it. It's also why pure functions are trivially safe to run in parallel or memoize, since there's no hidden state that could be invalidated or cause a race condition. An impure function, by contrast, might read a global variable or write to a database, so its result and effects can depend on external factors beyond just its arguments."},"follow_up_hint":"Ask them to identify why a function reading Date.now() or Math.random() internally isn't a pure function."},
-  {"id":"fp-0002","question":"Explain what immutability means, and what problem it solves in concurrent or React-style state management.","type":"conceptual","difficulty":2,"roles":["general_sde","frontend"],"topics":["functional-programming"],"tech_keywords":["immutability"],"companies_common":["Meta","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["Immutability means once a data structure is created, it can't be changed — any 'modification' produces a new copy rather than mutating the original in place","In concurrent code, immutable data eliminates a whole class of race conditions, since multiple threads reading the same immutable object can never see it change underneath them or need locking around it","In React specifically, comparing old vs new state by reference (e.g. Object.is) to decide whether to re-render is fast and reliable only if state updates always produce new objects rather than mutating existing ones in place","Trade-off: creating new copies for every change can have a memory/performance cost, mitigated in practice by structural sharing (persistent data structures reuse unchanged parts of the old structure)"],"sample_answer":"Immutability means once a data structure is created, it's never modified in place — any change produces a brand new copy instead. In concurrent programming, this eliminates a whole category of race conditions, since if data can never change, multiple threads reading the same object concurrently never have to worry about seeing a partially-updated or inconsistent state, and don't need locks just to read it safely. In React specifically, this matters for performance: React decides whether to re-render a component by comparing old and new state by reference, which is a fast check, but it only works correctly if updating state always produces a genuinely new object rather than mutating the existing one — mutating state directly would leave the reference unchanged, so React wouldn't detect the update at all. The main trade-off is that creating a new copy on every change has some memory and performance cost, though in practice this is mitigated using persistent/structural-sharing data structures that reuse the parts of the old structure that didn't actually change."},"follow_up_hint":"Ask them what bug would occur in React if you called array.push() directly on state instead of creating a new array with spread syntax."},
-  {"id":"fp-0003","question":"What is a higher-order function? Give an example.","type":"conceptual","difficulty":1,"roles":["general_sde","frontend"],"topics":["functional-programming"],"tech_keywords":["functional-programming"],"companies_common":["Amazon","Meta"],"source_style":"common-interview","reference_solution":{"key_points":["A higher-order function either takes one or more functions as arguments, or returns a function as its result (or both)","Common examples: map, filter, reduce all take a function as an argument to apply across a collection","Enables composing behavior generically without duplicating the iteration/control-flow logic for every specific operation","A function returning a function is also higher-order, e.g. a function that returns a customized comparator or a debounced version of another function"],"sample_answer":"A higher-order function is one that either takes a function as an argument, returns a function, or both. Common examples are array methods like map, filter, and reduce, which take a callback function describing what to do with each element, letting you reuse the same generic iteration logic for entirely different transformations rather than writing a manual loop each time. Another example is a function that returns a function — like a 'debounce' utility that takes a function and a delay, and returns a new function that only actually calls the original after the delay has passed without being called again, which is itself a higher-order function since it both takes and returns a function."},"follow_up_hint":"Ask them to implement a simple 'debounce' higher-order function from scratch."}
+  {
+    "id": "fp-0001",
+    "question": "What is a pure function, and why are pure functions valued in functional programming?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "general_sde",
+      "frontend"
+    ],
+    "topics": [
+      "functional-programming"
+    ],
+    "tech_keywords": [
+      "functional-programming"
+    ],
+    "companies_common": [
+      "Meta",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A pure function's output depends only on its inputs (no hidden dependency on external/mutable state), and it produces no side effects (no mutating external state, no I/O)",
+        "Same input always produces the same output — this makes pure functions easy to test in isolation (no setup/mocking of external state needed) and to reason about",
+        "Pure functions are trivially safe to run in parallel/any order, and easy to memoize, since there's no hidden state to worry about invalidating",
+        "Contrast with an impure function that reads/writes a global variable or performs I/O, whose behavior can depend on when/how many times it's called"
+      ],
+      "sample_answer": "A pure function's return value depends only on its input arguments, with no reliance on external or mutable state, and it produces no observable side effects like mutating a variable outside its scope or performing I/O. This means the same inputs always produce the same output, no matter when or how many times it's called, which makes pure functions much easier to test in isolation — no need to set up or mock any external state — and easier to reason about generally, since you don't have to track what else might be affected by calling it. It's also why pure functions are trivially safe to run in parallel or memoize, since there's no hidden state that could be invalidated or cause a race condition. An impure function, by contrast, might read a global variable or write to a database, so its result and effects can depend on external factors beyond just its arguments."
+    },
+    "follow_up_hint": "Ask them to identify why a function reading Date.now() or Math.random() internally isn't a pure function.",
+    "concept": "Functional Programming",
+    "sub_concept": "Pure Functions",
+    "expected_reasoning": "A strong candidate begins by defining the two foundational pillars of purity: determinism based exclusively on inputs and a total lack of observable side effects. They then bridge this definition to practical software engineering benefits, explaining how deterministic execution naturally enables straightforward unit testing without complex mocking. Finally, they derive the architectural advantages like safe concurrency and memoization, noting how the absence of shared mutable state eliminates entire classes of bugs related to execution timing and order.",
+    "common_mistakes": [
+      "Stating that a pure function just means it has no bugs or does not modify its own local variables.",
+      "Confusing side effects with returning a value, claiming that any function that returns something is pure.",
+      "Listing benefits like 'easier to test' or 'faster' without connecting them back to determinism and lack of side effects.",
+      "Claiming pure functions cannot use local mutable state as long as it is not exposed outside the function scope.",
+      "Giving a circular definition like 'a pure function is a function written in a functional programming style.'"
+    ],
+    "progressive_hints": [
+      "Think about what happens if you call the exact same function twice with identical arguments in two completely different parts of a program.",
+      "Consider what external factors—other than the arguments passed in—might influence what a function returns or what changes it makes while running.",
+      "Think about why removing reliance on external state makes running tasks concurrently or caching results vastly simpler."
+    ],
+    "learning_objective": "Understand how deterministic execution and the absence of side effects make code safer to test, cache, and run concurrently."
+  },
+  {
+    "id": "fp-0002",
+    "question": "Explain what immutability means, and what problem it solves in concurrent or React-style state management.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "general_sde",
+      "frontend"
+    ],
+    "topics": [
+      "functional-programming"
+    ],
+    "tech_keywords": [
+      "immutability"
+    ],
+    "companies_common": [
+      "Meta",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Immutability means once a data structure is created, it can't be changed — any 'modification' produces a new copy rather than mutating the original in place",
+        "In concurrent code, immutable data eliminates a whole class of race conditions, since multiple threads reading the same immutable object can never see it change underneath them or need locking around it",
+        "In React specifically, comparing old vs new state by reference (e.g. Object.is) to decide whether to re-render is fast and reliable only if state updates always produce new objects rather than mutating existing ones in place",
+        "Trade-off: creating new copies for every change can have a memory/performance cost, mitigated in practice by structural sharing (persistent data structures reuse unchanged parts of the old structure)"
+      ],
+      "sample_answer": "Immutability means once a data structure is created, it's never modified in place — any change produces a brand new copy instead. In concurrent programming, this eliminates a whole category of race conditions, since if data can never change, multiple threads reading the same object concurrently never have to worry about seeing a partially-updated or inconsistent state, and don't need locks just to read it safely. In React specifically, this matters for performance: React decides whether to re-render a component by comparing old and new state by reference, which is a fast check, but it only works correctly if updating state always produces a genuinely new object rather than mutating the existing one — mutating state directly would leave the reference unchanged, so React wouldn't detect the update at all. The main trade-off is that creating a new copy on every change has some memory and performance cost, though in practice this is mitigated using persistent/structural-sharing data structures that reuse the parts of the old structure that didn't actually change."
+    },
+    "follow_up_hint": "Ask them what bug would occur in React if you called array.push() directly on state instead of creating a new array with spread syntax.",
+    "concept": "Immutability",
+    "sub_concept": "State Management and Concurrency",
+    "expected_reasoning": "A strong candidate begins by defining immutability as the property where data cannot be modified after creation, establishing that updates yield new references instead of in-place mutations. They then connect this definition to concurrency, reasoning that if multiple execution paths or threads only read data, race conditions disappear without requiring locks. Next, they bridge this to React or UI state, explaining how reference equality checks (like Object.is) rely entirely on new references being created to detect changes cheaply. Finally, they address the performance trade-off of copying data, noting how structural sharing mitigates memory overhead.",
+    "common_mistakes": [
+      "States that immutability just means 'read-only constants' without explaining how updates work via copying",
+      "Claims immutability completely solves all performance issues in React without mentioning the memory overhead of copying",
+      "Focuses solely on React re-renders while ignoring the concurrency and thread-safety implications entirely",
+      "Believes immutable data means data cannot be changed at all, missing the concept of returning a new updated copy",
+      "Gives a superficial definition with no justification of why it makes change detection or state synchronization easier"
+    ],
+    "progressive_hints": [
+      "Think about what happens to a data structure when you want to update just one nested property under an immutable paradigm.",
+      "Consider how two different threads or components reading the same object at the same time behave differently if the object can be modified in place versus if it cannot.",
+      "If a UI framework needs to know whether a large state tree changed, how does comparing object references (like a memory address) make that check instantaneous, and what rule must your update logic follow to make that reference check work?"
+    ],
+    "learning_objective": "Understand that immutability simplifies concurrent execution and state change detection by guaranteeing that data never changes in place, trading memory allocation for predictable reference semantics."
+  },
+  {
+    "id": "fp-0003",
+    "question": "What is a higher-order function? Give an example.",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "general_sde",
+      "frontend"
+    ],
+    "topics": [
+      "functional-programming"
+    ],
+    "tech_keywords": [
+      "functional-programming"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A higher-order function either takes one or more functions as arguments, or returns a function as its result (or both)",
+        "Common examples: map, filter, reduce all take a function as an argument to apply across a collection",
+        "Enables composing behavior generically without duplicating the iteration/control-flow logic for every specific operation",
+        "A function returning a function is also higher-order, e.g. a function that returns a customized comparator or a debounced version of another function"
+      ],
+      "sample_answer": "A higher-order function is one that either takes a function as an argument, returns a function, or both. Common examples are array methods like map, filter, and reduce, which take a callback function describing what to do with each element, letting you reuse the same generic iteration logic for entirely different transformations rather than writing a manual loop each time. Another example is a function that returns a function — like a 'debounce' utility that takes a function and a delay, and returns a new function that only actually calls the original after the delay has passed without being called again, which is itself a higher-order function since it both takes and returns a function."
+    },
+    "follow_up_hint": "Ask them to implement a simple 'debounce' higher-order function from scratch.",
+    "concept": "Functional Programming",
+    "sub_concept": "Higher-Order Functions",
+    "expected_reasoning": "A strong candidate begins by defining the core dual criteria that classify a function as higher-order: taking a function as an argument, returning one, or both. They then articulate the structural benefit of this pattern, recognizing that it abstracts away repetitive control-flow and iteration logic so behavior can be injected dynamically. To solidify their explanation, they provide a concrete example like map, filter, or a function factory, demonstrating how passing or returning behavior separates the 'what' from the 'how'. Finally, they connect this concept to broader software design principles, noting how it promotes modularity and code reuse.",
+    "common_mistakes": [
+      "States the definition without giving any concrete example",
+      "Confuses a higher-order function with a recursive function",
+      "Only mentions functions taking arguments as functions, forgetting that returning functions also qualifies",
+      "Provides a code snippet but cannot explain why it is advantageous over a standard loop",
+      "Confuses higher-order functions with callback functions in general asynchronous programming"
+    ],
+    "progressive_hints": [
+      "Think about how treat functions as data in your programming language. What can you do with numbers or strings that you might also want to do with functions?",
+      "Consider what happens when a function doesn't just take data like integers or strings as parameters, but takes another function instead—or evaluates to one.",
+      "Look at common collection methods like map or filter. What do they accept as an argument, and why is that powerful compared to writing a standard for-loop every time?"
+    ],
+    "learning_objective": "Understand how treating functions as first-class citizens allows for powerful abstractions that separate operational logic from business behavior."
+  }
 ]

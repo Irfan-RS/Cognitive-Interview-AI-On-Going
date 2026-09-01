@@ -1,5 +1,144 @@
 [
-  {"id":"mon-0001","question":"What are the three pillars of observability (logs, metrics, traces), and what does each tell you?","type":"conceptual","difficulty":2,"roles":["devops","backend"],"topics":["observability","devops"],"tech_keywords":["logging","metrics","tracing"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["Logs: detailed, timestamped records of discrete events — great for understanding exactly what happened at a specific point, but expensive to store/search at scale and easy to over-log or under-log","Metrics: numeric time-series measurements (request rate, error rate, latency percentiles, CPU usage) — cheap to store and great for dashboards/alerting on trends, but lack per-request detail","Traces: follow a single request's journey across multiple services, showing where time was spent at each hop — essential for diagnosing latency issues in distributed/microservices systems","Together they complement each other: metrics alert you something's wrong, traces pinpoint where in the request path, logs give the exact detail of what happened there"],"sample_answer":"Logs are detailed, timestamped records of discrete events, giving you the exact detail of what happened at a specific point in time, but they're comparatively expensive to store and search at scale, and it's easy to either drown in noise or miss the one line that mattered. Metrics are numeric time-series measurements — things like request rate, error rate, or latency percentiles — which are cheap to store and great for dashboards and alerting on trends over time, but they don't give you per-request detail. Traces follow a single request's journey across multiple services in a distributed system, showing exactly where time was spent at each hop, which is essential for diagnosing latency problems that logs and metrics alone can't localize. In practice they complement each other in an investigation: a metric alert tells you something's wrong, a trace helps pinpoint where in the request path it's happening, and logs from that specific span give you the precise detail of what actually occurred there."},"follow_up_hint":"Ask them to walk through diagnosing a sudden latency spike using all three signals together."},
-  {"id":"mon-0002","question":"What is the difference between monitoring and observability?","type":"conceptual","difficulty":3,"roles":["devops"],"topics":["observability"],"tech_keywords":["observability"],"companies_common":["Google","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["Monitoring: watching for known failure modes you've anticipated in advance, via predefined dashboards/alerts (is CPU high? is the error rate above X?)","Observability: the ability to ask arbitrary new questions about the system's internal state from its external outputs, WITHOUT having predicted that specific question in advance — useful for debugging novel, previously unseen failure modes","Monitoring answers 'is something wrong' for known scenarios; observability supports answering 'why is this specific unusual thing happening' for scenarios nobody explicitly built a dashboard for","Rich, structured, high-cardinality telemetry (not just a handful of predefined dashboards) is what makes a system observable versus merely monitored"],"sample_answer":"Monitoring is about watching for known failure modes you've anticipated in advance, using predefined dashboards and alert thresholds — like alerting when CPU usage crosses 90% or the error rate exceeds some percentage. Observability is a broader capability: the ability to ask arbitrary new questions about what's happening inside the system, from its external telemetry, without having predicted that specific question ahead of time — which matters when you're debugging a genuinely novel failure mode nobody built a specific dashboard for. So monitoring is good at answering 'is something wrong' for scenarios you expected, while observability is what lets you answer 'why is this weird, unexpected thing happening' by slicing and querying rich, structured telemetry data in ways you didn't pre-plan. Having lots of dashboards doesn't automatically make a system observable — what matters is whether the underlying telemetry has enough detail and structure to support answering questions you haven't thought of yet."},"follow_up_hint":"Ask them to describe a real debugging scenario where pre-built dashboards weren't enough and they needed to query raw, high-cardinality telemetry instead."},
-  {"id":"mon-0003","question":"What is a good alerting strategy to avoid alert fatigue?","type":"scenario_based","difficulty":3,"roles":["devops"],"topics":["observability"],"tech_keywords":["alerting"],"companies_common":["Amazon","Google"],"source_style":"faang-common","reference_solution":{"key_points":["Alert fatigue: too many low-value or noisy alerts cause on-call engineers to start ignoring or desensitizing to alerts, including important ones — the boy who cried wolf problem","Alert on symptoms that actually affect users (SLO/error budget burn, elevated error rates, latency) rather than every possible internal metric anomaly","Every alert that fires should be actionable — if there's nothing a human can/should do about it, it shouldn't page anyone; route it to a dashboard or a lower-urgency channel instead","Use appropriate thresholds and durations (avoid alerting on a single noisy data point; require sustained conditions) and clear runbooks so responders know what to do once paged"],"sample_answer":"Alert fatigue happens when too many low-value or noisy alerts fire, causing on-call engineers to start ignoring or tuning out alerts altogether, including the genuinely important ones — that's dangerous since it defeats the whole purpose of alerting. A good strategy is to alert primarily on symptoms that actually affect users — like SLO or error-budget burn rate, elevated user-facing error rates, or latency crossing a meaningful threshold — rather than paging on every internal metric fluctuation that might just be normal noise. Every alert that pages someone should be genuinely actionable — if there's nothing a human needs to or can do about it right now, it shouldn't wake anyone up; route that instead to a dashboard or a lower-urgency notification channel. I'd also make sure thresholds require a sustained condition rather than firing on one noisy data point, and that every alert has a clear runbook so whoever gets paged knows what to actually do, rather than starting an investigation from scratch every time."},"follow_up_hint":"Ask them what an 'error budget' is and how it can be used to decide when to actually page someone versus let a minor issue accumulate."}
+  {
+    "id": "mon-0001",
+    "question": "What are the three pillars of observability (logs, metrics, traces), and what does each tell you?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "devops",
+      "backend"
+    ],
+    "topics": [
+      "observability",
+      "devops"
+    ],
+    "tech_keywords": [
+      "logging",
+      "metrics",
+      "tracing"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Logs: detailed, timestamped records of discrete events — great for understanding exactly what happened at a specific point, but expensive to store/search at scale and easy to over-log or under-log",
+        "Metrics: numeric time-series measurements (request rate, error rate, latency percentiles, CPU usage) — cheap to store and great for dashboards/alerting on trends, but lack per-request detail",
+        "Traces: follow a single request's journey across multiple services, showing where time was spent at each hop — essential for diagnosing latency issues in distributed/microservices systems",
+        "Together they complement each other: metrics alert you something's wrong, traces pinpoint where in the request path, logs give the exact detail of what happened there"
+      ],
+      "sample_answer": "Logs are detailed, timestamped records of discrete events, giving you the exact detail of what happened at a specific point in time, but they're comparatively expensive to store and search at scale, and it's easy to either drown in noise or miss the one line that mattered. Metrics are numeric time-series measurements — things like request rate, error rate, or latency percentiles — which are cheap to store and great for dashboards and alerting on trends over time, but they don't give you per-request detail. Traces follow a single request's journey across multiple services in a distributed system, showing exactly where time was spent at each hop, which is essential for diagnosing latency problems that logs and metrics alone can't localize. In practice they complement each other in an investigation: a metric alert tells you something's wrong, a trace helps pinpoint where in the request path it's happening, and logs from that specific span give you the precise detail of what actually occurred there."
+    },
+    "follow_up_hint": "Ask them to walk through diagnosing a sudden latency spike using all three signals together.",
+    "concept": "Observability",
+    "sub_concept": "Three Pillars of Observability",
+    "expected_reasoning": "A strong candidate begins by identifying the overarching goal of observability—understanding internal system states through external outputs. They then systematically break down the three distinct data types, explaining not just their definitions but their relative trade-offs regarding granularity, cost, and scale. Rather than treating them as isolated tools, the candidate synthesizes how they work in concert during an incident response lifecycle, showing how you move from high-level anomaly detection down to individual execution paths.",
+    "common_mistakes": [
+      "Listing the three terms with generic definitions without explaining their trade-offs or operational use cases.",
+      "Conflating logs and traces, treating traces merely as a collection of logs.",
+      "Stating that metrics provide deep debugging context for individual user requests.",
+      "Failing to explain how the three data types complement each other during troubleshooting.",
+      "Treating the pillars as competing technologies rather than synergistic components of a telemetry strategy."
+    ],
+    "progressive_hints": [
+      "When a system breaks in production, what is the first sign you notice, and how do you figure out where to look next?",
+      "Think about the difference between aggregated numerical data over time versus an individual event record or a request crossing service boundaries. What makes each uniquely expensive or cheap?",
+      "Consider the troubleshooting lifecycle: what tool tells you 'something is broken', what tells you 'where it is broken', and what tells you 'why it broke'?"
+    ],
+    "learning_objective": "Understand how logs, metrics, and traces complement each other to provide comprehensive visibility into complex distributed systems."
+  },
+  {
+    "id": "mon-0002",
+    "question": "What is the difference between monitoring and observability?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "devops"
+    ],
+    "topics": [
+      "observability"
+    ],
+    "tech_keywords": [
+      "observability"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Monitoring: watching for known failure modes you've anticipated in advance, via predefined dashboards/alerts (is CPU high? is the error rate above X?)",
+        "Observability: the ability to ask arbitrary new questions about the system's internal state from its external outputs, WITHOUT having predicted that specific question in advance — useful for debugging novel, previously unseen failure modes",
+        "Monitoring answers 'is something wrong' for known scenarios; observability supports answering 'why is this specific unusual thing happening' for scenarios nobody explicitly built a dashboard for",
+        "Rich, structured, high-cardinality telemetry (not just a handful of predefined dashboards) is what makes a system observable versus merely monitored"
+      ],
+      "sample_answer": "Monitoring is about watching for known failure modes you've anticipated in advance, using predefined dashboards and alert thresholds — like alerting when CPU usage crosses 90% or the error rate exceeds some percentage. Observability is a broader capability: the ability to ask arbitrary new questions about what's happening inside the system, from its external telemetry, without having predicted that specific question ahead of time — which matters when you're debugging a genuinely novel failure mode nobody built a specific dashboard for. So monitoring is good at answering 'is something wrong' for scenarios you expected, while observability is what lets you answer 'why is this weird, unexpected thing happening' by slicing and querying rich, structured telemetry data in ways you didn't pre-plan. Having lots of dashboards doesn't automatically make a system observable — what matters is whether the underlying telemetry has enough detail and structure to support answering questions you haven't thought of yet."
+    },
+    "follow_up_hint": "Ask them to describe a real debugging scenario where pre-built dashboards weren't enough and they needed to query raw, high-cardinality telemetry instead.",
+    "concept": "Observability",
+    "sub_concept": "Monitoring vs Observability Distinction",
+    "expected_reasoning": "A strong candidate begins by establishing the operational baseline of what both terms attempt to solve in modern software systems. They then differentiate between the reactive, predefined nature of checking known metrics versus the exploratory nature of querying unfamiliar system behaviors. Rather than treating them as competing approaches, they frame monitoring as a subset or downstream outcome of a truly observable system. Finally, they highlight the architectural role of telemetry and cardinality in enabling high-fidelity debugging for unpredictable, novel failure modes.",
+    "common_mistakes": [
+      "Treating monitoring and observability as pure synonyms used interchangeably in industry.",
+      "Claiming that monitoring is just for metrics while observability is just for logs and traces.",
+      "Stating that monitoring tells you if things are broken and observability tells you why, without explaining the dimension of unanticipated versus anticipated failures.",
+      "Failing to mention that observability relies on high-cardinality telemetry and the ability to ask arbitrary new questions.",
+      "Giving a shallow tool-based definition, such as 'monitoring is Prometheus and observability is OpenTelemetry'."
+    ],
+    "progressive_hints": [
+      "Think about what happens when your system fails in a completely unprecedented way that no dashboard was ever built to catch.",
+      "Consider whether you can debug a completely novel error using only predefined graphs and hardcoded alerts you set up last month.",
+      "Reflect on the difference between being alerted that a symptom is occurring versus having the structural telemetry to interrogate the system's internal state to ask entirely new questions."
+    ],
+    "learning_objective": "Understand that monitoring tells you when known failure modes occur through predefined alerts, whereas observability provides the underlying telemetry required to ask arbitrary, unpredicted questions about unknown system states."
+  },
+  {
+    "id": "mon-0003",
+    "question": "What is a good alerting strategy to avoid alert fatigue?",
+    "type": "scenario_based",
+    "difficulty": 3,
+    "roles": [
+      "devops"
+    ],
+    "topics": [
+      "observability"
+    ],
+    "tech_keywords": [
+      "alerting"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Alert fatigue: too many low-value or noisy alerts cause on-call engineers to start ignoring or desensitizing to alerts, including important ones — the boy who cried wolf problem",
+        "Alert on symptoms that actually affect users (SLO/error budget burn, elevated error rates, latency) rather than every possible internal metric anomaly",
+        "Every alert that fires should be actionable — if there's nothing a human can/should do about it, it shouldn't page anyone; route it to a dashboard or a lower-urgency channel instead",
+        "Use appropriate thresholds and durations (avoid alerting on a single noisy data point; require sustained conditions) and clear runbooks so responders know what to do once paged"
+      ],
+      "sample_answer": "Alert fatigue happens when too many low-value or noisy alerts fire, causing on-call engineers to start ignoring or tuning out alerts altogether, including the genuinely important ones — that's dangerous since it defeats the whole purpose of alerting. A good strategy is to alert primarily on symptoms that actually affect users — like SLO or error-budget burn rate, elevated user-facing error rates, or latency crossing a meaningful threshold — rather than paging on every internal metric fluctuation that might just be normal noise. Every alert that pages someone should be genuinely actionable — if there's nothing a human needs to or can do about it right now, it shouldn't wake anyone up; route that instead to a dashboard or a lower-urgency notification channel. I'd also make sure thresholds require a sustained condition rather than firing on one noisy data point, and that every alert has a clear runbook so whoever gets paged knows what to actually do, rather than starting an investigation from scratch every time."
+    },
+    "follow_up_hint": "Ask them what an 'error budget' is and how it can be used to decide when to actually page someone versus let a minor issue accumulate.",
+    "concept": "Observability",
+    "sub_concept": "Alerting Strategy and Alert Fatigue Mitigation",
+    "expected_reasoning": "A strong candidate begins by identifying the root cause of alert fatigue, which is the over-allocation of noisy, non-actionable pages that desensitize engineers. They then derive a philosophy where alerting shifts away from raw infrastructure metrics toward user-centric symptoms that directly impact experience, such as SLO burn rates. Next, they weigh the requirement for actionability against the need for visibility, establishing that non-urgent warnings belong in asynchronous logs or dashboards rather than waking someone up. Finally, they incorporate operational hygiene like sustained duration thresholds and mandatory runbooks to ensure every paged incident is both real and solvable.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as saying 'just set fewer alerts' without explaining how to choose which ones to keep.",
+      "Suggests alerting on every CPU, memory, or disk spike because 'it might matter later.'",
+      "Treats all alerts with the same urgency level, failing to distinguish between pageable incidents and informational notifications.",
+      "Proposes zero human intervention through full automation without addressing how complex or novel failures are handled.",
+      "Focuses purely on technical thresholds without mentioning the human element of engineer burnout and response behavior."
+    ],
+    "progressive_hints": [
+      "What happens to an on-call team's behavior when they receive dozens of notifications every night, and how does that impact true outages?",
+      "When deciding whether a high CPU spike should page an engineer at 3 AM, what question should you ask about its immediate impact on the end user?",
+      "If an alert fires and the human responder's only action is to acknowledge it because they can't actually fix it, where should that signal have gone instead?"
+    ],
+    "learning_objective": "Understand how to design a sustainable alerting framework by prioritizing user-facing symptoms and strict actionability to prevent engineer burnout."
+  }
 ]

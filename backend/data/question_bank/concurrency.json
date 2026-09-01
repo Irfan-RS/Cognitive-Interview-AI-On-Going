@@ -1,7 +1,248 @@
 [
-  {"id":"conc-0001","question":"What is a race condition, and how would you prevent one in multi-threaded code?","type":"conceptual","difficulty":2,"roles":["backend","general_sde"],"topics":["concurrency","operating-systems"],"tech_keywords":["concurrency","threading"],"companies_common":["Amazon","Microsoft","Google"],"source_style":"common-interview","reference_solution":{"key_points":["A race condition occurs when multiple threads access shared data concurrently, and the final outcome depends on the unpredictable timing/interleaving of their operations","Common cause: a 'check-then-act' or read-modify-write sequence on shared state that isn't atomic, allowing another thread to interleave in between","Prevention: mutual exclusion (locks/mutexes) around the critical section, or using atomic operations/data structures designed for concurrent access","Explains the trade-off: locks can introduce contention and the risk of deadlock, so scope should be minimized to just the critical section"],"sample_answer":"A race condition happens when multiple threads access and modify shared data concurrently, and the final result depends on the unpredictable order in which their operations get interleaved by the scheduler. A classic cause is a read-modify-write sequence — like incrementing a shared counter — that isn't atomic: two threads can both read the same old value before either writes back the incremented result, losing one of the increments. The standard fix is protecting that critical section with a lock or mutex so only one thread can execute it at a time, or using an atomic operation/data structure built for concurrent access, like an atomic integer. Locks should be scoped as tightly as possible around just the critical section, since overly broad locking increases contention and raises the risk of deadlock."},"follow_up_hint":"Ask them to identify the race condition in a specific code snippet, like a non-atomic counter increment across threads."},
-  {"id":"conc-0002","question":"What is a deadlock, and what four conditions must all be present for one to occur?","type":"conceptual","difficulty":3,"roles":["backend","general_sde"],"topics":["concurrency","operating-systems"],"tech_keywords":["deadlock"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["A deadlock: two or more threads/processes are each waiting for a resource held by another, so none can proceed","Mutual exclusion: at least one resource must be held in a non-shareable mode","Hold and wait: a process holding a resource is waiting to acquire additional resources held by others","No preemption: resources can't be forcibly taken away from a process holding them","Circular wait: a cycle exists where each process is waiting for a resource held by the next process in the cycle"],"sample_answer":"A deadlock happens when two or more threads or processes are each waiting on a resource held by another, forming a cycle where none of them can ever proceed. Four conditions all need to hold simultaneously for a deadlock to occur: mutual exclusion, where at least one resource can only be used by one holder at a time; hold and wait, where a process holds one resource while waiting to acquire another; no preemption, meaning a resource can't be forcibly taken from whoever holds it; and circular wait, where there's a cycle of processes each waiting on the next one's resource. Breaking any single one of these conditions — most commonly by imposing a consistent global ordering on lock acquisition to eliminate circular wait — prevents deadlock."},"follow_up_hint":"Ask them how enforcing a global lock-acquisition order specifically breaks the circular wait condition."},
-  {"id":"conc-0003","question":"Explain the difference between a mutex and a semaphore.","type":"conceptual","difficulty":2,"roles":["backend","general_sde"],"topics":["concurrency","operating-systems"],"tech_keywords":["mutex","semaphore"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["A mutex allows only one thread to hold it at a time, and typically must be released by the same thread that acquired it (ownership semantics)","A semaphore maintains a count and allows up to N threads to hold it concurrently; it doesn't have ownership semantics — any thread can 'release'/signal it","A binary semaphore (count=1) looks similar to a mutex but conceptually differs since it lacks ownership enforcement","Semaphores are used to limit concurrent access to a resource pool (e.g. a connection pool of size N), while mutexes protect a single critical section"],"sample_answer":"A mutex allows exactly one thread to hold it at a time and typically enforces ownership — the same thread that acquired the lock must be the one to release it. A semaphore maintains an internal count and allows up to N threads to hold it concurrently, and doesn't enforce ownership — any thread can signal/release it, not necessarily the one that acquired it. A binary semaphore, with count 1, can look similar to a mutex at first glance, but conceptually they're different because of that missing ownership guarantee. In practice, I'd use a mutex to protect a single critical section that only one thread should execute at once, and a semaphore to limit concurrent access to a pool of N interchangeable resources, like a fixed-size database connection pool."},"follow_up_hint":"Ask them to design using a semaphore to limit at most 5 concurrent outgoing API calls."},
-  {"id":"conc-0004","question":"What is the difference between concurrency and parallelism?","type":"conceptual","difficulty":1,"roles":["backend","general_sde"],"topics":["concurrency"],"tech_keywords":["concurrency","parallelism"],"companies_common":["Amazon","Microsoft","Google"],"source_style":"common-interview","reference_solution":{"key_points":["Concurrency: structuring a program to handle multiple tasks that can be in progress at overlapping times, potentially interleaved on a single core","Parallelism: actually executing multiple tasks simultaneously on multiple cores/processors at the exact same instant","A single-core CPU can achieve concurrency (via time-slicing/context switching) but not true parallelism","Rob Pike's framing: concurrency is about dealing with lots of things at once (structure); parallelism is about doing lots of things at once (execution)"],"sample_answer":"Concurrency is about structuring a program to deal with multiple tasks that are in progress during overlapping time periods, which can happen even on a single CPU core through time-slicing and context switching between tasks. Parallelism is about actually executing multiple tasks at the exact same physical instant, which requires multiple cores or processors. A single-core machine can be concurrent — juggling many tasks by rapidly switching between them — but it can't be truly parallel. As Rob Pike put it, concurrency is about dealing with lots of things at once, while parallelism is about doing lots of things at once — a well-designed concurrent program can take advantage of parallelism when multiple cores are available, but the two concepts are distinct."},"follow_up_hint":"Ask them to give an example of a concurrent program that provides no speedup from parallelism (e.g. I/O-bound single-core work)."},
-  {"id":"conc-0005","question":"What is the Global Interpreter Lock (GIL) in Python, and how does it affect multi-threaded CPU-bound code?","type":"conceptual","difficulty":3,"roles":["backend"],"topics":["concurrency","python"],"tech_keywords":["python","gil"],"companies_common":["Google","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["The GIL ensures only one thread executes Python bytecode at a time within a single CPython process, even on a multi-core machine","This means multi-threading in CPython doesn't provide a speedup for CPU-bound work — threads take turns rather than running truly in parallel","I/O-bound work still benefits from threading, since the GIL is released during blocking I/O operations, letting other threads run while one waits","Workarounds for CPU-bound parallelism: multiprocessing (separate processes, separate GILs, separate memory), or moving hot code to a C extension/library that releases the GIL (e.g. NumPy)"],"sample_answer":"The GIL in CPython ensures that only one thread can execute Python bytecode at any given moment within a single process, even if the machine has multiple cores. This means using multiple threads for CPU-bound Python code, like heavy numeric computation in pure Python, doesn't give you a real speedup — the threads just take turns on one core rather than running truly in parallel. Threading is still useful in Python for I/O-bound work, though, since the GIL is released while a thread is blocked waiting on I/O, letting other threads run during that wait. To actually get CPU-bound parallelism, you'd use the multiprocessing module to spawn separate processes, each with its own interpreter and GIL, or rely on libraries like NumPy that release the GIL internally while running their C-level computations."},"follow_up_hint":"Ask them when they'd choose multiprocessing over asyncio or threading for a given Python workload."}
+  {
+    "id": "conc-0001",
+    "question": "What is a race condition, and how would you prevent one in multi-threaded code?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "concurrency",
+      "operating-systems"
+    ],
+    "tech_keywords": [
+      "concurrency",
+      "threading"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A race condition occurs when multiple threads access shared data concurrently, and the final outcome depends on the unpredictable timing/interleaving of their operations",
+        "Common cause: a 'check-then-act' or read-modify-write sequence on shared state that isn't atomic, allowing another thread to interleave in between",
+        "Prevention: mutual exclusion (locks/mutexes) around the critical section, or using atomic operations/data structures designed for concurrent access",
+        "Explains the trade-off: locks can introduce contention and the risk of deadlock, so scope should be minimized to just the critical section"
+      ],
+      "sample_answer": "A race condition happens when multiple threads access and modify shared data concurrently, and the final result depends on the unpredictable order in which their operations get interleaved by the scheduler. A classic cause is a read-modify-write sequence — like incrementing a shared counter — that isn't atomic: two threads can both read the same old value before either writes back the incremented result, losing one of the increments. The standard fix is protecting that critical section with a lock or mutex so only one thread can execute it at a time, or using an atomic operation/data structure built for concurrent access, like an atomic integer. Locks should be scoped as tightly as possible around just the critical section, since overly broad locking increases contention and raises the risk of deadlock."
+    },
+    "follow_up_hint": "Ask them to identify the race condition in a specific code snippet, like a non-atomic counter increment across threads.",
+    "concept": "Concurrency Control",
+    "sub_concept": "Race Conditions and Mutual Exclusion",
+    "expected_reasoning": "A strong candidate begins by defining the problem in terms of thread scheduling interleavings and shared mutable state. They then trace a concrete example, such as an increment operation, to illustrate how non-atomic read-modify-write sequences corrupt data. From there, they evaluate mitigation strategies, distinguishing between coarse-grained and fine-grained locking mechanisms. Finally, they weigh the performance trade-offs of these synchronization techniques, specifically mentioning contention and deadlocks.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'it's when threads interfere' without explaining the underlying memory or instruction interleaving.",
+      "Confuses a race condition with a deadlock or livelock.",
+      "Suggests using thread sleep or delays as a reliable fix for timing issues.",
+      "Proposes locking the entire application or object indiscriminately without identifying the specific critical section.",
+      "Fails to mention any trade-offs associated with synchronization, such as performance degradation from lock contention."
+    ],
+    "progressive_hints": [
+      "Think about what happens at the instruction level when two threads try to update the exact same variable at the exact same millisecond.",
+      "You are looking at a scenario where a read and a subsequent write are interrupted midway by another thread. What do we call operations that cannot be interrupted?",
+      "If multiple threads need to safely update a shared counter, how can you ensure only one thread executes that specific block of read-modify-write code at a time?"
+    ],
+    "learning_objective": "The candidate should understand how unpredictable thread interleavings corrupt shared state and how to properly isolate critical sections using synchronization primitives while weighing concurrency trade-offs."
+  },
+  {
+    "id": "conc-0002",
+    "question": "What is a deadlock, and what four conditions must all be present for one to occur?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "concurrency",
+      "operating-systems"
+    ],
+    "tech_keywords": [
+      "deadlock"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A deadlock: two or more threads/processes are each waiting for a resource held by another, so none can proceed",
+        "Mutual exclusion: at least one resource must be held in a non-shareable mode",
+        "Hold and wait: a process holding a resource is waiting to acquire additional resources held by others",
+        "No preemption: resources can't be forcibly taken away from a process holding them",
+        "Circular wait: a cycle exists where each process is waiting for a resource held by the next process in the cycle"
+      ],
+      "sample_answer": "A deadlock happens when two or more threads or processes are each waiting on a resource held by another, forming a cycle where none of them can ever proceed. Four conditions all need to hold simultaneously for a deadlock to occur: mutual exclusion, where at least one resource can only be used by one holder at a time; hold and wait, where a process holds one resource while waiting to acquire another; no preemption, meaning a resource can't be forcibly taken from whoever holds it; and circular wait, where there's a cycle of processes each waiting on the next one's resource. Breaking any single one of these conditions — most commonly by imposing a consistent global ordering on lock acquisition to eliminate circular wait — prevents deadlock."
+    },
+    "follow_up_hint": "Ask them how enforcing a global lock-acquisition order specifically breaks the circular wait condition.",
+    "concept": "Concurrency",
+    "sub_concept": "Deadlock Conditions",
+    "expected_reasoning": "A strong candidate begins by defining the macroscopic state of a deadlock, focusing on permanent blocking due to interdependencies rather than mere resource contention. They then systematically break down the system model to identify the necessary structural preconditions rather than guessing at arbitrary failure modes. They trace how resource allocation policies interact across multiple concurrent entities to create a cycle of dependency. Finally, they articulate how each condition plays a distinct, necessary role in trapping the processes.",
+    "common_mistakes": [
+      "Stating that a deadlock is just a slow or frozen program without explaining the circular resource dependency.",
+      "Listing fewer than four conditions or confusing them with race conditions and starvation.",
+      "Describing solutions or prevention strategies instead of enumerating the foundational requirements for the state to exist.",
+      "Failing to explain how 'hold and wait' differs from 'no preemption', treating them as interchangeable.",
+      "Providing a purely abstract definition without explaining how processes and resources interact."
+    ],
+    "progressive_hints": [
+      "Think about what happens when multiple processes need shared resources simultaneously and none of them can finish.",
+      "Consider the system-level rules governing resource ownership, sharing, and forced release that allow processes to become permanently stuck.",
+      "Recall the classic set of four simultaneous axioms formulated by Coffman that mathematically guarantee a deadlock exists."
+    ],
+    "learning_objective": "The candidate should understand that deadlock is a structural failure of concurrent resource management governed by four necessary and jointly sufficient conditions."
+  },
+  {
+    "id": "conc-0003",
+    "question": "Explain the difference between a mutex and a semaphore.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "concurrency",
+      "operating-systems"
+    ],
+    "tech_keywords": [
+      "mutex",
+      "semaphore"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A mutex allows only one thread to hold it at a time, and typically must be released by the same thread that acquired it (ownership semantics)",
+        "A semaphore maintains a count and allows up to N threads to hold it concurrently; it doesn't have ownership semantics — any thread can 'release'/signal it",
+        "A binary semaphore (count=1) looks similar to a mutex but conceptually differs since it lacks ownership enforcement",
+        "Semaphores are used to limit concurrent access to a resource pool (e.g. a connection pool of size N), while mutexes protect a single critical section"
+      ],
+      "sample_answer": "A mutex allows exactly one thread to hold it at a time and typically enforces ownership — the same thread that acquired the lock must be the one to release it. A semaphore maintains an internal count and allows up to N threads to hold it concurrently, and doesn't enforce ownership — any thread can signal/release it, not necessarily the one that acquired it. A binary semaphore, with count 1, can look similar to a mutex at first glance, but conceptually they're different because of that missing ownership guarantee. In practice, I'd use a mutex to protect a single critical section that only one thread should execute at once, and a semaphore to limit concurrent access to a pool of N interchangeable resources, like a fixed-size database connection pool."
+    },
+    "follow_up_hint": "Ask them to design using a semaphore to limit at most 5 concurrent outgoing API calls.",
+    "concept": "Concurrency Control Primitives",
+    "sub_concept": "Mutex versus Semaphore semantics and use cases",
+    "expected_reasoning": "A strong candidate begins by defining the primary operational difference between the two primitives regarding concurrency limits. They explore the concept of ownership, explaining that mutexes are tied to a specific thread that must unlock what it locks, whereas semaphores operate on a signaling count without thread attachment. They then contrast their intended design patterns, identifying mutexes as ideal for mutual exclusion in critical sections and semaphores as signaling mechanisms for resource pools. Finally, they address the edge case of a binary semaphore, noting why it differs from a mutex despite having a similar capacity.",
+    "common_mistakes": [
+      "States that a binary semaphore and a mutex are identical without mentioning ownership semantics",
+      "Claims a semaphore can only have a value of 0 or 1",
+      "Asserts that the thread that acquires a semaphore must also be the one to release it",
+      "Provides dictionary definitions of the words rather than explaining runtime behavior and guarantees",
+      "Confuses synchronization signaling (semaphores) with mutual exclusion (mutexes)"
+    ],
+    "progressive_hints": [
+      "Think about who is allowed to release or signal each primitive once it has been acquired.",
+      "Consider what happens if Thread A acquires a lock versus when Thread A signals a resource that Thread B waits on.",
+      "Focus on the concept of 'ownership': which primitive enforces that the exact same thread must release it, and which one acts purely as a counter that any thread can increment?"
+    ],
+    "learning_objective": "Understand that mutexes enforce strict thread ownership for exclusive critical sections, while semaphores manage counting permits for broader coordination and resource pools."
+  },
+  {
+    "id": "conc-0004",
+    "question": "What is the difference between concurrency and parallelism?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "concurrency"
+    ],
+    "tech_keywords": [
+      "concurrency",
+      "parallelism"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Concurrency: structuring a program to handle multiple tasks that can be in progress at overlapping times, potentially interleaved on a single core",
+        "Parallelism: actually executing multiple tasks simultaneously on multiple cores/processors at the exact same instant",
+        "A single-core CPU can achieve concurrency (via time-slicing/context switching) but not true parallelism",
+        "Rob Pike's framing: concurrency is about dealing with lots of things at once (structure); parallelism is about doing lots of things at once (execution)"
+      ],
+      "sample_answer": "Concurrency is about structuring a program to deal with multiple tasks that are in progress during overlapping time periods, which can happen even on a single CPU core through time-slicing and context switching between tasks. Parallelism is about actually executing multiple tasks at the exact same physical instant, which requires multiple cores or processors. A single-core machine can be concurrent — juggling many tasks by rapidly switching between them — but it can't be truly parallel. As Rob Pike put it, concurrency is about dealing with lots of things at once, while parallelism is about doing lots of things at once — a well-designed concurrent program can take advantage of parallelism when multiple cores are available, but the two concepts are distinct."
+    },
+    "follow_up_hint": "Ask them to give an example of a concurrent program that provides no speedup from parallelism (e.g. I/O-bound single-core work).",
+    "concept": "Concurrency",
+    "sub_concept": "Concurrency versus Parallelism",
+    "expected_reasoning": "A strong candidate begins by defining the core objective of both terms, noting that everyday language often conflates them. They distinguish between how a program is structured to handle multiple tasks logically versus how those tasks are physically executed by hardware. They then introduce the dimension of physical execution, explaining how hardware resources like multiple CPU cores dictate whether tasks overlap in time or run at the exact same instant. Finally, they synthesize these ideas using a clear analogy or Rob Pike's concise framing of structure versus execution.",
+    "common_mistakes": [
+      "Treating concurrency and parallelism as interchangeable synonyms.",
+      "Stating that concurrency requires multiple CPU cores to function.",
+      "Defining parallelism purely as software threads without mentioning hardware execution.",
+      "Giving a vague definition like 'concurrency is fast and parallelism is faster'.",
+      "Providing the dictionary definitions without explaining how they apply to program execution."
+    ],
+    "progressive_hints": [
+      "Think about whether two tasks need separate hardware to make progress, or if they can share a single processor.",
+      "Consider the difference between how a program is written to manage multiple things at once, versus what the CPU is physically doing at any single clock cycle.",
+      "Recall Rob Pike's famous distinction: one is about program structure and dealing with lots of things, while the other is about simultaneous execution."
+    ],
+    "learning_objective": "Understand that concurrency is about program structure and dealing with multiple tasks at overlapping times, whereas parallelism is about physical execution on multiple cores at the exact same instant."
+  },
+  {
+    "id": "conc-0005",
+    "question": "What is the Global Interpreter Lock (GIL) in Python, and how does it affect multi-threaded CPU-bound code?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "concurrency",
+      "python"
+    ],
+    "tech_keywords": [
+      "python",
+      "gil"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "The GIL ensures only one thread executes Python bytecode at a time within a single CPython process, even on a multi-core machine",
+        "This means multi-threading in CPython doesn't provide a speedup for CPU-bound work — threads take turns rather than running truly in parallel",
+        "I/O-bound work still benefits from threading, since the GIL is released during blocking I/O operations, letting other threads run while one waits",
+        "Workarounds for CPU-bound parallelism: multiprocessing (separate processes, separate GILs, separate memory), or moving hot code to a C extension/library that releases the GIL (e.g. NumPy)"
+      ],
+      "sample_answer": "The GIL in CPython ensures that only one thread can execute Python bytecode at any given moment within a single process, even if the machine has multiple cores. This means using multiple threads for CPU-bound Python code, like heavy numeric computation in pure Python, doesn't give you a real speedup — the threads just take turns on one core rather than running truly in parallel. Threading is still useful in Python for I/O-bound work, though, since the GIL is released while a thread is blocked waiting on I/O, letting other threads run during that wait. To actually get CPU-bound parallelism, you'd use the multiprocessing module to spawn separate processes, each with its own interpreter and GIL, or rely on libraries like NumPy that release the GIL internally while running their C-level computations."
+    },
+    "follow_up_hint": "Ask them when they'd choose multiprocessing over asyncio or threading for a given Python workload.",
+    "concept": "Global Interpreter Lock",
+    "sub_concept": "CPython Concurrency Limitations",
+    "expected_reasoning": "A strong candidate begins by defining the GIL as a mutex used by CPython to protect memory management and prevent concurrent access to Python objects. They then reason about how this mechanism impacts different types of workloads by analyzing what happens during execution. They deduce that for CPU-bound tasks, threads contend for the single lock rather than running in parallel, rendering multi-threading ineffective for performance gains. Finally, they contrast this with I/O-bound operations and alternative paradigms like multiprocessing to demonstrate a complete systems-level understanding.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as just saying 'Python has no true multi-threading'",
+      "Claims that Python cannot use multiple CPU cores at all under any circumstances",
+      "Confuses multi-threading with multi-processing and assumes threads have completely separate memory spaces",
+      "Believes that multi-threading speeds up CPU-bound tasks in standard Python",
+      "Fails to mention that the GIL is released during I/O operations",
+      "Assumes the GIL applies to all Python implementations, not just CPython"
+    ],
+    "progressive_hints": [
+      "What fundamental resource or memory constraint is the Python interpreter protecting at the C level?",
+      "Think about what happens when two threads try to manipulate Python object reference counts simultaneously on a multi-core CPU.",
+      "Consider how the interpreter manages thread execution states and why it forces them to take turns, then distinguish between tasks waiting on external devices versus pure computation."
+    ],
+    "learning_objective": "Understand why CPython uses the Global Interpreter Lock, how it restricts CPU-bound multi-threading, and when to use alternative concurrency models like multiprocessing."
+  }
 ]

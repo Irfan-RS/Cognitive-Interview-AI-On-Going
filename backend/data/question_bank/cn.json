@@ -4,10 +4,24 @@
     "question": "Explain the OSI model's seven layers and give an example protocol at each.",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["general_sde", "backend"],
-    "topics": ["networking-fundamentals", "osi-model"],
-    "tech_keywords": ["computer-networks", "networking"],
-    "companies_common": ["Amazon", "Cisco", "Infosys", "TCS"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "networking-fundamentals",
+      "osi-model"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "networking"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Cisco",
+      "Infosys",
+      "TCS"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -19,17 +33,46 @@
       ],
       "sample_answer": "Physical handles raw bit transmission over the medium. Data Link handles framing and local addressing via MAC addresses, e.g. Ethernet. Network handles logical addressing and routing across networks via IP. Transport provides end-to-end delivery guarantees via TCP (reliable) or UDP (unreliable, low-overhead). Session manages connections/sessions, Presentation handles data formatting/encryption, and Application is where protocols like HTTP, DNS, and FTP operate."
     },
-    "follow_up_hint": "Ask how the simpler 4-layer TCP/IP model maps onto the 7-layer OSI model."
+    "follow_up_hint": "Ask how the simpler 4-layer TCP/IP model maps onto the 7-layer OSI model.",
+    "concept": "OSI Model",
+    "sub_concept": "Layered Network Architecture and Protocol Mapping",
+    "expected_reasoning": "A strong candidate begins by structuring their explanation from the bottom up or top down, explicitly recognizing that each layer encapsulates data and provides services to the layer above it. They proceed by systematically defining the primary responsibility of each layer, moving from physical hardware transmission to logical routing, reliable transport, and finally user-facing application services. For each layer, they do not just name it, but briefly articulate its core function and map it to a widely recognized protocol or standard. Finally, they tie the abstraction together by tracing how data moves through these conceptual boundaries during a standard network transaction.",
+    "common_mistakes": [
+      "Listing the layers out of order without acknowledging the bottom-up or top-down hierarchical flow.",
+      "Stating the names of the layers with no justification or description of their functions.",
+      "Confusing the OSI model layers with the TCP/IP four-layer model and blending them incorrectly.",
+      "Providing hardware components (like a switch or router) instead of protocol examples for specific layers.",
+      "Grouping the top three layers (Session, Presentation, Application) into a single nebulous concept without distinguishing their unique roles."
+    ],
+    "progressive_hints": [
+      "Think about how data travels from a physical cable all the way up to a web browser. What are the natural conceptual steps that data must pass through?",
+      "You are missing the distinction between moving data locally across a physical medium versus routing it globally across distinct networks. How does the model separate these concerns?",
+      "Consider how the lower layers handle raw transmission and routing, while the upper layers handle reliability, formatting, and the final application interface. Can you map a protocol like TCP or IP to its specific layer?"
+    ],
+    "learning_objective": "The candidate should understand how network communication is modularized into abstract layers of responsibility, allowing different protocols to operate independently at each stage of data transmission."
   },
   {
     "id": "cn-0002",
     "question": "Explain the TCP three-way handshake, and why it's necessary.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["tcp-ip"],
-    "tech_keywords": ["computer-networks", "tcp", "networking"],
-    "companies_common": ["Amazon", "Microsoft", "Cisco"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "tcp-ip"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "tcp",
+      "networking"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Cisco"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -41,17 +84,46 @@
       ],
       "sample_answer": "The client sends a SYN packet with an initial sequence number. The server responds with SYN-ACK, acknowledging the client's sequence number and providing its own. The client responds with an ACK, acknowledging the server's sequence number — at this point both sides have confirmed bidirectional communication and agreed on starting sequence numbers, which TCP needs for reliable, ordered, duplicate-free delivery. This confirms the connection is genuinely two-way before data transfer begins."
     },
-    "follow_up_hint": "Ask about the TCP connection termination process and the TIME_WAIT state."
+    "follow_up_hint": "Ask about the TCP connection termination process and the TIME_WAIT state.",
+    "concept": "Transmission Control Protocol",
+    "sub_concept": "Connection Establishment and Sequence Synchronization",
+    "expected_reasoning": "A strong candidate begins by mapping out the bidirectional nature of network communication, noting that a sender cannot assume a receiver is ready without confirmation. They trace the flow of state from the initial connection request to the exchange of sequence numbers, recognizing that both endpoints must independently verify their own and the other's ability to transmit and receive data. Rather than just listing packet names, they explain how sequence numbers protect against old, delayed packets from previous sessions interfering with the new connection. Finally, they contrast this setup phase with the connection teardown process to demonstrate a complete lifecycle understanding.",
+    "common_mistakes": [
+      "Reciting 'SYN, SYN-ACK, ACK' as a pure memorization task without explaining the underlying bidirectional state synchronization.",
+      "Failing to mention initial sequence numbers and why agreeing on them matters for ordering and reliability.",
+      "Confusing the three-way handshake with the four-way connection termination process.",
+      "Assuming the handshake is only about security or authentication rather than transport reliability and state tracking.",
+      "Stating that data can be sent immediately in the first SYN packet without mentioning TCP Fast Open."
+    ],
+    "progressive_hints": [
+      "Think about what a client and server need to establish before they can trust that data packets will arrive in order.",
+      "Consider how each side independently proves to the other that it can both successfully send and receive messages.",
+      "Focus on how sequence numbers are initialized and why both directions need separate synchronization steps to prevent out-of-order or duplicate packet confusion."
+    ],
+    "learning_objective": "Understand how the TCP three-way handshake establishes reliable, bidirectional communication and synchronizes initial sequence numbers between client and server."
   },
   {
     "id": "cn-0003",
     "question": "What is the difference between TCP and UDP, and when would you choose one over the other?",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["general_sde", "backend"],
-    "topics": ["tcp-ip"],
-    "tech_keywords": ["computer-networks", "tcp", "udp"],
-    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "tcp-ip"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "tcp",
+      "udp"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -63,17 +135,52 @@
       ],
       "sample_answer": "TCP establishes a connection, guarantees ordered and reliable delivery via acknowledgments and retransmission, and manages flow/congestion control — but that adds overhead and latency. UDP is connectionless and 'fire and forget' with no delivery guarantees, giving lower latency and overhead. TCP fits use cases needing correctness, like web APIs and file transfer; UDP fits latency-sensitive, loss-tolerant use cases like live video calls, multiplayer gaming, and DNS lookups. QUIC (used by HTTP/3) is a modern middle ground, building custom reliability on top of UDP."
     },
-    "follow_up_hint": "Ask why DNS typically uses UDP but falls back to TCP for large responses."
+    "follow_up_hint": "Ask why DNS typically uses UDP but falls back to TCP for large responses.",
+    "concept": "Transport Layer Protocols",
+    "sub_concept": "TCP and UDP trade-offs between reliability and latency",
+    "expected_reasoning": "A strong candidate begins by contrasting the fundamental design goals of both protocols, focusing on connection state and reliability guarantees. They systematically analyze the overhead introduced by TCP's handshakes, acknowledgments, and retransmissions versus UDP's lightweight, fire-and-forget nature. Rather than just listing features, they map these technical differences directly to real-world application constraints like data integrity versus real-time delivery. Finally, they synthesize their analysis by providing concrete scenarios where each protocol is the optimal choice, demonstrating an understanding of systems trade-offs.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely saying 'TCP is reliable and UDP is fast'.",
+      "Confuses transport layer protocols with application layer protocols like HTTP.",
+      "Claims UDP is completely insecure or unusable for modern applications because it lacks reliability.",
+      "Fails to mention congestion control and flow control as key differences causing TCP's higher latency.",
+      "Lists use cases without explaining why the underlying protocol trade-offs fit that specific domain."
+    ],
+    "progressive_hints": [
+      "What are the primary priorities an application designer has to balance when sending data across a network?",
+      "Think about what happens at the packet level when a piece of data is dropped in transit. How does each protocol handle that situation differently?",
+      "If an application is streaming live video where a dropped frame is better skipped than retransmitted, which protocol's guarantees work against you?"
+    ],
+    "learning_objective": "Understand how to evaluate network protocol trade-offs between reliability and latency to select the correct transport mechanism for a given application requirement."
   },
   {
     "id": "cn-0004",
     "question": "Walk through what happens, step by step, when you type a URL into a browser and press enter.",
     "type": "scenario",
     "difficulty": 2,
-    "roles": ["general_sde", "frontend", "backend", "fullstack"],
-    "topics": ["networking-fundamentals", "http", "dns"],
-    "tech_keywords": ["computer-networks", "http", "dns", "tcp"],
-    "companies_common": ["Amazon", "Google", "Microsoft", "Meta"],
+    "roles": [
+      "general_sde",
+      "frontend",
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "networking-fundamentals",
+      "http",
+      "dns"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "http",
+      "dns",
+      "tcp"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft",
+      "Meta"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -85,17 +192,45 @@
       ],
       "sample_answer": "The browser first checks its cache and does a DNS lookup to resolve the domain to an IP address, walking through recursive resolvers if not cached. It then opens a TCP connection via the three-way handshake, and if HTTPS, performs a TLS handshake to negotiate encryption. It sends an HTTP request; the server routes it, runs application logic (possibly hitting a database or cache), and returns a response. The browser parses the HTML, discovers linked resources like CSS/JS/images, fetches them (often in parallel, especially with HTTP/2 multiplexing), and renders the final page, applying styles and running scripts."
     },
-    "follow_up_hint": "Ask them to go deeper on any one step, e.g. exactly how the TLS handshake negotiates a shared key."
+    "follow_up_hint": "Ask them to go deeper on any one step, e.g. exactly how the TLS handshake negotiates a shared key.",
+    "concept": "Web Architecture",
+    "sub_concept": "End-to-End Request Lifecycle",
+    "expected_reasoning": "A strong candidate begins by structuring the journey chronologically, moving from user intent at the client layer down to physical network routing, security protocols, server-side execution, and finally client-side rendering. They systematically address each layer of the OSI or TCP/IP stack rather than jumping straight from typing the URL to the page appearing. They explicitly call out intermediate state checks, such as local caches and DNS resolution paths, before establishing network connections and negotiating encryption. Finally, they break down how the server processes the payload and how the browser handles asynchronous asset fetching and layout construction.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply listing 'DNS, TCP, HTTP, Render' without explaining the mechanics or triggers of each phase.",
+      "Confuses the order of operations, such as claiming the browser initiates a TCP handshake before resolving the IP address via DNS.",
+      "Ignores security handshake steps entirely, skipping the distinction between plain HTTP and modern TLS-encrypted connections.",
+      "Treats the server as a black box that instantly outputs a rendered view, omitting server-side processing, database queries, and routing logic.",
+      "Neglects client-side rendering details, failing to mention how HTML parsing triggers secondary requests for stylesheets, scripts, and images."
+    ],
+    "progressive_hints": [
+      "Before any data can travel across the internet, what does the browser need to figure out about the domain name, and where might it look first?",
+      "Once the browser has the destination IP address, think about the transport and security layers required to establish a secure communication channel before sending application data.",
+      "After the server returns the initial HTML document, the job isn't done; what does the browser do when it encounters links to external stylesheets, scripts, and images?"
+    ],
+    "learning_objective": "Understand the complete multi-layered sequence of networking, security, server processing, and browser rendering events that occur between entering a URL and viewing a webpage."
   },
   {
     "id": "cn-0005",
     "question": "Explain what DNS is and how a recursive DNS lookup resolves a domain name to an IP address.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["dns"],
-    "tech_keywords": ["computer-networks", "dns"],
-    "companies_common": ["Amazon", "Google", "Cloudflare"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "dns"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "dns"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Cloudflare"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -107,17 +242,49 @@
       ],
       "sample_answer": "DNS is a hierarchical, distributed system mapping domain names to IP addresses. A recursive resolver, when asked to resolve a domain it doesn't have cached, first queries a root server, which points it to the TLD server (e.g. for .com), which points it to the domain's authoritative name server, which finally returns the actual IP. The resolver caches this result (respecting the record's TTL) so subsequent lookups are fast until it expires. Browsers and operating systems also maintain their own local caches on top of this."
     },
-    "follow_up_hint": "Ask what an A record versus a CNAME record is, and why CNAMEs can't coexist with other records at the same name."
+    "follow_up_hint": "Ask what an A record versus a CNAME record is, and why CNAMEs can't coexist with other records at the same name.",
+    "concept": "Domain Name System",
+    "sub_concept": "Recursive Resolution Hierarchy",
+    "expected_reasoning": "A strong candidate begins by defining DNS as a distributed hierarchical database and framing the core problem as translating human-readable names to machine-routable IP addresses. They then trace the step-by-step traversal path, systematically walking from local and OS caches up through the recursive resolver, root servers, Top-Level Domain (TLD) servers, and finally the authoritative namespace. They emphasize the distinct roles of recursive versus authoritative servers rather than treating the lookup as a single monolithic query. Finally, they explain how performance and resilience are maintained across this global network through time-to-live (TTL) caching at each layer.",
+    "common_mistakes": [
+      "Confusing the role of a recursive resolver with an authoritative name server",
+      "Stating that a single server or database holds all domain name mappings globally",
+      "Omitting intermediate resolution steps like root and TLD name servers and jumping straight from client to target IP",
+      "Forgetting to mention caching and TTL mechanisms, which are critical to how the DNS infrastructure functions at scale",
+      "Treating the lookup as a flat peer-to-peer query rather than a strict hierarchical delegation chain"
+    ],
+    "progressive_hints": [
+      "When a user types a URL into a browser, how does your machine figure out which specific machine on the internet to talk to?",
+      "Think about what happens if your local resolver doesn't know the answer directly. Who does it ask first, and how does it find out who holds the final record?",
+      "Consider the path through root, TLD, and authoritative servers, and explain what each tier hands back to the recursive resolver before the final IP is returned."
+    ],
+    "learning_objective": "Understand how the DNS hierarchy distributes trust and resolution data globally through a chain of delegations managed by root, TLD, and authoritative servers."
   },
   {
     "id": "cn-0006",
     "question": "What is the difference between HTTP/1.1, HTTP/2, and HTTP/3?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend", "frontend"],
-    "topics": ["http"],
-    "tech_keywords": ["computer-networks", "http", "http2", "http3"],
-    "companies_common": ["Google", "Amazon", "Cloudflare", "Meta"],
+    "roles": [
+      "general_sde",
+      "backend",
+      "frontend"
+    ],
+    "topics": [
+      "http"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "http",
+      "http2",
+      "http3"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon",
+      "Cloudflare",
+      "Meta"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -129,17 +296,50 @@
       ],
       "sample_answer": "HTTP/1.1 is text-based and processes one request at a time per connection, so browsers open multiple parallel connections to work around head-of-line blocking. HTTP/2 introduces binary framing and multiplexes many requests over a single TCP connection with header compression, but a single lost TCP packet still stalls all multiplexed streams on that connection since TCP itself guarantees strict ordering. HTTP/3 replaces TCP with QUIC over UDP, giving each stream independent loss recovery so one lost packet only affects its own stream, and also integrates TLS 1.3 for faster connection setup."
     },
-    "follow_up_hint": "Ask them to explain exactly why QUIC solves the head-of-line blocking problem that HTTP/2 over TCP still has."
+    "follow_up_hint": "Ask them to explain exactly why QUIC solves the head-of-line blocking problem that HTTP/2 over TCP still has.",
+    "concept": "Network Protocol Evolution",
+    "sub_concept": "HTTP Version Differences and Transport Layer Mechanics",
+    "expected_reasoning": "A strong candidate structures their answer chronologically, evaluating how each protocol iteration solved the bottlenecks of the previous one. They begin by analyzing HTTP/1.1's text-based nature and its transport constraint—head-of-line blocking over TCP—which necessitated multiple connections. Next, they explain how HTTP/2 addressed application-layer concurrency via binary framing and multiplexing over a single connection, while critically noting that it introduced a new bottleneck at the transport layer: TCP packet loss stalls all streams. Finally, they reason about HTTP/3's shift away from TCP to QUIC over UDP, explaining how independent stream recovery eliminates transport-level head-of-line blocking and integrates handshake optimization.",
+    "common_mistakes": [
+      "Listing features of HTTP/2 and HTTP/3 from memory without explaining the specific limitations of the prior version that motivated them",
+      "Confusing application-layer head-of-line blocking in HTTP/1.1 with transport-layer head-of-line blocking in HTTP/2",
+      "Stating that HTTP/3 runs over TCP instead of UDP/QUIC",
+      "Treating HTTP/2 server push and header compression as the primary reasons for upgrading rather than transport efficiency",
+      "Failing to mention how packet loss impacts multiplexed streams differently in HTTP/2 versus HTTP/3"
+    ],
+    "progressive_hints": [
+      "Think about the transport layer: what underlying protocol does HTTP/1.1 and HTTP/2 rely on, and how does that affect how multiple requests share a connection?",
+      "Consider what happens when a single TCP packet is dropped in the middle of transmitting multiple multiplexed streams over an HTTP/2 connection.",
+      "Look at how shifting from TCP to a UDP-based transport layer allows individual data streams to recover from packet loss independently without stalling the entire connection."
+    ],
+    "learning_objective": "Understand how web protocols have evolved from text-based serial requests over TCP to binary multiplexed streams and finally to UDP-based transports to eliminate head-of-line blocking."
   },
   {
     "id": "cn-0007",
     "question": "Explain how HTTPS/TLS works: what happens during the handshake, and what does it actually protect against?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["security", "tls"],
-    "tech_keywords": ["computer-networks", "tls", "ssl", "security", "https"],
-    "companies_common": ["Amazon", "Google", "Cloudflare", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "security",
+      "tls"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "tls",
+      "ssl",
+      "security",
+      "https"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Cloudflare",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -151,17 +351,48 @@
       ],
       "sample_answer": "During the TLS handshake, the client and server agree on a cipher suite, and the server presents a certificate signed by a trusted Certificate Authority to prove its identity. They use asymmetric cryptography (often via a Diffie-Hellman exchange) to securely agree on a shared symmetric session key without ever transmitting it directly, then switch to fast symmetric encryption for the actual data. This protects confidentiality (eavesdroppers can't read the data), integrity (tampering is detectable), and authenticity (the certificate chain proves you're really talking to the intended server, preventing man-in-the-middle attacks)."
     },
-    "follow_up_hint": "Ask what happens if a certificate is self-signed or expired, and why browsers reject those by default."
+    "follow_up_hint": "Ask what happens if a certificate is self-signed or expired, and why browsers reject those by default.",
+    "concept": "Transport Layer Security",
+    "sub_concept": "Handshake Protocol and Security Guarantees",
+    "expected_reasoning": "A strong candidate begins by separating the initial connection setup from the ongoing data transmission phases. They explain how asymmetric cryptography is used solely to securely agree on a shared secret without exposing it on the wire. Next, they clarify that performance constraints require switching to fast symmetric encryption for all subsequent application data. Finally, they tie the handshake mechanics to the core security guarantees—confidentiality, integrity, and authenticity—by emphasizing the critical role of certificate validation.",
+    "common_mistakes": [
+      "States that the entire session is encrypted using asymmetric cryptography like RSA",
+      "Confuses the certificate's role, claiming it encrypts the actual web traffic rather than establishing identity and passing keys",
+      "Leaves out the Certificate Authority chain of trust when discussing how impersonation is prevented",
+      "Fails to distinguish between confidentiality, integrity, and authenticity as separate guarantees",
+      "States the conclusion with no justification of how the handshake actually establishes the shared key"
+    ],
+    "progressive_hints": [
+      "Consider what the fundamental performance trade-off is between asymmetric and symmetric cryptography during a long-lived connection.",
+      "Think about how two parties can securely agree on a shared secret over a public channel where everyone can read the traffic.",
+      "If a server sends its public certificate to the client, how does the client verify that the server is actually who it claims to be, and how does this enable the creation of a session key?"
+    ],
+    "learning_objective": "Understand how the TLS handshake combines asymmetric and symmetric cryptography to balance security and performance while establishing trust over an insecure network."
   },
   {
     "id": "cn-0008",
     "question": "What is a load balancer, and compare Layer 4 versus Layer 7 load balancing.",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["load-balancing", "distributed-systems"],
-    "tech_keywords": ["computer-networks", "load-balancing", "distributed-systems"],
-    "companies_common": ["Amazon", "Google", "Netflix", "Uber"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "load-balancing",
+      "distributed-systems"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "load-balancing",
+      "distributed-systems"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Netflix",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -173,17 +404,46 @@
       ],
       "sample_answer": "A load balancer spreads incoming traffic across multiple backend servers so no single server is overwhelmed and traffic can survive individual server failures. Layer 4 load balancing works at the transport layer, routing based on IP and port without looking at the actual request content — it's fast and protocol-agnostic. Layer 7 load balancing inspects the actual HTTP request (path, headers, cookies) to route intelligently, e.g. sending /api requests to one service and /static to another, or keeping a user's session sticky to one server — at the cost of more CPU overhead per request. Common algorithms include round robin, least connections, and consistent hashing."
     },
-    "follow_up_hint": "Ask them to explain consistent hashing and why it's preferred over simple modulo-based hashing for load balancing caches."
+    "follow_up_hint": "Ask them to explain consistent hashing and why it's preferred over simple modulo-based hashing for load balancing caches.",
+    "concept": "Load Balancing",
+    "sub_concept": "Layer 4 vs Layer 7 Load Balancing",
+    "expected_reasoning": "A strong candidate begins by defining the primary function of a load balancer as a traffic distribution mechanism ensuring high availability and scalability across backend pools. They then structure their comparison by evaluating where decisions are made in the OSI networking stack. For Layer 4, they analyze transport-layer mechanics like IP and port routing, noting its speed and protocol agnosticism. For Layer 7, they examine application-layer inspection—such as HTTP headers and URL paths—and weigh the richer routing capabilities (like path-based routing or SSL termination) against the higher CPU and memory overhead required to parse the payloads.",
+    "common_mistakes": [
+      "States that Layer 7 is always better than Layer 4 without mentioning the performance and latency trade-offs",
+      "Confuses OSI layers, claiming Layer 4 inspects URL paths and cookies",
+      "Fails to mention how health checks and failover play a role in load balancing",
+      "Gives a purely textbook definition of both layers without explaining the practical architectural use cases for each",
+      "Omits any mention of algorithms used by load balancers, such as round robin or least connections"
+    ],
+    "progressive_hints": [
+      "Think about where a network packet is inspected versus where an HTTP request is parsed in the OSI model.",
+      "Consider how much a router needs to look inside a packet to decide which server gets it versus how an API gateway routes traffic based on URL paths.",
+      "Contrast the speed and lower resource overhead of processing only transport-layer headers against the CPU cost of terminating TLS and inspecting application payloads for smart routing."
+    ],
+    "learning_objective": "Understand how to choose between Layer 4 and Layer 7 load balancing by weighing routing intelligence and application awareness against processing overhead and speed."
   },
   {
     "id": "cn-0009",
     "question": "What is NAT (Network Address Translation), and why is it needed given the limited size of IPv4 address space?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["ip-addressing"],
-    "tech_keywords": ["computer-networks", "networking", "ipv4"],
-    "companies_common": ["Cisco", "Amazon", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "ip-addressing"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "networking",
+      "ipv4"
+    ],
+    "companies_common": [
+      "Cisco",
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -195,17 +455,49 @@
       ],
       "sample_answer": "NAT sits at a network's boundary and translates private internal IP addresses to a shared public IP address, using port numbers to track which internal device a given connection belongs to. This lets an entire home or office network share a single public IPv4 address, which is a major reason IPv4's limited address space has lasted this long despite far more devices existing than available addresses. It also incidentally hides internal network structure from the outside, though it's not a real substitute for a firewall. IPv6's vastly larger address space is the long-term solution that reduces the need for NAT."
     },
-    "follow_up_hint": "Ask how NAT complicates peer-to-peer connections and what techniques (e.g. STUN/TURN) work around it."
+    "follow_up_hint": "Ask how NAT complicates peer-to-peer connections and what techniques (e.g. STUN/TURN) work around it.",
+    "concept": "Network Address Translation",
+    "sub_concept": "IPv4 Conservation and Port Mapping",
+    "expected_reasoning": "A strong candidate begins by identifying the core structural limitation of IPv4 and why running out of addresses became a critical bottleneck. They then trace the journey of an outbound packet, explaining how a router at the network boundary alters source IP headers to share a single public address. Next, they deduce how multiple internal devices can share that same public IP without collisions by utilizing transport-layer port numbers for multiplexing. Finally, they weigh the secondary implications, noting both the incidental security benefits and the architectural complications it introduces for end-to-end connectivity.",
+    "common_mistakes": [
+      "States the conclusion that NAT saves IP addresses with no justification of how it actually works",
+      "Confuses NAT with DHCP, assuming it is responsible for assigning private IPs to devices rather than routing between private and public spaces",
+      "Ignores how port mapping works, leaving it unexplained how a router distinguishes which internal device receives a returning packet",
+      "Treats NAT as a robust security firewall rather than an address translation mechanism that happens to block unsolicited inbound traffic",
+      "Fails to mention IPv4 exhaustion context or why this workaround was necessary in the first place"
+    ],
+    "progressive_hints": [
+      "Consider what happens to a packet when a device on your home network tries to communicate with a server on the public internet.",
+      "Think about how your home router handles multiple devices accessing the internet simultaneously while using only a single public IP address assigned by your ISP.",
+      "Examine how the router uses transport layer information—beyond just IP addresses—to keep track of distinct connections originating from different internal devices."
+    ],
+    "learning_objective": "The candidate should understand how network address translation extends the lifespan of IPv4 by mapping private spaces to public addresses via port multiplexing at the network boundary."
   },
   {
     "id": "cn-0010",
     "question": "Explain what a WebSocket is and why it's used instead of repeated HTTP polling.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "frontend", "backend"],
-    "topics": ["websockets", "real-time"],
-    "tech_keywords": ["computer-networks", "websocket", "real-time"],
-    "companies_common": ["Amazon", "Meta", "Uber", "Slack"],
+    "roles": [
+      "general_sde",
+      "frontend",
+      "backend"
+    ],
+    "topics": [
+      "websockets",
+      "real-time"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "websocket",
+      "real-time"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta",
+      "Uber",
+      "Slack"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -217,17 +509,50 @@
       ],
       "sample_answer": "A WebSocket starts as a normal HTTP request that 'upgrades' into a persistent, full-duplex TCP connection, letting both the client and server send messages at any time without the overhead of a new request/response cycle. This is far more efficient than HTTP polling, where the client repeatedly asks 'anything new?' even when the answer is usually no, or long-polling, which holds requests open but still re-establishes them repeatedly. WebSockets are the standard choice for real-time features like chat, live notifications, and collaborative editing, though they require the server to hold many persistent stateful connections open, which changes capacity planning compared to stateless HTTP."
     },
-    "follow_up_hint": "Ask how they'd scale WebSocket connections across multiple backend server instances (e.g. sticky sessions or a pub/sub backplane)."
+    "follow_up_hint": "Ask how they'd scale WebSocket connections across multiple backend server instances (e.g. sticky sessions or a pub/sub backplane).",
+    "concept": "WebSocket Protocol",
+    "sub_concept": "Persistent Full-Duplex Connections versus HTTP Polling",
+    "expected_reasoning": "A strong candidate begins by analyzing the structural limitations of standard HTTP, which is strictly request-response and stateless. They then examine how HTTP polling attempts to solve real-time requirements by repeatedly sending requests, and identify the glaring inefficiency of bandwidth and CPU overhead when most of those responses contain no new data. From there, they explain the WebSocket handshake via HTTP upgrade that establishes a long-lived, persistent TCP connection. Finally, they weigh the architectural trade-offs, noting that stateful persistent connections shift resource management burdens from request-based concurrency to connection-based concurrency.",
+    "common_mistakes": [
+      "Stating that WebSockets replace HTTP entirely without explaining that they rely on HTTP for the initial handshake.",
+      "Claiming WebSockets are always faster than HTTP without qualifying the use case or mentioning the overhead of persistent connection state.",
+      "Failing to mention full-duplex communication and treating WebSockets merely as a fast polling mechanism.",
+      "Ignoring the network overhead and latency drawbacks of HTTP polling.",
+      "Giving a shallow definition like 'WebSockets are just for real-time chat' without explaining the underlying transport mechanism.",
+      "Forgetting to address the resource management trade-offs of maintaining thousands of open TCP connections on the server."
+    ],
+    "progressive_hints": [
+      "Think about what happens at the network layer when a client wants to check for new updates every two seconds using standard HTTP.",
+      "Consider the repeated headers and handshake overhead of those frequent requests, and what percentage of them actually return useful new data.",
+      "If you wanted the server to be able to initiate communication to the client spontaneously without waiting for a request, how would the underlying TCP connection need to behave?"
+    ],
+    "learning_objective": "Understand how WebSockets eliminate the overhead of HTTP polling by establishing a persistent, full-duplex communication channel over TCP, and weigh the architectural trade-offs of stateful connection management."
   },
   {
     "id": "cn-0011",
     "question": "What is a CDN (Content Delivery Network), and how does it reduce latency for users far from the origin server?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "frontend", "backend"],
-    "topics": ["cdn", "caching"],
-    "tech_keywords": ["computer-networks", "cdn", "caching"],
-    "companies_common": ["Amazon", "Cloudflare", "Netflix", "Google"],
+    "roles": [
+      "general_sde",
+      "frontend",
+      "backend"
+    ],
+    "topics": [
+      "cdn",
+      "caching"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "cdn",
+      "caching"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Cloudflare",
+      "Netflix",
+      "Google"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -239,17 +564,46 @@
       ],
       "sample_answer": "A CDN maintains servers at many geographically distributed points of presence and caches content there, so a user's request is served from a nearby edge location rather than traveling all the way to the origin server — cutting round-trip latency significantly. This also offloads traffic from the origin, since most requests never reach it. Cache freshness is controlled via TTLs and cache-control headers, and content changes usually need explicit invalidation to propagate quickly. Beyond static asset caching, CDNs are also commonly used for DDoS mitigation and even accelerating dynamic content via optimized routing."
     },
-    "follow_up_hint": "Ask how a CDN decides which edge server is 'nearest' to a given user."
+    "follow_up_hint": "Ask how a CDN decides which edge server is 'nearest' to a given user.",
+    "concept": "Content Delivery Network",
+    "sub_concept": "Geographic caching and latency reduction",
+    "expected_reasoning": "A strong candidate begins by identifying the primary bottleneck in web delivery: network propagation delay caused by physical distance between the user and the origin server. They then derive how deploying geographically distributed edge servers shortens this physical distance and reduces network hops. They explain the routing mechanism that directs a user's request to the closest PoP, and discuss how caching policies like TTLs balance freshness against origin load. Finally, they touch upon secondary architectural benefits such as DDoS protection and offloading origin compute.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying 'CDNs make websites faster by caching' without explaining network distance or round-trip time.",
+      "Confuses a CDN with a database cache or application-level in-memory cache like Redis.",
+      "Fails to mention how requests are actually routed to the nearest server (e.g., Anycast or GeoDNS).",
+      "Ignores the challenge of cache invalidation and how stale content is handled.",
+      "Treats CDNs as only useful for static images and files, completely missing dynamic content acceleration and security benefits."
+    ],
+    "progressive_hints": [
+      "What is the physical factor that inherently limits how fast a request can travel from a server in Virginia to a user in Tokyo?",
+      "You've identified that distance creates latency. If you wanted to bring the data closer to the user physically, where would you store it and how would you decide which server answers a given request?",
+      "Think about how routing protocols direct traffic to the nearest node, and consider what happens when content changes at the origin while copies exist out on the network."
+    ],
+    "learning_objective": "The candidate should understand how distributed edge architecture minimizes network round-trip time, offloads origin infrastructure, and introduces caching and consistency trade-offs."
   },
   {
     "id": "cn-0012",
     "question": "Explain the difference between a forward proxy and a reverse proxy.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["networking-fundamentals"],
-    "tech_keywords": ["computer-networks", "proxy", "nginx"],
-    "companies_common": ["Amazon", "Cloudflare", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "networking-fundamentals"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "proxy",
+      "nginx"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Cloudflare",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -261,17 +615,46 @@
       ],
       "sample_answer": "A forward proxy sits between clients and the internet, making outbound requests on the client's behalf — often used for anonymizing traffic, enforcing access policies, or caching for a group of internal users, like a corporate network's outbound proxy. A reverse proxy sits in front of one or more backend servers, receiving inbound client requests and forwarding them to the appropriate backend — commonly used for load balancing, TLS termination, and hiding the backend architecture from clients, like nginx or an API gateway routing to multiple microservices."
     },
-    "follow_up_hint": "Ask where an API gateway fits relative to a reverse proxy, and what extra responsibilities it typically adds."
+    "follow_up_hint": "Ask where an API gateway fits relative to a reverse proxy, and what extra responsibilities it typically adds.",
+    "concept": "Proxy Servers",
+    "sub_concept": "Forward vs Reverse Proxy Architecture",
+    "expected_reasoning": "A strong candidate begins by establishing the reference frame, explicitly defining who is being represented: the client or the server. They trace the lifecycle of a request from origin to destination, identifying where the proxy is placed in the network topology. Rather than just listing use cases, they contrast the perspectives, explaining that a forward proxy masks client identity from the internet, while a reverse proxy masks backend infrastructure from the client. Finally, they synthesize how shared features like caching or SSL termination manifest differently depending on which side of the network boundary the proxy resides.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying 'forward is for clients, reverse is for servers' without explaining the architecture.",
+      "Confuses the direction of traffic protection, claiming a forward proxy protects the backend servers from attacks.",
+      "Assumes caching is exclusive to reverse proxies and ignores forward proxy caching capabilities.",
+      "Fails to provide concrete, real-world examples like corporate content filters or load balancers.",
+      "Treats the proxy as a routing layer only, ignoring higher-level responsibilities like TLS termination or security masking."
+    ],
+    "progressive_hints": [
+      "Try drawing a quick diagram of a client and a server. Where does the proxy sit relative to each party?",
+      "Think about who needs protection or anonymity in a corporate network versus a large web application architecture. How does that shift the proxy's placement?",
+      "If a client wants to hide its IP address from a destination website, which side of the connection must the proxy intercept traffic on?"
+    ],
+    "learning_objective": "Understand the architectural distinction between forward and reverse proxies, including their unique placement in network topologies, respective responsibilities, and use cases."
   },
   {
     "id": "cn-0013",
     "question": "What is congestion control in TCP, and how do algorithms like slow start work?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["tcp-ip", "congestion-control"],
-    "tech_keywords": ["computer-networks", "tcp"],
-    "companies_common": ["Amazon", "Google", "Cisco"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "tcp-ip",
+      "congestion-control"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "tcp"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Cisco"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -283,17 +666,49 @@
       ],
       "sample_answer": "TCP congestion control adjusts how much unacknowledged data a sender can have in flight (the congestion window) to avoid overwhelming the network. Slow start begins with a small window and doubles it every round-trip, growing exponentially until it hits a threshold or a packet is lost. Once past that threshold, it grows more conservatively (linear, additive increase) — and on detecting loss, it shrinks the window sharply (multiplicative decrease), then ramps back up. This is distinct from flow control, which limits the sender based on the receiver's buffer capacity rather than network conditions."
     },
-    "follow_up_hint": "Ask about the difference between congestion control and flow control in TCP."
+    "follow_up_hint": "Ask about the difference between congestion control and flow control in TCP.",
+    "concept": "TCP Congestion Control",
+    "sub_concept": "Slow Start and Window Adjustment Mechanisms",
+    "expected_reasoning": "A strong candidate begins by framing the core problem as network-wide resource management, distinguishing it immediately from receiver-level flow control. They then trace the lifecycle of a connection, explaining how a sender probes capacity without prior knowledge using an exponential growth curve. Next, they analyze the transition point where exponential growth becomes dangerous, shifting the mechanism to linear probing to avoid destabilizing the network. Finally, they incorporate how feedback signals like packet loss are interpreted as congestion, completing the loop of dynamic adaptation.",
+    "common_mistakes": [
+      "Confusing congestion control with flow control and claiming it protects the receiver's buffer",
+      "Stating that 'slow start' means the transfer is slow overall, without realizing it grows exponentially",
+      "Claiming the congestion window increases linearly during the slow start phase",
+      "Failing to mention how packet loss or thresholds dictate the transition between phases",
+      "Treating TCP as operating with fixed window sizes rather than dynamically adapting to network feedback"
+    ],
+    "progressive_hints": [
+      "Consider what the sender knows about the capacity of the routers and links between it and the receiver when a connection first opens.",
+      "Think about how a sender can safely discover network capacity starting from a very small footprint, and how it should scale that footprint up as acknowledgments arrive.",
+      "If the window doubles every round-trip time, how does the sender know when it has gone too far, and what safety valve prevents it from flooding the network indefinitely?"
+    ],
+    "learning_objective": "Understand how TCP dynamically discovers network capacity and prevents congestion through adaptive window sizing mechanisms."
   },
   {
     "id": "cn-0014",
     "question": "What are REST API status codes 200, 201, 301, 400, 401, 403, 404, and 500 used for?",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["general_sde", "backend", "fullstack"],
-    "topics": ["http", "rest-api"],
-    "tech_keywords": ["http", "rest-api", "computer-networks"],
-    "companies_common": ["Amazon", "Microsoft", "Infosys", "Meta"],
+    "roles": [
+      "general_sde",
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "http",
+      "rest-api"
+    ],
+    "tech_keywords": [
+      "http",
+      "rest-api",
+      "computer-networks"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Infosys",
+      "Meta"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -305,17 +720,43 @@
       ],
       "sample_answer": "200 means the request succeeded generically; 201 specifically means a new resource was created, e.g. after a POST. 301 tells the client a resource has permanently moved to a new URL. 400 means the request itself was malformed or invalid. 401 means authentication is missing or invalid, while 403 means the client IS authenticated but isn't allowed to access that resource. 404 means the resource doesn't exist. 500 means something broke unexpectedly on the server side, distinct from the client-caused 4xx errors."
     },
-    "follow_up_hint": "Ask them to explain the difference between 401 and 403 with a concrete example."
+    "follow_up_hint": "Ask them to explain the difference between 401 and 403 with a concrete example.",
+    "concept": "HTTP Status Codes",
+    "sub_concept": "REST API Response Classification",
+    "expected_reasoning": "A strong candidate systematically categorizes the status codes by their standard numeric ranges (2xx, 3xx, 4xx, 5xx) to establish a mental framework. They then differentiate similar codes by analyzing the underlying intent, such as distinguishing client-side authentication failures from authorization constraints, or client errors from server faults. Finally, they provide brief, precise real-world examples for each code to demonstrate practical web architecture experience.",
+    "common_mistakes": [
+      "Listing the codes without grouping them by their semantic ranges (success, redirection, client error, server error).",
+      "Confusing 401 Unauthorized with 403 Forbidden without explaining the distinction regarding authentication versus permissions.",
+      "Blurring the lines between a 400 Bad Request and a 500 Internal Server Error regarding who is at fault.",
+      "Stating the numbers with no justification or context on when they should actually be returned by an API.",
+      "Confusing 301 Moved Permanently with temporary redirection codes like 302."
+    ],
+    "progressive_hints": [
+      "Think about how HTTP status codes are broadly categorized by their starting digit. What does each hundred-series generally represent?",
+      "Consider the difference between a client sending bad data, lacking credentials, or being logged in but lacking permissions for a specific action.",
+      "For the 4xx range, think about how an API distinguishes between an invalid request format, a missing resource, and an action the user isn't allowed to take."
+    ],
+    "learning_objective": "Understand how to correctly use and interpret standard HTTP status codes to communicate API request outcomes and guide client behavior."
   },
   {
     "id": "cn-0015",
     "question": "Explain what happens during ARP resolution, and why it's needed even though we have IP addresses.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde"],
-    "topics": ["networking-fundamentals"],
-    "tech_keywords": ["computer-networks", "arp"],
-    "companies_common": ["Cisco", "Amazon"],
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "networking-fundamentals"
+    ],
+    "tech_keywords": [
+      "computer-networks",
+      "arp"
+    ],
+    "companies_common": [
+      "Cisco",
+      "Amazon"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -327,6 +768,22 @@
       ],
       "sample_answer": "ARP resolves an IP address to the MAC address needed to actually deliver an Ethernet frame on the local network, since IP addressing (network layer) and MAC addressing (data link layer) are separate systems. A host that needs to reach a local IP but doesn't know its MAC broadcasts an ARP request; the device owning that IP responds with its MAC address, which gets cached locally to avoid repeating this for every subsequent packet. For destinations outside the local subnet, the frame is instead addressed to the local router's MAC, which then handles routing onward."
     },
-    "follow_up_hint": "Ask what ARP spoofing is and why it's a security concern on local networks."
+    "follow_up_hint": "Ask what ARP spoofing is and why it's a security concern on local networks.",
+    "concept": "Address Resolution Protocol",
+    "sub_concept": "IP to MAC Address Translation and Layer Interaction",
+    "expected_reasoning": "A strong candidate begins by separating logical addressing at the network layer from physical addressing at the data link layer. They reason about how a NIC physically transmits a frame and why the network layer's IP address alone is insufficient for physical media traversal on a local link. They then trace the query-and-response flow of discovering a hardware address via broadcast, and conclude by considering how caching optimizes subsequent transmissions and how gateways handle cross-subnet traffic.",
+    "common_mistakes": [
+      "States that ARP is used to find IP addresses from MAC addresses, reversing the actual direction.",
+      "Claims ARP is used across the entire internet to communicate with remote servers directly.",
+      "Confuses Layer 2 MAC addresses with Layer 3 IP addresses, treating them as interchangeable identifiers.",
+      "Asserts that every single packet sent requires a fresh ARP broadcast without mentioning the ARP cache.",
+      "States the conclusion with no justification, merely saying 'ARP translates IP to MAC' without explaining the OSI layer boundary."
+    ],
+    "progressive_hints": [
+      "Consider what information a network card actually requires to physically transmit a frame onto a local wire, and whether an IP address provides that.",
+      "Think about how a host on a local network segment can discover the physical hardware address of another device when it only knows its logical address.",
+      "If device A wants to talk to device B on the same switch, it knows B's IP address. What mechanism does A use to ask the local network 'who has this IP, tell me your hardware address,' and how does it avoid doing this every time?"
+    ],
+    "learning_objective": "Understand how the network layer interfaces with the data link layer by using ARP to bridge logical IP addresses with physical MAC addresses on a local network segment."
   }
 ]

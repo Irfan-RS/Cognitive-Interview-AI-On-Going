@@ -1,6 +1,194 @@
 [
-  {"id":"cicd-0001","question":"What is the difference between continuous integration, continuous delivery, and continuous deployment?","type":"conceptual","difficulty":2,"roles":["devops","backend"],"topics":["devops","ci-cd"],"tech_keywords":["ci-cd"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["Continuous Integration: developers frequently merge code into a shared branch, with automated builds/tests running on every merge to catch integration problems early","Continuous Delivery: every change that passes CI is automatically prepared into a release-ready build/artifact, but deployment to production requires a manual trigger/approval","Continuous Deployment: every change that passes all automated checks is automatically deployed straight to production with no manual gate at all","Explains the progression: CI is foundational; delivery and deployment build on top of it, with deployment being the most automated/aggressive end of the spectrum"],"sample_answer":"Continuous Integration means developers frequently merge their code into a shared branch, and automated builds and tests run on every merge to catch integration issues as early as possible, rather than discovering them during a large, infrequent merge. Continuous Delivery builds on that: every change that passes CI is automatically packaged into a release-ready, deployable artifact, but there's still a manual approval or trigger before it actually goes to production. Continuous Deployment goes one step further and removes that manual gate entirely — every change that passes all automated checks is deployed straight to production automatically. So it's a progression: CI is the foundation of frequent integration and automated testing, delivery adds automated release-readiness, and deployment adds full automation all the way to production."},"follow_up_hint":"Ask what safeguards they'd want in place before trusting continuous deployment with no manual gate at all."},
-  {"id":"cicd-0002","question":"What is a blue-green deployment, and how does it reduce deployment risk?","type":"conceptual","difficulty":3,"roles":["devops"],"topics":["devops","ci-cd"],"tech_keywords":["blue-green-deployment"],"companies_common":["Amazon","Netflix"],"source_style":"common-interview","reference_solution":{"key_points":["Two identical production environments ('blue' and 'green') exist; only one serves live traffic at a time","The new version is deployed fully to the idle environment and tested there before any live traffic touches it","Traffic is then switched (via load balancer/router config) from the old environment to the new one, typically nearly instantly","If something's wrong post-switch, rolling back is just switching traffic back to the previous environment — fast and low-risk compared to redeploying the old version"],"sample_answer":"Blue-green deployment maintains two identical production environments, conventionally called blue and green, where only one is actively serving live traffic at any given time. You deploy the new version fully to the currently idle environment and can test it thoroughly there without any risk to live users, since it's receiving no real traffic yet. Once you're confident it's healthy, you switch traffic over — usually by updating the load balancer or router configuration — from the old environment to the new one, which can happen almost instantly. This significantly reduces deployment risk because if something goes wrong after the switch, rolling back is just flipping traffic back to the previous environment, which is fast and doesn't require redeploying or rebuilding the old version from scratch."},"follow_up_hint":"Ask how blue-green deployment handles database schema migrations that aren't backward-compatible between the two versions."},
-  {"id":"cicd-0003","question":"What is a canary deployment, and how does it differ from blue-green deployment?","type":"trade_off_questions","difficulty":3,"roles":["devops"],"topics":["devops","ci-cd"],"tech_keywords":["canary-deployment"],"companies_common":["Amazon","Google","Netflix"],"source_style":"faang-common","reference_solution":{"key_points":["Canary deployment gradually rolls out a new version to a small subset of real users/traffic first, monitoring error rates/metrics before progressively increasing the rollout percentage","Blue-green switches ALL traffic at once between two full environments; canary shifts traffic incrementally (e.g. 1% -> 10% -> 50% -> 100%)","Canary catches problems that only manifest under real production traffic/load at a much smaller blast radius than an all-at-once switch","Trade-off: canary is more complex to set up (needs traffic splitting infrastructure and good monitoring/automated rollback triggers) and takes longer to fully roll out than blue-green's instant switch"],"sample_answer":"A canary deployment gradually rolls out a new version to a small percentage of real production traffic first — say 1% — and closely monitors error rates and key metrics before progressively increasing that percentage toward 100% if things look healthy. This differs from blue-green, which switches all traffic from the old environment to the new one essentially at once. Canary's advantage is a much smaller blast radius if something's wrong — only a small fraction of real users are affected before you catch the problem and roll back — whereas blue-green either has everyone on the old version or everyone on the new one. The trade-off is canary requires more sophisticated infrastructure to split traffic by percentage and solid automated monitoring or rollback triggers, and it takes meaningfully longer to complete a full rollout compared to blue-green's essentially instant cutover."},"follow_up_hint":"Ask what specific metrics they'd monitor to automatically decide whether to proceed with or roll back a canary rollout."},
-  {"id":"cicd-0004","question":"Why is it recommended to run automated tests in a CI pipeline before merging code, rather than relying on manual testing alone?","type":"conceptual","difficulty":1,"roles":["devops","general_sde"],"topics":["ci-cd","testing"],"tech_keywords":["ci-cd","testing"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["Automated tests run consistently and quickly on every change, catching regressions immediately rather than relying on a human remembering to manually re-test everything","Manual testing doesn't scale as the codebase grows — testers can't realistically re-verify every existing feature for every small change","Automated tests provide fast feedback directly to the developer who made the change, while context is still fresh, rather than a bug surfacing much later","Doesn't eliminate the need for manual/exploratory testing entirely — automated tests catch known, previously-specified behavior; humans are still valuable for exploratory testing and catching genuinely new classes of issues"],"sample_answer":"Automated tests run consistently and quickly on every single change, catching regressions immediately, without depending on a human remembering to manually re-test every previously working feature — which becomes completely impractical as a codebase and its feature set grow. They also give the developer who made the change fast feedback while the context is still fresh in their mind, rather than a bug being discovered days or weeks later by a manual tester or, worse, a user in production, at which point it's much more expensive to diagnose and fix. That said, automated tests aren't a full replacement for manual testing — they can only catch behavior someone thought to specify in a test case, so exploratory manual testing still has real value for catching genuinely new or unexpected classes of issues automated coverage wouldn't anticipate."},"follow_up_hint":"Ask what they'd do if the CI test suite became slow enough that developers started skipping or ignoring it."}
+  {
+    "id": "cicd-0001",
+    "question": "What is the difference between continuous integration, continuous delivery, and continuous deployment?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "devops",
+      "backend"
+    ],
+    "topics": [
+      "devops",
+      "ci-cd"
+    ],
+    "tech_keywords": [
+      "ci-cd"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Continuous Integration: developers frequently merge code into a shared branch, with automated builds/tests running on every merge to catch integration problems early",
+        "Continuous Delivery: every change that passes CI is automatically prepared into a release-ready build/artifact, but deployment to production requires a manual trigger/approval",
+        "Continuous Deployment: every change that passes all automated checks is automatically deployed straight to production with no manual gate at all",
+        "Explains the progression: CI is foundational; delivery and deployment build on top of it, with deployment being the most automated/aggressive end of the spectrum"
+      ],
+      "sample_answer": "Continuous Integration means developers frequently merge their code into a shared branch, and automated builds and tests run on every merge to catch integration issues as early as possible, rather than discovering them during a large, infrequent merge. Continuous Delivery builds on that: every change that passes CI is automatically packaged into a release-ready, deployable artifact, but there's still a manual approval or trigger before it actually goes to production. Continuous Deployment goes one step further and removes that manual gate entirely — every change that passes all automated checks is deployed straight to production automatically. So it's a progression: CI is the foundation of frequent integration and automated testing, delivery adds automated release-readiness, and deployment adds full automation all the way to production."
+    },
+    "follow_up_hint": "Ask what safeguards they'd want in place before trusting continuous deployment with no manual gate at all.",
+    "concept": "CI CD Pipelines",
+    "sub_concept": "Distinction between integration, delivery, and deployment stages",
+    "expected_reasoning": "A strong candidate begins by establishing a baseline definition of Continuous Integration as the automated verification of code merges. They then reason about how automation extends outward toward the user, examining where human gates sit in the release process. By comparing the handoffs between staging artifacts and production environments, they articulate the operational trust and testing rigor required to eliminate manual steps entirely. Finally, they frame the three practices as a progressive maturity model rather than isolated choices.",
+    "common_mistakes": [
+      "Treating 'Continuous Delivery' and 'Continuous Deployment' as interchangeable synonyms",
+      "Stating that CI is just about running unit tests without mentioning frequent code merging to a shared branch",
+      "Failing to identify the presence or absence of a manual gate as the core differentiator between delivery and deployment",
+      "Providing purely academic definitions without explaining the operational and risk trade-offs involved",
+      "Ignoring the foundational role that CI plays as a prerequisite for both delivery and deployment"
+    ],
+    "progressive_hints": [
+      "Consider where human decision-making or manual approval steps occur across the software delivery lifecycle.",
+      "Look specifically at the boundary between a build artifact being ready for release and that artifact actually landing in front of users.",
+      "Think about whether a human has to press a button to push code to production, or if all tests passing is the only requirement to go live."
+    ],
+    "learning_objective": "The candidate should understand that CI/CD is a spectrum of automation where testing is foundational, delivery keeps code release-ready, and deployment fully automates the path to production."
+  },
+  {
+    "id": "cicd-0002",
+    "question": "What is a blue-green deployment, and how does it reduce deployment risk?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "devops"
+    ],
+    "topics": [
+      "devops",
+      "ci-cd"
+    ],
+    "tech_keywords": [
+      "blue-green-deployment"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Netflix"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Two identical production environments ('blue' and 'green') exist; only one serves live traffic at a time",
+        "The new version is deployed fully to the idle environment and tested there before any live traffic touches it",
+        "Traffic is then switched (via load balancer/router config) from the old environment to the new one, typically nearly instantly",
+        "If something's wrong post-switch, rolling back is just switching traffic back to the previous environment — fast and low-risk compared to redeploying the old version"
+      ],
+      "sample_answer": "Blue-green deployment maintains two identical production environments, conventionally called blue and green, where only one is actively serving live traffic at any given time. You deploy the new version fully to the currently idle environment and can test it thoroughly there without any risk to live users, since it's receiving no real traffic yet. Once you're confident it's healthy, you switch traffic over — usually by updating the load balancer or router configuration — from the old environment to the new one, which can happen almost instantly. This significantly reduces deployment risk because if something goes wrong after the switch, rolling back is just flipping traffic back to the previous environment, which is fast and doesn't require redeploying or rebuilding the old version from scratch."
+    },
+    "follow_up_hint": "Ask how blue-green deployment handles database schema migrations that aren't backward-compatible between the two versions.",
+    "concept": "Blue Green Deployment",
+    "sub_concept": "Zero-Downtime Deployment and Instant Rollback",
+    "expected_reasoning": "A strong candidate begins by defining the architectural layout of having two distinct, production-grade environments. They then trace the lifecycle of a release, explaining how the idle environment acts as a staging ground for final integration testing under real production constraints. Next, they analyze the mechanics of the traffic cutover via load balancers, emphasizing how atomic routing changes eliminate the slow rollout windows typical of rolling deployments. Finally, they contrast the rollback strategy—flipping a switch back to the stable environment—with traditional destructive patching, highlighting risk mitigation.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying 'it avoids downtime' without explaining how dual environments achieve it.",
+      "Confuses blue-green deployment with rolling updates or canary releases by assuming traffic is gradually split over a long period.",
+      "Ignores the role of the load balancer or router in managing the atomic traffic switch between environments.",
+      "Fails to mention how rollback works, treating the deployment as a one-way street rather than an easily reversible switch.",
+      "Assumes the idle environment is just a staging server rather than a fully provisioned, identical production stack."
+    ],
+    "progressive_hints": [
+      "Think about what happens if you maintain two separate, complete copies of your production environment simultaneously.",
+      "Consider how a load balancer can direct incoming user requests and how quickly you can change that destination.",
+      "If the new version proves faulty right after going live, what is the fastest way to revert the user base back to the working version without redeploying code?"
+    ],
+    "learning_objective": "Understand how maintaining two identical production environments enables zero-downtime releases and instant, low-risk rollbacks by shifting traffic atomically."
+  },
+  {
+    "id": "cicd-0003",
+    "question": "What is a canary deployment, and how does it differ from blue-green deployment?",
+    "type": "trade_off_questions",
+    "difficulty": 3,
+    "roles": [
+      "devops"
+    ],
+    "topics": [
+      "devops",
+      "ci-cd"
+    ],
+    "tech_keywords": [
+      "canary-deployment"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Netflix"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Canary deployment gradually rolls out a new version to a small subset of real users/traffic first, monitoring error rates/metrics before progressively increasing the rollout percentage",
+        "Blue-green switches ALL traffic at once between two full environments; canary shifts traffic incrementally (e.g. 1% -> 10% -> 50% -> 100%)",
+        "Canary catches problems that only manifest under real production traffic/load at a much smaller blast radius than an all-at-once switch",
+        "Trade-off: canary is more complex to set up (needs traffic splitting infrastructure and good monitoring/automated rollback triggers) and takes longer to fully roll out than blue-green's instant switch"
+      ],
+      "sample_answer": "A canary deployment gradually rolls out a new version to a small percentage of real production traffic first — say 1% — and closely monitors error rates and key metrics before progressively increasing that percentage toward 100% if things look healthy. This differs from blue-green, which switches all traffic from the old environment to the new one essentially at once. Canary's advantage is a much smaller blast radius if something's wrong — only a small fraction of real users are affected before you catch the problem and roll back — whereas blue-green either has everyone on the old version or everyone on the new one. The trade-off is canary requires more sophisticated infrastructure to split traffic by percentage and solid automated monitoring or rollback triggers, and it takes meaningfully longer to complete a full rollout compared to blue-green's essentially instant cutover."
+    },
+    "follow_up_hint": "Ask what specific metrics they'd monitor to automatically decide whether to proceed with or roll back a canary rollout.",
+    "concept": "Deployment Strategies",
+    "sub_concept": "Canary vs Blue-Green Deployments",
+    "expected_reasoning": "A strong candidate begins by defining the core operational goals of zero-downtime deployment strategies, focusing on risk mitigation. They analyze how each strategy handles traffic routing and infrastructure state, contrasting the atomic swap of a full environment with gradual, telemetry-driven traffic shifting. Next, they weigh the blast radius and rollback speed of a massive all-at-once environment switch against the complexity of building real-time traffic splitting and monitoring loops for incremental rollouts. Finally, they synthesize a comparison based on operational overhead, feedback speed, and safety guarantees.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as saying canary is safer without explaining traffic percentages or blast radius.",
+      "Confuses canary deployments with A/B testing, treating a release validation strategy as a business feature experimentation tool.",
+      "Assumes blue-green requires maintaining permanent duplicate production hardware indefinitely rather than understanding the temporary nature of the standby environment.",
+      "Ignores the infrastructure and observability requirements needed to automatically abort a failing canary deployment.",
+      "Claims blue-green has zero risk because it uses two environments, overlooking the immediate impact of a bad deployment on 100% of users during the cutover."
+    ],
+    "progressive_hints": [
+      "Consider how each strategy directs user traffic when a brand new software version is first released to production.",
+      "Think about the difference between switching 100% of your users over instantly versus exposing a tiny fraction of users to the new code first.",
+      "Evaluate the trade-off between the simplicity of an instant environment cutover versus the safety of a gradual rollout combined with automated metric monitoring."
+    ],
+    "learning_objective": "The candidate should understand how to select and contrast deployment strategies based on the trade-offs between blast radius, infrastructure complexity, and feedback speed."
+  },
+  {
+    "id": "cicd-0004",
+    "question": "Why is it recommended to run automated tests in a CI pipeline before merging code, rather than relying on manual testing alone?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "devops",
+      "general_sde"
+    ],
+    "topics": [
+      "ci-cd",
+      "testing"
+    ],
+    "tech_keywords": [
+      "ci-cd",
+      "testing"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Automated tests run consistently and quickly on every change, catching regressions immediately rather than relying on a human remembering to manually re-test everything",
+        "Manual testing doesn't scale as the codebase grows — testers can't realistically re-verify every existing feature for every small change",
+        "Automated tests provide fast feedback directly to the developer who made the change, while context is still fresh, rather than a bug surfacing much later",
+        "Doesn't eliminate the need for manual/exploratory testing entirely — automated tests catch known, previously-specified behavior; humans are still valuable for exploratory testing and catching genuinely new classes of issues"
+      ],
+      "sample_answer": "Automated tests run consistently and quickly on every single change, catching regressions immediately, without depending on a human remembering to manually re-test every previously working feature — which becomes completely impractical as a codebase and its feature set grow. They also give the developer who made the change fast feedback while the context is still fresh in their mind, rather than a bug being discovered days or weeks later by a manual tester or, worse, a user in production, at which point it's much more expensive to diagnose and fix. That said, automated tests aren't a full replacement for manual testing — they can only catch behavior someone thought to specify in a test case, so exploratory manual testing still has real value for catching genuinely new or unexpected classes of issues automated coverage wouldn't anticipate."
+    },
+    "follow_up_hint": "Ask what they'd do if the CI test suite became slow enough that developers started skipping or ignoring it.",
+    "concept": "Continuous Integration",
+    "sub_concept": "Automated Testing vs Manual Testing Trade-offs",
+    "expected_reasoning": "A strong candidate begins by evaluating the scaling limitations of human memory and manual verification as codebases grow over time. They then analyze the speed and consistency of automated test execution compared to the high latency and fatigue of manual regression testing. Next, they weigh the economic and cognitive benefits of receiving rapid feedback while code context is fresh versus discovering bugs late in the release cycle. Finally, they balance this by acknowledging that automation complements rather than replaces human effort, reserving manual testing for exploratory scenarios.",
+    "common_mistakes": [
+      "States that manual testing is completely useless without acknowledging its value in exploratory verification",
+      "Claims automated tests are 100% bug-free and eliminate the need for any human oversight",
+      "Focuses purely on execution speed without mentioning scalability or human fatigue",
+      "Gives a vague, shallow answer like 'automation is faster' with no explanation of consistency or regression catching",
+      "Confuses CI with production deployment rather than pre-merge validation"
+    ],
+    "progressive_hints": [
+      "Consider what happens to the time required for manual testing as a product grows from a few features to thousands.",
+      "Think about human limitations regarding memory and fatigue when repeating the exact same regression checks for every single code change.",
+      "Reflect on how catching a bug immediately when a developer writes a few lines of code compares to finding it weeks later during a manual release pass."
+    ],
+    "learning_objective": "Understand how automated tests in a CI pipeline provide the scalability, consistency, and early feedback loop that manual testing alone cannot sustain as a codebase grows."
+  }
 ]

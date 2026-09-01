@@ -1,5 +1,146 @@
 [
-  {"id":"nosql-0001","question":"When would you choose a NoSQL database over a relational database?","type":"trade_off_questions","difficulty":2,"roles":["backend","system_design"],"topics":["dbms","system-design"],"tech_keywords":["nosql","mongodb"],"companies_common":["Amazon","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["Relational DBs excel at structured data with well-defined relationships, strong consistency (ACID transactions), and complex queries/joins","NoSQL fits use cases needing flexible/evolving schemas, horizontal scalability across many nodes, or specific access patterns (key-value lookups, document storage, wide-column, graph) that map awkwardly to tables","Choose NoSQL when: schema changes frequently, extremely high write throughput/horizontal scale is required, or data is naturally hierarchical/document-shaped (e.g. user profiles with nested, varying structure)","Choose relational when: data integrity/relationships matter a lot, complex multi-table queries are common, and the schema is relatively stable"],"sample_answer":"I'd lean toward a relational database when data has clear structured relationships, when strong consistency via ACID transactions matters, and when the application needs complex queries joining multiple tables — like most financial or inventory systems. I'd lean toward NoSQL when the schema is likely to evolve frequently and rigidly defining it upfront is painful, when the access pattern is naturally document- or key-value-shaped, like storing user profiles with deeply nested and varying fields, or when I need to scale writes horizontally across many nodes more easily than a traditional single-primary relational setup typically allows. It's not that NoSQL databases can't do relationships or that relational databases can't scale — it's about which trade-offs and access patterns best match the actual workload."},"follow_up_hint":"Ask them to design the schema for a product catalog with wildly varying attributes per category, and justify document vs relational."},
-  {"id":"nosql-0002","question":"Explain the difference between a document database (like MongoDB) and a wide-column database (like Cassandra).","type":"conceptual","difficulty":3,"roles":["backend","system_design"],"topics":["dbms"],"tech_keywords":["mongodb","cassandra"],"companies_common":["Amazon","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["Document databases store self-contained JSON/BSON-like documents with flexible, often nested structure, typically queried by any field within the document","Wide-column stores organize data into rows identified by a key, but with flexible sets of columns per row, grouped into column families — optimized heavily for very fast writes and scans over specific partition/row keys","Document DBs suit general-purpose flexible-schema applications; wide-column stores suit massive-scale, high-write-throughput, time-series-like or partition-key-driven access patterns","Cassandra specifically is designed for high availability and linear write scalability across many nodes (masterless, eventually consistent by default)"],"sample_answer":"A document database like MongoDB stores self-contained documents, often JSON-like with nested structure, and generally lets you query flexibly on any field within a document. A wide-column store like Cassandra organizes data into rows identified by a key, but each row can have a different flexible set of columns grouped into column families, and it's architected specifically for extremely fast writes and scans that are driven by a partition/row key. I'd reach for a document database for general-purpose applications needing schema flexibility and reasonably rich querying, and for a wide-column store like Cassandra specifically when I need massive write throughput and horizontal scalability across many nodes with high availability, like time-series data or event logging at very large scale, where Cassandra's masterless, eventually-consistent-by-default architecture is a good fit."},"follow_up_hint":"Ask them why Cassandra's data modeling approach requires designing your schema around your query patterns upfront, unlike a relational database."},
-  {"id":"nosql-0003","question":"What is denormalization, and why is it common in NoSQL data modeling?","type":"trade_off_questions","difficulty":3,"roles":["backend"],"topics":["dbms","nosql"],"tech_keywords":["denormalization"],"companies_common":["Amazon","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["Denormalization means duplicating data across multiple places instead of normalizing it into separate, joined tables — trading storage/write complexity for read performance","Many NoSQL databases don't support efficient joins (or any joins at all), so retrieving related data efficiently often requires embedding/duplicating it directly in the document/row you'll query","Trade-off: writes become more complex (must update duplicated copies consistently) and storage increases, but reads become much faster/simpler since no cross-collection joins are needed at query time","Design principle in NoSQL modeling: model your schema around your query patterns, not around eliminating redundancy the way relational normalization does"],"sample_answer":"Denormalization means intentionally duplicating data across multiple places rather than storing it once and joining it at query time. It's common in NoSQL modeling because many NoSQL databases either don't support efficient joins or don't support them at all, so if a query needs related data — like an order document needing the customer's name and address — it's often much faster to embed a copy of that data directly in the order document rather than doing a separate lookup. The trade-off is that writes become more complex, since updating a customer's address now potentially means updating it in every order document that embedded a copy, and storage usage increases due to the duplication — but reads become simpler and much faster since there's no join needed at query time. This reflects a broader NoSQL modeling philosophy: design your schema around how the data will actually be queried, rather than around eliminating redundancy the way relational normalization does."},"follow_up_hint":"Ask them how they'd handle keeping duplicated data eventually consistent when the source of truth changes."}
+  {
+    "id": "nosql-0001",
+    "question": "When would you choose a NoSQL database over a relational database?",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "dbms",
+      "system-design"
+    ],
+    "tech_keywords": [
+      "nosql",
+      "mongodb"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Relational DBs excel at structured data with well-defined relationships, strong consistency (ACID transactions), and complex queries/joins",
+        "NoSQL fits use cases needing flexible/evolving schemas, horizontal scalability across many nodes, or specific access patterns (key-value lookups, document storage, wide-column, graph) that map awkwardly to tables",
+        "Choose NoSQL when: schema changes frequently, extremely high write throughput/horizontal scale is required, or data is naturally hierarchical/document-shaped (e.g. user profiles with nested, varying structure)",
+        "Choose relational when: data integrity/relationships matter a lot, complex multi-table queries are common, and the schema is relatively stable"
+      ],
+      "sample_answer": "I'd lean toward a relational database when data has clear structured relationships, when strong consistency via ACID transactions matters, and when the application needs complex queries joining multiple tables — like most financial or inventory systems. I'd lean toward NoSQL when the schema is likely to evolve frequently and rigidly defining it upfront is painful, when the access pattern is naturally document- or key-value-shaped, like storing user profiles with deeply nested and varying fields, or when I need to scale writes horizontally across many nodes more easily than a traditional single-primary relational setup typically allows. It's not that NoSQL databases can't do relationships or that relational databases can't scale — it's about which trade-offs and access patterns best match the actual workload."
+    },
+    "follow_up_hint": "Ask them to design the schema for a product catalog with wildly varying attributes per category, and justify document vs relational.",
+    "concept": "Database Selection",
+    "sub_concept": "NoSQL Versus Relational Trade-offs",
+    "expected_reasoning": "A strong candidate begins by clarifying the specific access patterns, data structure, and scale requirements of the hypothetical workload. They weigh the benefits of ACID compliance and structured relational schemas against the flexibility and horizontal scalability of NoSQL systems. Rather than choosing based on hype, they evaluate whether the domain requires complex joins or if it consists of loosely coupled, hierarchical documents. Finally, they articulate the operational trade-offs, such as eventual consistency versus strong consistency, to justify their architectural choice.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying 'use MongoDB because it is modern'",
+      "Assumes NoSQL is always faster or better without considering query patterns or consistency requirements",
+      "Ignores the complexity of handling relationships and data integrity in NoSQL databases",
+      "Believes relational databases cannot scale horizontally at all, overlooking sharding and distributed SQL",
+      "Confuses schema flexibility with a complete lack of data modeling discipline"
+    ],
+    "progressive_hints": [
+      "What core characteristics of the application data and access patterns should drive your storage choice?",
+      "Consider how your schema would handle rapidly evolving data structures versus rigid tabular relationships at massive scale.",
+      "Think about what happens to your system's consistency guarantees and query flexibility when you need to distribute writes across dozens of independent nodes."
+    ],
+    "learning_objective": "The candidate should understand how to evaluate data models, scalability needs, and consistency requirements to intentionally choose between relational and NoSQL architectures."
+  },
+  {
+    "id": "nosql-0002",
+    "question": "Explain the difference between a document database (like MongoDB) and a wide-column database (like Cassandra).",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "dbms"
+    ],
+    "tech_keywords": [
+      "mongodb",
+      "cassandra"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Document databases store self-contained JSON/BSON-like documents with flexible, often nested structure, typically queried by any field within the document",
+        "Wide-column stores organize data into rows identified by a key, but with flexible sets of columns per row, grouped into column families — optimized heavily for very fast writes and scans over specific partition/row keys",
+        "Document DBs suit general-purpose flexible-schema applications; wide-column stores suit massive-scale, high-write-throughput, time-series-like or partition-key-driven access patterns",
+        "Cassandra specifically is designed for high availability and linear write scalability across many nodes (masterless, eventually consistent by default)"
+      ],
+      "sample_answer": "A document database like MongoDB stores self-contained documents, often JSON-like with nested structure, and generally lets you query flexibly on any field within a document. A wide-column store like Cassandra organizes data into rows identified by a key, but each row can have a different flexible set of columns grouped into column families, and it's architected specifically for extremely fast writes and scans that are driven by a partition/row key. I'd reach for a document database for general-purpose applications needing schema flexibility and reasonably rich querying, and for a wide-column store like Cassandra specifically when I need massive write throughput and horizontal scalability across many nodes with high availability, like time-series data or event logging at very large scale, where Cassandra's masterless, eventually-consistent-by-default architecture is a good fit."
+    },
+    "follow_up_hint": "Ask them why Cassandra's data modeling approach requires designing your schema around your query patterns upfront, unlike a relational database.",
+    "concept": "NoSQL Database Design",
+    "sub_concept": "Document versus Wide-Column Architectural Differences",
+    "expected_reasoning": "A strong candidate begins by identifying that both are NoSQL paradigms offering schema flexibility, but immediately shifts focus to their underlying storage models and intended access patterns. They analyze how document databases organize data as hierarchical, self-contained objects optimized for flexible queries across diverse attributes, whereas wide-column stores organize data around a rigid partition and clustering key hierarchy optimized for massive write throughput and range scans. They then weigh the architectural trade-offs, contrasting the master-slave or flexible querying nature of document stores with the distributed, masterless, ring-based architecture of wide-column stores like Cassandra which prioritize availability and partition scaling over ad-hoc querying.",
+    "common_mistakes": [
+      "States that both just store JSON and treats them as interchangeable",
+      "Claims wide-column databases are just relational tables with more columns without explaining the sparse column family and partition key model",
+      "Fails to mention access patterns, focusing only on the physical syntax of how data is written",
+      "Ignores the distributed systems implications (like Cassandra's masterless ring architecture vs typical document store replication)",
+      "Confuses schema flexibility with complete lack of structure or indexing capabilities"
+    ],
+    "progressive_hints": [
+      "Think about how data is structured on disk and how you typically query or write to each type of database.",
+      "Consider the primary access patterns: are you looking up deeply nested self-contained records by arbitrary fields, or streaming high-velocity time-series data using specific keys?",
+      "Think about the underlying distributed architectures—specifically how Cassandra manages partitions and writes across a cluster compared to how a typical document store handles queries and replication."
+    ],
+    "learning_objective": "Understand how the physical data organization and distributed architecture of document databases versus wide-column stores dictate their optimal application workloads."
+  },
+  {
+    "id": "nosql-0003",
+    "question": "What is denormalization, and why is it common in NoSQL data modeling?",
+    "type": "trade_off_questions",
+    "difficulty": 3,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "dbms",
+      "nosql"
+    ],
+    "tech_keywords": [
+      "denormalization"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Denormalization means duplicating data across multiple places instead of normalizing it into separate, joined tables — trading storage/write complexity for read performance",
+        "Many NoSQL databases don't support efficient joins (or any joins at all), so retrieving related data efficiently often requires embedding/duplicating it directly in the document/row you'll query",
+        "Trade-off: writes become more complex (must update duplicated copies consistently) and storage increases, but reads become much faster/simpler since no cross-collection joins are needed at query time",
+        "Design principle in NoSQL modeling: model your schema around your query patterns, not around eliminating redundancy the way relational normalization does"
+      ],
+      "sample_answer": "Denormalization means intentionally duplicating data across multiple places rather than storing it once and joining it at query time. It's common in NoSQL modeling because many NoSQL databases either don't support efficient joins or don't support them at all, so if a query needs related data — like an order document needing the customer's name and address — it's often much faster to embed a copy of that data directly in the order document rather than doing a separate lookup. The trade-off is that writes become more complex, since updating a customer's address now potentially means updating it in every order document that embedded a copy, and storage usage increases due to the duplication — but reads become simpler and much faster since there's no join needed at query time. This reflects a broader NoSQL modeling philosophy: design your schema around how the data will actually be queried, rather than around eliminating redundancy the way relational normalization does."
+    },
+    "follow_up_hint": "Ask them how they'd handle keeping duplicated data eventually consistent when the source of truth changes.",
+    "concept": "Denormalization",
+    "sub_concept": "NoSQL Data Modeling and Query-Driven Schema Design",
+    "expected_reasoning": "A strong candidate begins by contrasting this with relational normalization, explaining how relational systems prioritize reducing redundancy via foreign keys and normalization rules. They then examine the operational constraints of distributed NoSQL databases, noting how distributed joins across nodes are extremely expensive or unsupported. From there, they derive why duplicating data directly within documents is necessary to serve reads with a single lookup. Finally, they evaluate the trade-offs, contrasting fast, join-free reads against the increased complexity of maintaining write consistency across duplicated data.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as 'NoSQL uses denormalization because it is faster' without explaining why joins are absent or expensive.",
+      "Claims denormalization completely eliminates the need for updates or makes all operations simpler.",
+      "Confuses denormalization with caching, treating it as an in-memory layer rather than a fundamental database schema design choice.",
+      "Asserts that data duplication is done solely to save disk space, getting the storage trade-off backwards.",
+      "Fails to mention query patterns, treating denormalization as a generic best practice rather than something tailored to specific access patterns."
+    ],
+    "progressive_hints": [
+      "Think about how a relational database retrieves data from two related tables versus how a document database fetches a single record.",
+      "Consider what happens when a NoSQL database lacks native support for efficient joins, and how you would structure a record to avoid needing them at read time.",
+      "Analyze the cost of avoiding joins: what happens to your storage requirements and write operations when the same piece of entity data needs to live inside multiple different documents?"
+    ],
+    "learning_objective": "Understand that NoSQL data modeling trades write complexity and storage redundancy for read performance by designing schemas around specific query patterns rather than relational normalization rules."
+  }
 ]

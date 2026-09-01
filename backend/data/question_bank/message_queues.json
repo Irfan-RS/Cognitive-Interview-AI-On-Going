@@ -1,8 +1,289 @@
 [
-  {"id":"mq-0001","question":"What problem do message queues solve in a distributed system?","type":"conceptual","difficulty":2,"roles":["backend","system_design"],"topics":["message-queues","distributed-systems"],"tech_keywords":["kafka","rabbitmq","sqs"],"companies_common":["Amazon","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["Decouples producers and consumers in time — the producer doesn't need the consumer to be available/fast at the moment of sending","Buffers load spikes: a burst of incoming work is queued instead of overwhelming downstream services directly","Enables asynchronous processing and fan-out to multiple consumers","Improves resilience: if a consumer crashes, unprocessed messages remain in the queue instead of being lost"],"sample_answer":"Message queues decouple producers and consumers in time — a producer can publish a message without the consumer needing to be online or fast at that exact moment, since the queue holds it until it's processed. This is great for smoothing out load spikes, since a burst of requests just queues up rather than overwhelming a downstream service directly, and it enables asynchronous background processing and fan-out to multiple independent consumers. It also improves resilience: if a consumer crashes mid-processing, the message can be redelivered rather than lost, unlike a synchronous call that just fails."},"follow_up_hint":"Ask what happens if a consumer crashes after reading a message but before finishing processing it — how do you avoid losing that message?"},
-  {"id":"mq-0002","question":"Explain the difference between a message queue (like RabbitMQ/SQS) and an event streaming platform (like Kafka).","type":"conceptual","difficulty":3,"roles":["backend","system_design"],"topics":["message-queues"],"tech_keywords":["kafka","rabbitmq"],"companies_common":["Uber","LinkedIn","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["Traditional queue (RabbitMQ/SQS): a message is typically removed/invisible once consumed by one consumer — modeled as a work queue for task distribution","Kafka: messages (events) are appended to a durable, ordered log and retained for a configurable period; multiple independent consumer groups can each read the full stream at their own pace, and messages aren't deleted on read","Kafka partitions provide ordering within a partition and horizontal scalability; consumer groups enable parallel consumption","Choose a queue for simple task/work distribution; choose Kafka when you need replay, multiple independent subscribers to the same event stream, or high-throughput ordered event logs"],"sample_answer":"A traditional message queue like RabbitMQ or SQS is built around distributing discrete tasks to workers — a message is generally consumed and removed by one consumer. Kafka is an event streaming/log platform: messages are appended to a durable, ordered, partitioned log and retained for a configurable time regardless of whether they've been read, so multiple independent consumer groups can each read the entire stream at their own pace, and you can replay old events. Kafka partitions give ordering guarantees within a partition and let you scale consumption horizontally via consumer groups. I'd reach for a simple queue for straightforward task distribution to workers, and Kafka when I need multiple subscribers to the same events, replay capability, or very high-throughput ordered event logs, like for event sourcing or analytics pipelines."},"follow_up_hint":"Ask how Kafka guarantees ordering, and whether that guarantee holds across partitions or just within one."},
-  {"id":"mq-0003","question":"What is the difference between at-most-once, at-least-once, and exactly-once message delivery semantics?","type":"conceptual","difficulty":3,"roles":["backend","system_design"],"topics":["message-queues","distributed-systems"],"tech_keywords":["kafka","idempotency"],"companies_common":["Amazon","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["At-most-once: message is delivered zero or one time — can be lost, never duplicated (fire-and-forget)","At-least-once: message is guaranteed delivered one or more times — never lost, but consumer must handle duplicates (most common in practice)","Exactly-once: message delivered and processed exactly one time — very hard to guarantee end-to-end, usually achieved via idempotent processing + deduplication rather than a true distributed guarantee","Explains that in practice, most systems implement at-least-once delivery + idempotent consumers to effectively achieve exactly-once processing outcomes"],"sample_answer":"At-most-once means a message might be delivered once or not at all — it can be lost but is never duplicated, which is fine for non-critical data like some metrics. At-least-once means the message is guaranteed to arrive, but might arrive more than once, so the consumer must be able to handle duplicates — this is the most common and practical choice. True exactly-once delivery is extremely hard to guarantee across a network in the general case; in practice, systems achieve an exactly-once processing outcome by combining at-least-once delivery with an idempotent consumer — for example, tracking processed message IDs so reprocessing a duplicate is a safe no-op."},"follow_up_hint":"Ask them to design an idempotent consumer for a payment-processing message that could be delivered twice."},
-  {"id":"mq-0004","question":"What is a dead-letter queue, and why would you use one?","type":"practical_implementation","difficulty":2,"roles":["backend"],"topics":["message-queues"],"tech_keywords":["dead-letter-queue"],"companies_common":["Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["A dead-letter queue (DLQ) holds messages that repeatedly fail processing after a set number of retry attempts","Prevents a single 'poison pill' message from blocking the queue or being retried forever, consuming resources","Lets engineers inspect and debug failed messages separately, and potentially replay them after fixing the root cause","Without a DLQ, a malformed message could be retried indefinitely, or silently dropped, either of which is bad"],"sample_answer":"A dead-letter queue holds messages that have failed processing repeatedly, after exceeding a configured retry limit, instead of retrying them forever or dropping them silently. This prevents a single malformed or 'poison pill' message from blocking the queue or endlessly consuming worker resources on retries. It also gives engineers a place to inspect exactly which messages failed and why, and to replay them once the underlying bug or data issue is fixed, rather than losing that data entirely."},"follow_up_hint":"Ask how they'd set an appropriate retry count and backoff strategy before sending a message to the DLQ."},
-  {"id":"mq-0005","question":"How does Kafka achieve high throughput and horizontal scalability?","type":"conceptual","difficulty":3,"roles":["backend","system_design"],"topics":["message-queues"],"tech_keywords":["kafka"],"companies_common":["LinkedIn","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["Topics are split into partitions distributed across brokers, allowing parallel reads/writes across machines","Sequential disk writes (append-only log) are much faster than random I/O, and Kafka relies on OS page cache rather than heavy in-process buffering","Consumer groups let multiple consumer instances each own a subset of partitions, parallelizing consumption","Producers can batch and compress messages to reduce network overhead"],"sample_answer":"Kafka scales by splitting each topic into multiple partitions that are distributed across different broker machines, so reads and writes for the same topic can happen in parallel across the cluster. Within a partition, Kafka writes are append-only sequential disk writes, which are far faster than random I/O, and it leans heavily on the OS page cache for reads instead of managing its own in-memory buffer, keeping things efficient. On the consumption side, a consumer group can have multiple instances, each assigned a distinct subset of partitions, so consumption also parallelizes. Producers additionally batch and compress messages before sending, reducing network overhead per message."},"follow_up_hint":"Ask what happens to consumption parallelism if you have more consumers in a group than partitions in the topic."},
-  {"id":"mq-0006","question":"What is backpressure in a message-driven system, and how would you handle a slow consumer?","type":"scenario_based","difficulty":3,"roles":["backend","system_design"],"topics":["message-queues"],"tech_keywords":["backpressure"],"companies_common":["Amazon","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["Backpressure is a signal/mechanism that slows down or limits producers when consumers can't keep up, preventing unbounded queue growth","Without it, a slow consumer causes the queue to grow unboundedly, increasing memory use and message latency until something fails","Handling options: rate-limit the producer, add more consumer instances (horizontal scaling) if the workload is parallelizable, buffer with a bounded queue and reject/shed load past a threshold, or apply backpressure signals that propagate upstream (e.g. reactive streams)","Mentions monitoring consumer lag as the key metric to detect this problem early"],"sample_answer":"Backpressure is a mechanism to slow down or limit producers when consumers can't keep up with the incoming rate, preventing the queue from growing unboundedly — without it, a slow consumer just means the queue keeps growing until you run out of memory or the latency becomes unacceptable. To handle a slow consumer, I'd first check if the workload is horizontally scalable and add more consumer instances to increase parallel throughput. If not, I'd consider rate-limiting producers, using a bounded queue that starts shedding or rejecting load past a threshold, or using backpressure-aware streaming (like reactive streams) where the consumer explicitly signals how much it can handle. Monitoring consumer lag — how far behind the consumer is from the latest produced message — is the key metric to catch this early before it becomes a bigger problem."},"follow_up_hint":"Ask how they'd decide whether to scale consumers horizontally versus optimizing the consumer's per-message processing time."}
+  {
+    "id": "mq-0001",
+    "question": "What problem do message queues solve in a distributed system?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "message-queues",
+      "distributed-systems"
+    ],
+    "tech_keywords": [
+      "kafka",
+      "rabbitmq",
+      "sqs"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Decouples producers and consumers in time — the producer doesn't need the consumer to be available/fast at the moment of sending",
+        "Buffers load spikes: a burst of incoming work is queued instead of overwhelming downstream services directly",
+        "Enables asynchronous processing and fan-out to multiple consumers",
+        "Improves resilience: if a consumer crashes, unprocessed messages remain in the queue instead of being lost"
+      ],
+      "sample_answer": "Message queues decouple producers and consumers in time — a producer can publish a message without the consumer needing to be online or fast at that exact moment, since the queue holds it until it's processed. This is great for smoothing out load spikes, since a burst of requests just queues up rather than overwhelming a downstream service directly, and it enables asynchronous background processing and fan-out to multiple independent consumers. It also improves resilience: if a consumer crashes mid-processing, the message can be redelivered rather than lost, unlike a synchronous call that just fails."
+    },
+    "follow_up_hint": "Ask what happens if a consumer crashes after reading a message but before finishing processing it — how do you avoid losing that message?",
+    "concept": "Message Queues",
+    "sub_concept": "Decoupling and Load Management in Distributed Systems",
+    "expected_reasoning": "A strong candidate begins by analyzing how synchronous, direct communication tightly couples distributed services, leading to cascading failures when one service slows down. They reason about the lifecycle of a request under varying traffic conditions, identifying that producers often outpace consumers during peak load. By examining the dependencies between service availability and processing speed, they derive the need for an intermediary buffer. Finally, they weigh the trade-offs of asynchronous messaging, such as eventual consistency and message ordering challenges, against the resilience gains.",
+    "common_mistakes": [
+      "States that message queues are just for faster communication with no justification for architecture benefits",
+      "Confuses message queues with caching layers or databases without explaining their temporal decoupling role",
+      "Only mentions load balancing without addressing producer-consumer availability or failure resilience",
+      "Treats message queues as a way to guarantee synchronous response delivery across services",
+      "Gives a superficial definition like 'they hold messages' without explaining the systemic architectural impact"
+    ],
+    "progressive_hints": [
+      "Consider what happens to a calling service if the receiving service goes offline right when a request is sent.",
+      "Think about how a sudden spike in user traffic affects downstream services if they have to process requests instantly and synchronously.",
+      "Imagine inserting an asynchronous buffer between two services—how does that change their availability requirements and ability to handle traffic bursts?"
+    ],
+    "learning_objective": "Understand how message queues provide temporal decoupling, load leveling, and fault tolerance between independent services in a distributed architecture."
+  },
+  {
+    "id": "mq-0002",
+    "question": "Explain the difference between a message queue (like RabbitMQ/SQS) and an event streaming platform (like Kafka).",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "message-queues"
+    ],
+    "tech_keywords": [
+      "kafka",
+      "rabbitmq"
+    ],
+    "companies_common": [
+      "Uber",
+      "LinkedIn",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Traditional queue (RabbitMQ/SQS): a message is typically removed/invisible once consumed by one consumer — modeled as a work queue for task distribution",
+        "Kafka: messages (events) are appended to a durable, ordered log and retained for a configurable period; multiple independent consumer groups can each read the full stream at their own pace, and messages aren't deleted on read",
+        "Kafka partitions provide ordering within a partition and horizontal scalability; consumer groups enable parallel consumption",
+        "Choose a queue for simple task/work distribution; choose Kafka when you need replay, multiple independent subscribers to the same event stream, or high-throughput ordered event logs"
+      ],
+      "sample_answer": "A traditional message queue like RabbitMQ or SQS is built around distributing discrete tasks to workers — a message is generally consumed and removed by one consumer. Kafka is an event streaming/log platform: messages are appended to a durable, ordered, partitioned log and retained for a configurable time regardless of whether they've been read, so multiple independent consumer groups can each read the entire stream at their own pace, and you can replay old events. Kafka partitions give ordering guarantees within a partition and let you scale consumption horizontally via consumer groups. I'd reach for a simple queue for straightforward task distribution to workers, and Kafka when I need multiple subscribers to the same events, replay capability, or very high-throughput ordered event logs, like for event sourcing or analytics pipelines."
+    },
+    "follow_up_hint": "Ask how Kafka guarantees ordering, and whether that guarantee holds across partitions or just within one.",
+    "concept": "Event Streaming Versus Message Queueing",
+    "sub_concept": "Architectural and Consumption Model Differences",
+    "expected_reasoning": "A strong candidate begins by identifying the fundamental operational difference in how data lifecycle is managed between the two paradigms. They distinguish between point-to-point task distribution where consumption implies deletion or acknowledgment, versus a persistent append-only log architecture where data remains available for multiple independent readers. They then analyze how scaling and ordering are achieved, contrasting consumer concurrency in queues with partitioned logs and consumer groups. Finally, they weigh the trade-offs regarding use cases, matching task offloading and simple retries to queues, and event-driven architectures requiring replayability and auditing to streaming platforms.",
+    "common_mistakes": [
+      "Stating that Kafka is just a faster or more scalable version of RabbitMQ without addressing the architectural storage differences",
+      "Believing that messages in Kafka are deleted immediately after a single consumer reads them",
+      "Ignoring the concept of consumer groups and how multiple independent services can consume the same data stream",
+      "Failing to mention message retention policies and the ability to replay historical data in streaming platforms",
+      "Treating the two systems as direct drop-in replacements for one another regardless of workload characteristics"
+    ],
+    "progressive_hints": [
+      "Think about what happens to a message immediately after it is successfully processed by a worker in RabbitMQ versus Kafka.",
+      "Consider how many different microservices can read the exact same set of historical events, and how long those events stick around in storage.",
+      "Focus on the core data structure differences: a transient work queue meant for task distribution versus a durable, ordered log meant for state replication and replay."
+    ],
+    "learning_objective": "Understand when to use a task-oriented message queue versus a durable event log based on data retention, consumption patterns, and replay requirements."
+  },
+  {
+    "id": "mq-0003",
+    "question": "What is the difference between at-most-once, at-least-once, and exactly-once message delivery semantics?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "message-queues",
+      "distributed-systems"
+    ],
+    "tech_keywords": [
+      "kafka",
+      "idempotency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "At-most-once: message is delivered zero or one time — can be lost, never duplicated (fire-and-forget)",
+        "At-least-once: message is guaranteed delivered one or more times — never lost, but consumer must handle duplicates (most common in practice)",
+        "Exactly-once: message delivered and processed exactly one time — very hard to guarantee end-to-end, usually achieved via idempotent processing + deduplication rather than a true distributed guarantee",
+        "Explains that in practice, most systems implement at-least-once delivery + idempotent consumers to effectively achieve exactly-once processing outcomes"
+      ],
+      "sample_answer": "At-most-once means a message might be delivered once or not at all — it can be lost but is never duplicated, which is fine for non-critical data like some metrics. At-least-once means the message is guaranteed to arrive, but might arrive more than once, so the consumer must be able to handle duplicates — this is the most common and practical choice. True exactly-once delivery is extremely hard to guarantee across a network in the general case; in practice, systems achieve an exactly-once processing outcome by combining at-least-once delivery with an idempotent consumer — for example, tracking processed message IDs so reprocessing a duplicate is a safe no-op."
+    },
+    "follow_up_hint": "Ask them to design an idempotent consumer for a payment-processing message that could be delivered twice.",
+    "concept": "Message Delivery Semantics",
+    "sub_concept": "Trade-offs between at-most-once, at-least-once, and exactly-once processing",
+    "expected_reasoning": "A strong candidate begins by analyzing what happens when network partitions or failures occur between a producer, broker, and consumer. They systematically break down each semantic by examining the failure modes of message loss versus message duplication. Rather than viewing them as three independent native options, they derive how practical systems use retries to avoid loss (at-least-once) and rely on downstream deduplication or idempotency to emulate the ideal state. Finally, they weigh the performance and complexity trade-offs of enforcing strict end-to-end guarantees versus practical architectural compromises.",
+    "common_mistakes": [
+      "States the definitions with no justification or context on when to use each.",
+      "Assumes exactly-once delivery is a native network-level guarantee rather than an application-level illusion achieved via idempotency.",
+      "Claims exactly-once is standard and easy to configure in off-the-shelf message brokers without performance or complexity penalties.",
+      "Fails to explain how duplicates happen under at-least-once semantics when acknowledgments fail or time out.",
+      "Confuses message delivery semantics with message ordering or transactional isolation levels."
+    ],
+    "progressive_hints": [
+      "What are the two worst things that can happen to a message when a network connection drops mid-flight?",
+      "If a message broker resends a message because it never received an acknowledgment, what guarantee does that represent, and what problem does it create for the consumer?",
+      "If true network-level exactly-once is extremely difficult and expensive to achieve across distributed nodes, how do practical production systems achieve the same business outcome using at-least-once delivery?"
+    ],
+    "learning_objective": "Understand that practical distributed messaging systems achieve reliable outcomes by combining at-least-once delivery with idempotent consumer design rather than relying on native end-to-end exactly-once guarantees."
+  },
+  {
+    "id": "mq-0004",
+    "question": "What is a dead-letter queue, and why would you use one?",
+    "type": "practical_implementation",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "message-queues"
+    ],
+    "tech_keywords": [
+      "dead-letter-queue"
+    ],
+    "companies_common": [
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A dead-letter queue (DLQ) holds messages that repeatedly fail processing after a set number of retry attempts",
+        "Prevents a single 'poison pill' message from blocking the queue or being retried forever, consuming resources",
+        "Lets engineers inspect and debug failed messages separately, and potentially replay them after fixing the root cause",
+        "Without a DLQ, a malformed message could be retried indefinitely, or silently dropped, either of which is bad"
+      ],
+      "sample_answer": "A dead-letter queue holds messages that have failed processing repeatedly, after exceeding a configured retry limit, instead of retrying them forever or dropping them silently. This prevents a single malformed or 'poison pill' message from blocking the queue or endlessly consuming worker resources on retries. It also gives engineers a place to inspect exactly which messages failed and why, and to replay them once the underlying bug or data issue is fixed, rather than losing that data entirely."
+    },
+    "follow_up_hint": "Ask how they'd set an appropriate retry count and backoff strategy before sending a message to the DLQ.",
+    "concept": "Message Queues",
+    "sub_concept": "Dead-Letter Queue",
+    "expected_reasoning": "A strong candidate starts by considering what happens when a message fails processing, recognizing that simple retries can lead to infinite loops if the error is deterministic. They deduce that the system needs a circuit breaker mechanism to remove permanently failing items without losing data. They then explain how isolating these 'poison pills' allows the main queue to continue operating smoothly while giving operators a chance to inspect the payload and debug the root cause. Finally, they highlight the operational necessity of manual intervention or asynchronous replay once a fix is deployed.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'it holds bad messages' without explaining the failure mechanism or retry loop.",
+      "Confuses a dead-letter queue with a standard retry mechanism or backoff policy, missing that a DLQ is where messages go *after* retries are exhausted.",
+      "Claims that a DLQ permanently deletes or discards failed messages, missing the debugging and replay utility.",
+      "Assumes the queue automatically fixes and reprocesses the failed messages on its own.",
+      "Fails to mention the impact of a 'poison pill' on downstream consumer threads or overall queue throughput."
+    ],
+    "progressive_hints": [
+      "What happens to a message in your system if the worker processing it throws an unhandled exception or crashes?",
+      "If a message keeps failing repeatedly due to corrupted data, retrying it forever will freeze your consumer. How can you stop it from blocking valid messages without losing the data entirely?",
+      "If you route exhausted messages to a secondary holding area for inspection and later repair, what is that pattern called?"
+    ],
+    "learning_objective": "Understand how dead-letter queues protect distributed systems from infinite retry loops and enable safe isolation and debugging of poison pill messages."
+  },
+  {
+    "id": "mq-0005",
+    "question": "How does Kafka achieve high throughput and horizontal scalability?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "message-queues"
+    ],
+    "tech_keywords": [
+      "kafka"
+    ],
+    "companies_common": [
+      "LinkedIn",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Topics are split into partitions distributed across brokers, allowing parallel reads/writes across machines",
+        "Sequential disk writes (append-only log) are much faster than random I/O, and Kafka relies on OS page cache rather than heavy in-process buffering",
+        "Consumer groups let multiple consumer instances each own a subset of partitions, parallelizing consumption",
+        "Producers can batch and compress messages to reduce network overhead"
+      ],
+      "sample_answer": "Kafka scales by splitting each topic into multiple partitions that are distributed across different broker machines, so reads and writes for the same topic can happen in parallel across the cluster. Within a partition, Kafka writes are append-only sequential disk writes, which are far faster than random I/O, and it leans heavily on the OS page cache for reads instead of managing its own in-memory buffer, keeping things efficient. On the consumption side, a consumer group can have multiple instances, each assigned a distinct subset of partitions, so consumption also parallelizes. Producers additionally batch and compress messages before sending, reducing network overhead per message."
+    },
+    "follow_up_hint": "Ask what happens to consumption parallelism if you have more consumers in a group than partitions in the topic.",
+    "concept": "Distributed Message Queues",
+    "sub_concept": "Throughput and Horizontal Scalability Architecture",
+    "expected_reasoning": "A strong candidate begins by separating storage architecture from network and compute bottlenecks. They first analyze how data is organized on disk, recognizing that moving from random to sequential access fundamentally changes I/O limits. Next, they explain how breaking monolithic topics into smaller units allows distribution across independent nodes. Finally, they tie compute scaling together by showing how consumer coordination enables parallel processing without lock contention.",
+    "common_mistakes": [
+      "States that Kafka is fast simply because it is written in Java or Scala without explaining hardware-level mechanisms.",
+      "Claims Kafka stores all messages in RAM, confusing caching with in-memory databases.",
+      "Treats a topic as a single monolithic queue rather than explaining how partitions enable distribution.",
+      "Focuses solely on broker-side storage while ignoring how consumer groups and client batching contribute to end-to-end throughput.",
+      "Confuses high throughput with low latency, missing the architectural trade-offs Kafka makes for batching."
+    ],
+    "progressive_hints": [
+      "Consider the fundamental differences between how traditional databases write to disk versus how a log file grows.",
+      "Think about how a single topic can outgrow the storage and I/O capacity of any single machine in a cluster.",
+      "Look closely at how breaking data into isolated segments on disk allows both the OS kernel and multiple consumer processes to work in parallel."
+    ],
+    "learning_objective": "Understand how combining append-only sequential disk I/O, OS page cache utilization, and partitioned data distribution enables a message broker to scale horizontally and achieve massive throughput."
+  },
+  {
+    "id": "mq-0006",
+    "question": "What is backpressure in a message-driven system, and how would you handle a slow consumer?",
+    "type": "scenario_based",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "message-queues"
+    ],
+    "tech_keywords": [
+      "backpressure"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Backpressure is a signal/mechanism that slows down or limits producers when consumers can't keep up, preventing unbounded queue growth",
+        "Without it, a slow consumer causes the queue to grow unboundedly, increasing memory use and message latency until something fails",
+        "Handling options: rate-limit the producer, add more consumer instances (horizontal scaling) if the workload is parallelizable, buffer with a bounded queue and reject/shed load past a threshold, or apply backpressure signals that propagate upstream (e.g. reactive streams)",
+        "Mentions monitoring consumer lag as the key metric to detect this problem early"
+      ],
+      "sample_answer": "Backpressure is a mechanism to slow down or limit producers when consumers can't keep up with the incoming rate, preventing the queue from growing unboundedly — without it, a slow consumer just means the queue keeps growing until you run out of memory or the latency becomes unacceptable. To handle a slow consumer, I'd first check if the workload is horizontally scalable and add more consumer instances to increase parallel throughput. If not, I'd consider rate-limiting producers, using a bounded queue that starts shedding or rejecting load past a threshold, or using backpressure-aware streaming (like reactive streams) where the consumer explicitly signals how much it can handle. Monitoring consumer lag — how far behind the consumer is from the latest produced message — is the key metric to catch this early before it becomes a bigger problem."
+    },
+    "follow_up_hint": "Ask how they'd decide whether to scale consumers horizontally versus optimizing the consumer's per-message processing time.",
+    "concept": "Message Queues",
+    "sub_concept": "Backpressure and Consumer Scaling",
+    "expected_reasoning": "A strong candidate begins by identifying the operational risk of decoupled systems where producer throughput outpaces consumer capacity, leading to resource exhaustion. They then trace the failure mode—unbounded memory growth, cascading timeouts, and eventual system failure—if no signaling mechanism exists. Next, they weigh structural mitigation strategies, comparing reactive upstream flow control against infrastructural solutions like horizontal scaling or strategic load shedding. Finally, they tie these solutions back to observability, highlighting consumer lag as the primary telemetry required to detect imbalances early.",
+    "common_mistakes": [
+      "States that infinite queues solve the problem without discussing memory limits or latency degradation",
+      "Assumes adding more consumers magically fixes every slow-consumer scenario without checking if the workload is partitionable",
+      "Confuses backpressure with rate-limiting or simple message dropping",
+      "Fails to mention how backpressure signals propagate upstream through distributed boundaries",
+      "Omits any mention of monitoring or metrics like consumer lag"
+    ],
+    "progressive_hints": [
+      "What happens to the broker's memory if your producers keep pushing data twice as fast as your consumers can process it?",
+      "You've identified that the queue fills up, but how can you prevent the producer from overwhelming the system before messages hit the queue?",
+      "Consider combining a signaling mechanism that slows down the publisher with architectural patterns like horizontal scaling or bounded buffers with load shedding."
+    ],
+    "learning_objective": "The candidate should understand how backpressure prevents cascading failures in message-driven systems by aligning producer throughput with consumer capacity through signaling, scaling, or load shedding."
+  }
 ]

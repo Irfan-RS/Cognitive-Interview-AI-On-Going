@@ -1,5 +1,145 @@
 [
-  {"id":"perf-0001","question":"What are Core Web Vitals, and what does each metric measure?","type":"conceptual","difficulty":2,"roles":["frontend"],"topics":["performance","frontend"],"tech_keywords":["web-vitals"],"companies_common":["Google","Meta","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["Largest Contentful Paint (LCP): time until the largest visible content element renders — measures perceived loading speed","Interaction to Next Paint (INP, replacing First Input Delay): measures responsiveness — how quickly the page responds to user interactions throughout its lifetime, not just the first one","Cumulative Layout Shift (CLS): measures visual stability — how much unexpected layout shifting occurs as the page loads (e.g. content jumping around as images/ads load in)","Explains these are used by Google as real user-experience signals, including as a ranking factor for search"],"sample_answer":"Largest Contentful Paint, or LCP, measures how long it takes for the largest visible content element on the page — often a hero image or main heading — to fully render, giving a good proxy for perceived loading speed. Interaction to Next Paint, INP, which replaced First Input Delay, measures overall responsiveness by tracking how quickly the page responds to user interactions across its entire lifetime, not just the very first click. Cumulative Layout Shift, CLS, measures visual stability — how much content unexpectedly shifts around during loading, like when an ad or image loads late and pushes text down right as a user was about to tap something. Google uses these as real user-experience signals, and they factor into search ranking, which is part of why they've become a standard set of metrics teams actively optimize for."},"follow_up_hint":"Ask them what specific technique reduces CLS caused by images loading without a reserved size (e.g. explicit width/height attributes)."},
-  {"id":"perf-0002","question":"What techniques would you use to improve the initial load time of a large JavaScript web application?","type":"scenario_based","difficulty":3,"roles":["frontend"],"topics":["performance"],"tech_keywords":["code-splitting","lazy-loading"],"companies_common":["Meta","Amazon","Google"],"source_style":"faang-common","reference_solution":{"key_points":["Code splitting: break the JS bundle into smaller chunks loaded on demand (e.g. per route), so the initial load only downloads what's needed for the first screen, not the entire application","Lazy loading: defer loading of below-the-fold images, non-critical components, or third-party scripts until they're actually needed/visible","Tree-shaking and removing unused dependencies to reduce overall bundle size; using lighter alternative libraries where a heavy dependency isn't fully needed","Server-side rendering or static generation for the initial page to show meaningful content faster, before the full JS bundle even finishes loading and hydrating"],"sample_answer":"I'd start with code splitting — breaking the JavaScript bundle into smaller chunks, typically per route or per major feature, so the initial page load only downloads the code actually needed for that first screen, rather than the entire application upfront. I'd add lazy loading for below-the-fold images, non-critical UI components, and third-party scripts, so they only load once they're actually needed or about to become visible, rather than blocking the initial render. I'd also audit the bundle for unused dependencies and rely on tree-shaking to strip out dead code, and look for lighter-weight alternatives to any unusually heavy library that's only using a small fraction of its features. For content that needs to appear as fast as possible, I'd consider server-side rendering or static site generation for the initial page, so meaningful content shows up before the full JavaScript bundle has even finished downloading and hydrating on the client."},"follow_up_hint":"Ask them how they'd actually measure whether these changes made a real difference (e.g. Lighthouse, real user monitoring)."},
-  {"id":"perf-0003","question":"Explain what browser rendering critical path means and how render-blocking resources affect it.","type":"conceptual","difficulty":3,"roles":["frontend"],"topics":["performance"],"tech_keywords":["critical-rendering-path"],"companies_common":["Google","Meta"],"source_style":"faang-common","reference_solution":{"key_points":["Critical rendering path: the sequence of steps the browser must complete before it can paint pixels to the screen — parsing HTML into the DOM, parsing CSS into the CSSOM, combining them into a render tree, layout, then paint","CSS is render-blocking by default: the browser won't paint anything until it has the CSSOM, since styles could affect what's visible, so a slow-loading stylesheet delays first paint","A <script> tag without async/defer is also render-blocking and parser-blocking: the HTML parser stops entirely to fetch and execute it before continuing, unless deferred","Techniques to shorten the critical path: minimize/inline critical CSS, defer/async non-critical JS, reduce the number of render-blocking resources and their size"],"sample_answer":"The critical rendering path is the sequence of steps a browser must go through before it can actually paint pixels to the screen: parsing the HTML into the DOM, parsing CSS into the CSSOM, combining both into a render tree, computing layout, and finally painting. CSS is render-blocking by default — the browser deliberately won't paint anything until it has the full CSSOM, since a late-arriving stylesheet could change what's visually correct to show, so a slow stylesheet directly delays the first paint. A regular <script> tag without async or defer is both parser-blocking and can be render-blocking too: the HTML parser stops entirely to fetch and execute that script before continuing to parse the rest of the page. To shorten the critical path, I'd inline the small amount of CSS actually needed for above-the-fold content directly in the HTML head, defer or async-load everything else, defer non-critical JavaScript so it doesn't block parsing, and generally minimize both the number and size of render-blocking resources needed before the first meaningful paint."},"follow_up_hint":"Ask them the specific difference in behavior between the `async` and `defer` script attributes."}
+  {
+    "id": "perf-0001",
+    "question": "What are Core Web Vitals, and what does each metric measure?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "performance",
+      "frontend"
+    ],
+    "tech_keywords": [
+      "web-vitals"
+    ],
+    "companies_common": [
+      "Google",
+      "Meta",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Largest Contentful Paint (LCP): time until the largest visible content element renders — measures perceived loading speed",
+        "Interaction to Next Paint (INP, replacing First Input Delay): measures responsiveness — how quickly the page responds to user interactions throughout its lifetime, not just the first one",
+        "Cumulative Layout Shift (CLS): measures visual stability — how much unexpected layout shifting occurs as the page loads (e.g. content jumping around as images/ads load in)",
+        "Explains these are used by Google as real user-experience signals, including as a ranking factor for search"
+      ],
+      "sample_answer": "Largest Contentful Paint, or LCP, measures how long it takes for the largest visible content element on the page — often a hero image or main heading — to fully render, giving a good proxy for perceived loading speed. Interaction to Next Paint, INP, which replaced First Input Delay, measures overall responsiveness by tracking how quickly the page responds to user interactions across its entire lifetime, not just the very first click. Cumulative Layout Shift, CLS, measures visual stability — how much content unexpectedly shifts around during loading, like when an ad or image loads late and pushes text down right as a user was about to tap something. Google uses these as real user-experience signals, and they factor into search ranking, which is part of why they've become a standard set of metrics teams actively optimize for."
+    },
+    "follow_up_hint": "Ask them what specific technique reduces CLS caused by images loading without a reserved size (e.g. explicit width/height attributes).",
+    "concept": "Core Web Vitals",
+    "sub_concept": "User-Centric Performance Metrics",
+    "expected_reasoning": "A strong candidate will first define Core Web Vitals as a standardized set of metrics used by Google to quantify the user experience of a webpage. They will categorize these metrics into three distinct pillars: loading performance, interactivity, and visual stability. They should explain the transition from FID to INP, demonstrating an awareness of modern web standards. Finally, they will contextualize these metrics as ranking signals, linking technical performance directly to business outcomes like SEO and user retention.",
+    "common_mistakes": [
+      "Listing only one or two metrics instead of the full set of three.",
+      "Confusing legacy metrics like First Input Delay (FID) with the current standard, Interaction to Next Paint (INP).",
+      "Describing the metrics as purely technical server-side measurements rather than user-centric browser experiences.",
+      "Failing to explain the 'why'—that these are specific signals used by Google for search ranking.",
+      "Providing vague definitions (e.g., 'CLS is about layout') without explaining the specific user pain point (unexpected movement).",
+      "Focusing on developer-centric metrics like 'Time to First Byte' (TTFB) which are not part of the Core Web Vitals."
+    ],
+    "progressive_hints": [
+      "Consider the three primary aspects of a user's journey on a website: how it starts, how it reacts to them, and how stable it feels.",
+      "Think about the specific user frustrations associated with a page loading: elements appearing too slowly, buttons not responding, or content jumping around while reading.",
+      "Recall the three specific acronyms (LCP, INP, CLS) and describe what specific user experience each one quantifies regarding loading, responsiveness, and visual stability."
+    ],
+    "learning_objective": "The candidate should understand that Core Web Vitals are user-centric metrics that prioritize the actual experience of a visitor over raw server-side performance data."
+  },
+  {
+    "id": "perf-0002",
+    "question": "What techniques would you use to improve the initial load time of a large JavaScript web application?",
+    "type": "scenario_based",
+    "difficulty": 3,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "performance"
+    ],
+    "tech_keywords": [
+      "code-splitting",
+      "lazy-loading"
+    ],
+    "companies_common": [
+      "Meta",
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Code splitting: break the JS bundle into smaller chunks loaded on demand (e.g. per route), so the initial load only downloads what's needed for the first screen, not the entire application",
+        "Lazy loading: defer loading of below-the-fold images, non-critical components, or third-party scripts until they're actually needed/visible",
+        "Tree-shaking and removing unused dependencies to reduce overall bundle size; using lighter alternative libraries where a heavy dependency isn't fully needed",
+        "Server-side rendering or static generation for the initial page to show meaningful content faster, before the full JS bundle even finishes loading and hydrating"
+      ],
+      "sample_answer": "I'd start with code splitting — breaking the JavaScript bundle into smaller chunks, typically per route or per major feature, so the initial page load only downloads the code actually needed for that first screen, rather than the entire application upfront. I'd add lazy loading for below-the-fold images, non-critical UI components, and third-party scripts, so they only load once they're actually needed or about to become visible, rather than blocking the initial render. I'd also audit the bundle for unused dependencies and rely on tree-shaking to strip out dead code, and look for lighter-weight alternatives to any unusually heavy library that's only using a small fraction of its features. For content that needs to appear as fast as possible, I'd consider server-side rendering or static site generation for the initial page, so meaningful content shows up before the full JavaScript bundle has even finished downloading and hydrating on the client."
+    },
+    "follow_up_hint": "Ask them how they'd actually measure whether these changes made a real difference (e.g. Lighthouse, real user monitoring).",
+    "concept": "Frontend Performance Optimization",
+    "sub_concept": "Critical Rendering Path and Bundle Management",
+    "expected_reasoning": "A strong candidate begins by identifying the primary bottleneck as the size of the initial JavaScript payload and the time required to parse/execute it. They then categorize solutions into reducing the total amount of code sent (tree-shaking, dependency auditing) and changing the delivery strategy (code splitting, lazy loading). Finally, they weigh the trade-offs between client-side rendering and server-side techniques, considering how these impact the First Contentful Paint and Time to Interactive metrics.",
+    "common_mistakes": [
+      "Listing generic performance tips like 'use a CDN' or 'minify files' without addressing the architectural complexity of a large JS application.",
+      "Focusing exclusively on client-side code while ignoring the impact of the initial server response or hydration process.",
+      "Suggesting aggressive code splitting without considering the negative impact of too many small network requests (HTTP/2 overhead).",
+      "Failing to distinguish between 'loading' (downloading) and 'execution' (parsing/compiling) costs.",
+      "Providing a laundry list of tools (Webpack, Vite) rather than explaining the underlying architectural principles."
+    ],
+    "progressive_hints": [
+      "Consider the lifecycle of a web page: what are the specific stages between a user clicking a link and the application becoming interactive?",
+      "Think about the relationship between the total bundle size and the browser's ability to render the first screen; what could you change about how the code is delivered to the client?",
+      "If your application is currently one massive file, how could you restructure the delivery so the browser only fetches the code required for the specific page the user is currently viewing?"
+    ],
+    "learning_objective": "The candidate should understand that optimizing large web applications requires a holistic strategy balancing bundle size reduction, intelligent delivery patterns, and efficient rendering techniques."
+  },
+  {
+    "id": "perf-0003",
+    "question": "Explain what browser rendering critical path means and how render-blocking resources affect it.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "performance"
+    ],
+    "tech_keywords": [
+      "critical-rendering-path"
+    ],
+    "companies_common": [
+      "Google",
+      "Meta"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Critical rendering path: the sequence of steps the browser must complete before it can paint pixels to the screen — parsing HTML into the DOM, parsing CSS into the CSSOM, combining them into a render tree, layout, then paint",
+        "CSS is render-blocking by default: the browser won't paint anything until it has the CSSOM, since styles could affect what's visible, so a slow-loading stylesheet delays first paint",
+        "A <script> tag without async/defer is also render-blocking and parser-blocking: the HTML parser stops entirely to fetch and execute it before continuing, unless deferred",
+        "Techniques to shorten the critical path: minimize/inline critical CSS, defer/async non-critical JS, reduce the number of render-blocking resources and their size"
+      ],
+      "sample_answer": "The critical rendering path is the sequence of steps a browser must go through before it can actually paint pixels to the screen: parsing the HTML into the DOM, parsing CSS into the CSSOM, combining both into a render tree, computing layout, and finally painting. CSS is render-blocking by default — the browser deliberately won't paint anything until it has the full CSSOM, since a late-arriving stylesheet could change what's visually correct to show, so a slow stylesheet directly delays the first paint. A regular <script> tag without async or defer is both parser-blocking and can be render-blocking too: the HTML parser stops entirely to fetch and execute that script before continuing to parse the rest of the page. To shorten the critical path, I'd inline the small amount of CSS actually needed for above-the-fold content directly in the HTML head, defer or async-load everything else, defer non-critical JavaScript so it doesn't block parsing, and generally minimize both the number and size of render-blocking resources needed before the first meaningful paint."
+    },
+    "follow_up_hint": "Ask them the specific difference in behavior between the `async` and `defer` script attributes.",
+    "concept": "Critical Rendering Path",
+    "sub_concept": "Resource Blocking and Browser Pipeline",
+    "expected_reasoning": "A strong candidate will first define the pipeline from bytes to pixels, identifying the dependency between DOM and CSSOM construction. They will then analyze how external resources interrupt this flow, distinguishing between the browser's need for style information to prevent layout shifts and the parser's need to execute scripts. Finally, they will evaluate how specific attributes like 'async' or 'defer' alter these blocking behaviors to optimize the time to first paint.",
+    "common_mistakes": [
+      "Confusing the DOM construction process with the network request phase",
+      "Failing to distinguish between render-blocking CSS and parser-blocking JavaScript",
+      "Assuming all external resources block the rendering process equally",
+      "Focusing only on network latency rather than the browser's internal execution sequence",
+      "Stating that scripts always block rendering without mentioning the impact of async/defer attributes"
+    ],
+    "progressive_hints": [
+      "Consider the sequence of steps a browser must take from receiving the initial HTML bytes to displaying the final visual elements on the screen.",
+      "Think about why a browser might choose to pause the construction of the page layout when it encounters a link to an external stylesheet or a script tag.",
+      "Analyze how the browser's requirement for a complete CSSOM and the sequential nature of HTML parsing create dependencies that prevent the browser from painting pixels immediately."
+    ],
+    "learning_objective": "Understand how resource dependencies and browser parsing rules dictate the sequence of page rendering and how to optimize them to improve perceived performance."
+  }
 ]

@@ -1,5 +1,145 @@
 [
-  {"id":"javad-0001","question":"Explain the difference between JVM heap and stack memory, and where objects versus local variables live.","type":"conceptual","difficulty":2,"roles":["backend"],"topics":["java"],"tech_keywords":["java","jvm"],"companies_common":["Amazon","Google","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["Each thread has its own stack, storing local variables, method call frames, and primitive values (or references to heap objects)","The heap is shared across all threads and stores all objects created with 'new', managed by the garbage collector","Passing an object 'reference' to a method copies the reference (a pointer to the heap object) onto the stack, not the object itself — Java is 'pass by value' where the value being passed for objects is the reference","Explains stack memory is automatically reclaimed when a method returns; heap memory is reclaimed only by the garbage collector once nothing references it anymore"],"sample_answer":"Each thread in the JVM has its own stack, which stores local variables, method call frames, and primitive values, or references pointing to objects on the heap. The heap is shared across all threads and holds every object created with 'new', and it's managed by the garbage collector rather than being automatically cleaned up when a method returns. When you pass an object to a method in Java, you're passing a copy of the reference — essentially a pointer — onto the stack, not copying the actual object data; this is why Java is described as strictly pass-by-value, even for objects, since it's the reference value itself that's copied. Stack memory for a method's local variables is automatically reclaimed the instant that method returns, while heap memory for an object is only reclaimed by the garbage collector once it determines nothing references that object anymore."},"follow_up_hint":"Ask them to explain what happens in memory when a method reassigns a passed-in object reference to point somewhere else — does it affect the caller's variable?"},
-  {"id":"javad-0002","question":"What is the difference between an abstract class and an interface in Java, and when would you use each?","type":"trade_off_questions","difficulty":2,"roles":["backend"],"topics":["java","oop"],"tech_keywords":["java"],"companies_common":["Amazon","Infosys","TCS"],"source_style":"common-interview","reference_solution":{"key_points":["An abstract class can have both abstract and concrete methods, instance fields with state, and constructors — a class can extend only one abstract class (single inheritance)","An interface (traditionally) declares method signatures without implementation (though modern Java allows default methods); a class can implement multiple interfaces","Use abstract class when subclasses share meaningful common state/implementation and there's a clear 'is-a' hierarchy","Use interface when you want to define a contract/capability that unrelated classes can adopt, or need multiple inheritance of type/behavior"],"sample_answer":"An abstract class can contain both abstract methods without implementation and fully implemented concrete methods, can hold instance state via fields, and can have constructors — but a class can only extend one abstract class, following Java's single-inheritance rule for classes. An interface traditionally just declares method signatures as a contract with no implementation, though modern Java does allow default methods with implementations now — importantly, a class can implement multiple interfaces, giving a form of multiple inheritance of behavior. I'd reach for an abstract class when subclasses genuinely share meaningful implementation or state and there's a clear 'is-a' hierarchy, like different types of Vehicle sharing common fields and logic. I'd reach for an interface when I want to define a capability or contract that otherwise unrelated classes can adopt — like Comparable or Serializable — or when a class needs to satisfy multiple such contracts at once."},"follow_up_hint":"Ask them what a Java 8 default method is and why it was added to interfaces."},
-  {"id":"javad-0003","question":"Explain checked versus unchecked exceptions in Java, and when you'd choose to create a checked exception.","type":"trade_off_questions","difficulty":3,"roles":["backend"],"topics":["java"],"tech_keywords":["java","exceptions"],"companies_common":["Amazon","Microsoft"],"source_style":"faang-common","reference_solution":{"key_points":["Checked exceptions (extending Exception, not RuntimeException) must be either caught or declared in a method's 'throws' clause — enforced at compile time","Unchecked exceptions (extending RuntimeException) don't require explicit handling or declaration — the compiler doesn't force you to deal with them","Checked exceptions fit recoverable conditions the caller can reasonably be expected to handle (e.g. a file not found, a network timeout)","Unchecked exceptions fit programming errors or conditions the caller typically can't meaningfully recover from (e.g. NullPointerException, IllegalArgumentException for invalid input) — many modern Java codebases lean toward unchecked exceptions to avoid boilerplate try/catch or throws-clause proliferation"],"sample_answer":"Checked exceptions, which extend Exception but not RuntimeException, must either be caught or explicitly declared in a method's throws clause, enforced by the compiler. Unchecked exceptions, extending RuntimeException, don't require any of that — the compiler doesn't force calling code to acknowledge them at all. I'd use a checked exception for a genuinely recoverable condition that a reasonable caller might want to catch and handle differently, like a file not being found or a network timeout during an I/O operation. I'd use an unchecked exception for programming errors or conditions the caller usually can't meaningfully recover from, like passing an invalid argument or hitting a null reference. In practice, a lot of modern Java code and libraries lean more toward unchecked exceptions even for some recoverable conditions, since checked exceptions can lead to a lot of boilerplate try/catch blocks or throws-clause proliferation through many layers of calling code that don't actually add value."},"follow_up_hint":"Ask them what criticism is commonly raised against Java's checked exception design, and whether other JVM languages like Kotlin adopted it."}
+  {
+    "id": "javad-0001",
+    "question": "Explain the difference between JVM heap and stack memory, and where objects versus local variables live.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "java"
+    ],
+    "tech_keywords": [
+      "java",
+      "jvm"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Each thread has its own stack, storing local variables, method call frames, and primitive values (or references to heap objects)",
+        "The heap is shared across all threads and stores all objects created with 'new', managed by the garbage collector",
+        "Passing an object 'reference' to a method copies the reference (a pointer to the heap object) onto the stack, not the object itself — Java is 'pass by value' where the value being passed for objects is the reference",
+        "Explains stack memory is automatically reclaimed when a method returns; heap memory is reclaimed only by the garbage collector once nothing references it anymore"
+      ],
+      "sample_answer": "Each thread in the JVM has its own stack, which stores local variables, method call frames, and primitive values, or references pointing to objects on the heap. The heap is shared across all threads and holds every object created with 'new', and it's managed by the garbage collector rather than being automatically cleaned up when a method returns. When you pass an object to a method in Java, you're passing a copy of the reference — essentially a pointer — onto the stack, not copying the actual object data; this is why Java is described as strictly pass-by-value, even for objects, since it's the reference value itself that's copied. Stack memory for a method's local variables is automatically reclaimed the instant that method returns, while heap memory for an object is only reclaimed by the garbage collector once it determines nothing references that object anymore."
+    },
+    "follow_up_hint": "Ask them to explain what happens in memory when a method reassigns a passed-in object reference to point somewhere else — does it affect the caller's variable?",
+    "concept": "JVM Memory Management",
+    "sub_concept": "Heap vs Stack Memory Allocation",
+    "expected_reasoning": "A strong candidate begins by separating JVM memory into two distinct architectural regions based on thread scope and lifespan. They trace how method execution frames and primitive values occupy thread-specific stack memory, while dynamically allocated objects reside in a globally shared heap. Next, they clarify the crucial distinction between object references stored on the stack and the actual object payloads on the heap. Finally, they contrast the deterministic, automatic cleanup of stack frames upon method return with the non-deterministic, garbage-collected reclamation of heap memory.",
+    "common_mistakes": [
+      "States that all variables live on the stack and all objects live on the heap without mentioning object references.",
+      "Claims Java is pass-by-reference when explaining how objects are passed to methods.",
+      "Confuses the lifespan of heap objects with method execution boundaries.",
+      "States that the heap is thread-local rather than shared across all threads.",
+      "Believes garbage collection frees stack memory automatically while ignoring heap reclamation mechanics."
+    ],
+    "progressive_hints": [
+      "Consider what happens to local variables and method call states when a method finishes executing.",
+      "Think about how multiple threads running concurrently access local variables versus shared objects, and what actually gets stored when you use the 'new' keyword.",
+      "Examine what mechanism actually gets placed onto the stack when you pass an object into a method, and how Java handles 'pass-by-value' with respect to memory addresses."
+    ],
+    "learning_objective": "The candidate should understand how the JVM partitions memory between thread-local stacks and the shared heap, and how references bridge the two during method execution and object creation."
+  },
+  {
+    "id": "javad-0002",
+    "question": "What is the difference between an abstract class and an interface in Java, and when would you use each?",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "java",
+      "oop"
+    ],
+    "tech_keywords": [
+      "java"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys",
+      "TCS"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "An abstract class can have both abstract and concrete methods, instance fields with state, and constructors — a class can extend only one abstract class (single inheritance)",
+        "An interface (traditionally) declares method signatures without implementation (though modern Java allows default methods); a class can implement multiple interfaces",
+        "Use abstract class when subclasses share meaningful common state/implementation and there's a clear 'is-a' hierarchy",
+        "Use interface when you want to define a contract/capability that unrelated classes can adopt, or need multiple inheritance of type/behavior"
+      ],
+      "sample_answer": "An abstract class can contain both abstract methods without implementation and fully implemented concrete methods, can hold instance state via fields, and can have constructors — but a class can only extend one abstract class, following Java's single-inheritance rule for classes. An interface traditionally just declares method signatures as a contract with no implementation, though modern Java does allow default methods with implementations now — importantly, a class can implement multiple interfaces, giving a form of multiple inheritance of behavior. I'd reach for an abstract class when subclasses genuinely share meaningful implementation or state and there's a clear 'is-a' hierarchy, like different types of Vehicle sharing common fields and logic. I'd reach for an interface when I want to define a capability or contract that otherwise unrelated classes can adopt — like Comparable or Serializable — or when a class needs to satisfy multiple such contracts at once."
+    },
+    "follow_up_hint": "Ask them what a Java 8 default method is and why it was added to interfaces.",
+    "concept": "Object Oriented Design",
+    "sub_concept": "Abstract Classes versus Interfaces",
+    "expected_reasoning": "A strong candidate begins by defining the fundamental structural differences, noting that abstract classes support state and single inheritance while interfaces define behavior contracts and support multiple implementation. They then analyze how these mechanics dictate design choices, evaluating whether the classes share a strict taxonomic hierarchy or simply need to fulfill a common capability. Finally, they weigh modern language features like default methods in interfaces to explain that the boundary has blurred, requiring deeper consideration of state versus behavior rather than just syntax.",
+    "common_mistakes": [
+      "Listing syntax differences like keywords (extends vs implements) without explaining design trade-offs",
+      "Stating that interfaces cannot contain any method implementation, ignoring modern default methods",
+      "Claiming one is universally better or faster than the other",
+      "Failing to mention object state and instance fields as a primary differentiator",
+      "Confusing inheritance of type with inheritance of implementation"
+    ],
+    "progressive_hints": [
+      "Think about what you can share besides just method signatures when designing a group of related objects.",
+      "Consider the structural limitation regarding how many of these constructs a single class can inherit from, and what that implies for state.",
+      "If two unrelated classes need to guarantee a specific behavior, which construct fits best versus when classes share a common foundational implementation?"
+    ],
+    "learning_objective": "Understand how to choose between abstract classes and interfaces based on state sharing, hierarchy, and capability contracts rather than just syntactic differences."
+  },
+  {
+    "id": "javad-0003",
+    "question": "Explain checked versus unchecked exceptions in Java, and when you'd choose to create a checked exception.",
+    "type": "trade_off_questions",
+    "difficulty": 3,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "java"
+    ],
+    "tech_keywords": [
+      "java",
+      "exceptions"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Checked exceptions (extending Exception, not RuntimeException) must be either caught or declared in a method's 'throws' clause — enforced at compile time",
+        "Unchecked exceptions (extending RuntimeException) don't require explicit handling or declaration — the compiler doesn't force you to deal with them",
+        "Checked exceptions fit recoverable conditions the caller can reasonably be expected to handle (e.g. a file not found, a network timeout)",
+        "Unchecked exceptions fit programming errors or conditions the caller typically can't meaningfully recover from (e.g. NullPointerException, IllegalArgumentException for invalid input) — many modern Java codebases lean toward unchecked exceptions to avoid boilerplate try/catch or throws-clause proliferation"
+      ],
+      "sample_answer": "Checked exceptions, which extend Exception but not RuntimeException, must either be caught or explicitly declared in a method's throws clause, enforced by the compiler. Unchecked exceptions, extending RuntimeException, don't require any of that — the compiler doesn't force calling code to acknowledge them at all. I'd use a checked exception for a genuinely recoverable condition that a reasonable caller might want to catch and handle differently, like a file not being found or a network timeout during an I/O operation. I'd use an unchecked exception for programming errors or conditions the caller usually can't meaningfully recover from, like passing an invalid argument or hitting a null reference. In practice, a lot of modern Java code and libraries lean more toward unchecked exceptions even for some recoverable conditions, since checked exceptions can lead to a lot of boilerplate try/catch blocks or throws-clause proliferation through many layers of calling code that don't actually add value."
+    },
+    "follow_up_hint": "Ask them what criticism is commonly raised against Java's checked exception design, and whether other JVM languages like Kotlin adopted it.",
+    "concept": "Exception Handling",
+    "sub_concept": "Checked Versus Unchecked Exceptions",
+    "expected_reasoning": "A strong candidate begins by defining the compiler-enforced distinction between checked and unchecked exceptions based on their class hierarchy. They then analyze the architectural intent behind both, weighing compile-time safety against the verbosity and tight coupling caused by forced exception handling. Finally, they evaluate when a developer should deliberately create a checked exception versus leaning toward unchecked ones, considering recoverability and modern API design best practices.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'checked is checked at compile time and unchecked isn't'.",
+      "Confuses RuntimeException with checked exceptions or gets the class hierarchy backwards.",
+      "Claims checked exceptions are completely obsolete and should never be used, ignoring valid recovery scenarios.",
+      "Argues that unchecked exceptions should be caught just as frequently as checked ones, missing their typical purpose of signaling programming bugs.",
+      "Fails to mention API design consequences like throws-clause pollution and boilerplate try-catch blocks."
+    ],
+    "progressive_hints": [
+      "What role does the compiler play in how you handle different types of runtime failures?",
+      "Think about who is expected to recover from the error—is it a predictable recovery path or a bug in how the code was written?",
+      "Consider how forcing a caller to handle an exception via the method signature affects API flexibility and boilerplate code."
+    ],
+    "learning_objective": "The candidate should understand when to leverage compile-time safety for recoverable conditions versus utilizing unchecked exceptions to prevent API verbosity and excessive boilerplate."
+  }
 ]

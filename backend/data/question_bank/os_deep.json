@@ -1,5 +1,143 @@
 [
-  {"id":"osd-0001","question":"Explain virtual memory and why operating systems use it instead of letting programs access physical memory directly.","type":"conceptual","difficulty":3,"roles":["general_sde","backend"],"topics":["operating-systems"],"tech_keywords":["virtual-memory"],"companies_common":["Amazon","Microsoft","Google"],"source_style":"faang-common","reference_solution":{"key_points":["Virtual memory gives each process its own private address space, isolated from other processes — a process can't accidentally (or maliciously) read/write another process's memory","Allows a process to use more memory than physically available RAM, by keeping less-used pages on disk (swap/page file) and loading them back in on demand (paging)","Simplifies programming: each process can assume it has a contiguous, large address space starting from a fixed address, without needing to coordinate with other processes about which physical addresses are free","The OS/MMU (memory management unit) translates virtual addresses to physical addresses transparently via page tables, with a page fault triggered when an accessed page isn't currently in physical RAM"],"sample_answer":"Virtual memory gives every process the illusion of its own private, contiguous address space, completely isolated from other processes — so a bug or malicious code in one process can't directly read or corrupt another process's memory, since it only ever sees virtual addresses, which are translated to real physical addresses by the memory management unit hardware, guided by page tables the OS maintains. It also lets a process use more memory than is physically installed, by keeping less-frequently-used memory pages out on disk in swap space and bringing them back into physical RAM on demand when accessed — triggering what's called a page fault if the needed page isn't currently resident in RAM. This also greatly simplifies programming, since a process can assume it has a large, contiguous address space starting from a predictable address, without needing to know or negotiate which actual physical memory addresses happen to be free at that moment."},"follow_up_hint":"Ask what happens, step by step, when a program accesses a virtual address whose page isn't currently in physical RAM (a page fault)."},
-  {"id":"osd-0002","question":"Explain the difference between preemptive and cooperative multitasking, and name a common CPU scheduling algorithm.","type":"conceptual","difficulty":2,"roles":["general_sde"],"topics":["operating-systems"],"tech_keywords":["scheduling"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["Cooperative multitasking: a running process/thread voluntarily yields control back to the scheduler; a misbehaving process that never yields can freeze the whole system","Preemptive multitasking: the OS can forcibly interrupt a running process (via a timer interrupt) and switch to another, regardless of whether the process 'wants' to yield — this is what virtually all modern OSes use","Common scheduling algorithms: Round Robin (each process gets a fixed time slice in rotation, fair and simple), Shortest Job First (minimizes average wait time but requires knowing job length upfront), Priority scheduling (higher-priority processes run first, with care needed to avoid starving low-priority ones)","Explains preemption is essential for responsiveness/fairness in a general-purpose multi-user OS"],"sample_answer":"In cooperative multitasking, a running process voluntarily yields control back to the scheduler at some point; the risk is a poorly behaved or buggy process that never yields can freeze the entire system, since nothing can forcibly take control back. Preemptive multitasking, which virtually all modern general-purpose operating systems use, lets the OS forcibly interrupt a running process via a hardware timer interrupt and switch to a different one, regardless of whether the current process wants to give up control, which is essential for fairness and responsiveness. A common scheduling algorithm is Round Robin, where each process gets a fixed time slice in rotation, which is simple and fair; other examples include Shortest Job First, which minimizes average wait time but requires knowing job length upfront, and Priority scheduling, where higher-priority processes run first, though that needs safeguards like priority aging to avoid permanently starving lower-priority processes."},"follow_up_hint":"Ask what 'priority inversion' is and how it can cause a high-priority task to be effectively blocked by a low-priority one."},
-  {"id":"osd-0003","question":"What is a context switch, and why does it have a real performance cost?","type":"conceptual","difficulty":2,"roles":["general_sde"],"topics":["operating-systems"],"tech_keywords":["context-switch"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["A context switch is the CPU saving the complete state (registers, program counter, stack pointer) of the currently running process/thread, and loading the saved state of a different one to resume it","Cost: directly, the CPU cycles spent saving/restoring this state, and the OS scheduler's own bookkeeping overhead","Indirect cost, often larger: cache/TLB pollution — the new process's working set isn't in the CPU cache or TLB (translation lookaside buffer) yet, so it runs slower initially until those warm back up ('cold cache' effect)","Explains this is why having too many runnable threads/processes competing for a limited number of CPU cores (excessive context switching) can hurt overall throughput, not just per-process latency"],"sample_answer":"A context switch is when the CPU saves the complete state of the currently running process or thread — its registers, program counter, stack pointer — and loads the previously saved state of a different process or thread to resume running it. The direct cost is the CPU cycles spent actually saving and restoring all that state plus the scheduler's own bookkeeping to decide what runs next, but there's often a larger indirect cost: the CPU's cache and TLB were 'warm' with the previous process's data and address translations, and the newly scheduled process starts with a cold cache, running slower initially until its own working set gets loaded back in. This is exactly why having far more runnable threads than available CPU cores, causing excessive context switching, can actually hurt total system throughput, not just add latency to any individual process — the CPU spends a meaningful fraction of its time switching rather than doing useful work."},"follow_up_hint":"Ask why a context switch between two threads of the SAME process is typically cheaper than a context switch between two different processes."}
+  {
+    "id": "osd-0001",
+    "question": "Explain virtual memory and why operating systems use it instead of letting programs access physical memory directly.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "operating-systems"
+    ],
+    "tech_keywords": [
+      "virtual-memory"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Virtual memory gives each process its own private address space, isolated from other processes — a process can't accidentally (or maliciously) read/write another process's memory",
+        "Allows a process to use more memory than physically available RAM, by keeping less-used pages on disk (swap/page file) and loading them back in on demand (paging)",
+        "Simplifies programming: each process can assume it has a contiguous, large address space starting from a fixed address, without needing to coordinate with other processes about which physical addresses are free",
+        "The OS/MMU (memory management unit) translates virtual addresses to physical addresses transparently via page tables, with a page fault triggered when an accessed page isn't currently in physical RAM"
+      ],
+      "sample_answer": "Virtual memory gives every process the illusion of its own private, contiguous address space, completely isolated from other processes — so a bug or malicious code in one process can't directly read or corrupt another process's memory, since it only ever sees virtual addresses, which are translated to real physical addresses by the memory management unit hardware, guided by page tables the OS maintains. It also lets a process use more memory than is physically installed, by keeping less-frequently-used memory pages out on disk in swap space and bringing them back into physical RAM on demand when accessed — triggering what's called a page fault if the needed page isn't currently resident in RAM. This also greatly simplifies programming, since a process can assume it has a large, contiguous address space starting from a predictable address, without needing to know or negotiate which actual physical memory addresses happen to be free at that moment."
+    },
+    "follow_up_hint": "Ask what happens, step by step, when a program accesses a virtual address whose page isn't currently in physical RAM (a page fault).",
+    "concept": "Virtual Memory",
+    "sub_concept": "Address Space Isolation and Paging",
+    "expected_reasoning": "A strong candidate begins by addressing the chaos of multiple programs competing directly for limited physical RAM, identifying isolation and fragmentation as core challenges. They then deduce that an abstraction layer is needed, leading them to describe how mapping virtual addresses to physical ones via hardware support decouples a program's view of memory from actual hardware. They trace how this abstraction enables both secure process isolation and the illusion of near-infinite memory via backing storage. Finally, they explain the mechanics of demand paging and what happens when a referenced page is missing.",
+    "common_mistakes": [
+      "Stating that virtual memory is just RAM plus disk storage without explaining the translation or protection mechanisms.",
+      "Claiming that virtual memory makes memory access faster by caching things in the CPU.",
+      "Confusing virtual memory with swap space, treating them as identical concepts.",
+      "Failing to mention process isolation, focusing solely on the capacity expansion aspect.",
+      "Ignoring the hardware component (MMU and page tables) and attributing translation entirely to software."
+    ],
+    "progressive_hints": [
+      "Consider what would happen to running programs if they all had to negotiate directly for chunks of the exact same physical RAM chips.",
+      "Think about how an operating system can make a program believe it has a massive, contiguous chunk of memory when physical RAM is fragmented or smaller.",
+      "What hardware-assisted mapping mechanism allows the CPU to translate an address a program sees into a completely different location in physical RAM on every single access?"
+    ],
+    "learning_objective": "Understand how operating systems use virtual memory abstraction and hardware translation to provide process isolation, simplified memory models, and demand paging."
+  },
+  {
+    "id": "osd-0002",
+    "question": "Explain the difference between preemptive and cooperative multitasking, and name a common CPU scheduling algorithm.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "operating-systems"
+    ],
+    "tech_keywords": [
+      "scheduling"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Cooperative multitasking: a running process/thread voluntarily yields control back to the scheduler; a misbehaving process that never yields can freeze the whole system",
+        "Preemptive multitasking: the OS can forcibly interrupt a running process (via a timer interrupt) and switch to another, regardless of whether the process 'wants' to yield — this is what virtually all modern OSes use",
+        "Common scheduling algorithms: Round Robin (each process gets a fixed time slice in rotation, fair and simple), Shortest Job First (minimizes average wait time but requires knowing job length upfront), Priority scheduling (higher-priority processes run first, with care needed to avoid starving low-priority ones)",
+        "Explains preemption is essential for responsiveness/fairness in a general-purpose multi-user OS"
+      ],
+      "sample_answer": "In cooperative multitasking, a running process voluntarily yields control back to the scheduler at some point; the risk is a poorly behaved or buggy process that never yields can freeze the entire system, since nothing can forcibly take control back. Preemptive multitasking, which virtually all modern general-purpose operating systems use, lets the OS forcibly interrupt a running process via a hardware timer interrupt and switch to a different one, regardless of whether the current process wants to give up control, which is essential for fairness and responsiveness. A common scheduling algorithm is Round Robin, where each process gets a fixed time slice in rotation, which is simple and fair; other examples include Shortest Job First, which minimizes average wait time but requires knowing job length upfront, and Priority scheduling, where higher-priority processes run first, though that needs safeguards like priority aging to avoid permanently starving lower-priority processes."
+    },
+    "follow_up_hint": "Ask what 'priority inversion' is and how it can cause a high-priority task to be effectively blocked by a low-priority one.",
+    "concept": "CPU Scheduling",
+    "sub_concept": "Preemptive vs Cooperative Multitasking",
+    "expected_reasoning": "A strong candidate begins by defining who controls the transition between running processes in both models, contrasting voluntary yielding with forced intervention via hardware interrupts. They analyze the critical failure mode of cooperative systems—where a single rogue process can starve the entire CPU—and explain why modern multi-user systems rely entirely on preemption to guarantee fairness and responsiveness. Finally, they connect these paradigms to practical scheduling algorithms, such as Round Robin, demonstrating how time slices enforce preemption in practice.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely saying 'preemptive is when the OS interrupts and cooperative is voluntary' without explaining the systemic implications.",
+      "Confuses cooperative multitasking with multi-threading or multi-core parallel processing.",
+      "Fails to mention hardware mechanisms like timer interrupts that enable preemption.",
+      "Names a scheduling algorithm (like FIFO) without explaining whether it is preemptive or cooperative.",
+      "Overlooks the reliability risk of cooperative multitasking, assuming all programs are well-behaved.",
+      "Treats the choice between the two as purely historical without connecting it to latency and system responsiveness."
+    ],
+    "progressive_hints": [
+      "Consider who ultimately decides when a running process stops using the CPU in each model.",
+      "Think about what happens to the rest of the operating system if a program enters an infinite computation loop without yielding control.",
+      "How does the hardware timer interrupt allow an operating system to regain control from a process that refuses to cooperate?"
+    ],
+    "learning_objective": "Understand how operating systems guarantee fairness and responsiveness through hardware-enforced preemption compared to voluntary cooperative multitasking."
+  },
+  {
+    "id": "osd-0003",
+    "question": "What is a context switch, and why does it have a real performance cost?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "operating-systems"
+    ],
+    "tech_keywords": [
+      "context-switch"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A context switch is the CPU saving the complete state (registers, program counter, stack pointer) of the currently running process/thread, and loading the saved state of a different one to resume it",
+        "Cost: directly, the CPU cycles spent saving/restoring this state, and the OS scheduler's own bookkeeping overhead",
+        "Indirect cost, often larger: cache/TLB pollution — the new process's working set isn't in the CPU cache or TLB (translation lookaside buffer) yet, so it runs slower initially until those warm back up ('cold cache' effect)",
+        "Explains this is why having too many runnable threads/processes competing for a limited number of CPU cores (excessive context switching) can hurt overall throughput, not just per-process latency"
+      ],
+      "sample_answer": "A context switch is when the CPU saves the complete state of the currently running process or thread — its registers, program counter, stack pointer — and loads the previously saved state of a different process or thread to resume running it. The direct cost is the CPU cycles spent actually saving and restoring all that state plus the scheduler's own bookkeeping to decide what runs next, but there's often a larger indirect cost: the CPU's cache and TLB were 'warm' with the previous process's data and address translations, and the newly scheduled process starts with a cold cache, running slower initially until its own working set gets loaded back in. This is exactly why having far more runnable threads than available CPU cores, causing excessive context switching, can actually hurt total system throughput, not just add latency to any individual process — the CPU spends a meaningful fraction of its time switching rather than doing useful work."
+    },
+    "follow_up_hint": "Ask why a context switch between two threads of the SAME process is typically cheaper than a context switch between two different processes.",
+    "concept": "Operating Systems",
+    "sub_concept": "Context Switching and Performance Impact",
+    "expected_reasoning": "A strong candidate begins by defining the mechanical transition of the CPU swapping execution contexts from one process or thread to another. They then break down the performance impact into two distinct categories: direct costs, such as CPU cycles spent executing the kernel code to save and restore registers, and indirect costs, such as cache and TLB invalidation. Finally, they connect these micro-level costs to macro-level system behavior, explaining how thrashing from excessive switches destroys throughput.",
+    "common_mistakes": [
+      "States that a context switch is just switching threads without explaining the underlying hardware state preservation",
+      "Only mentions the direct CPU overhead of saving registers and ignores cache or TLB misses entirely",
+      "Confuses process context switches with thread context switches without addressing memory space changes",
+      "Treats the cost as purely theoretical without explaining the practical consequence of a 'cold cache'",
+      "States the conclusion that 'context switches are bad' without explaining why high concurrency causes performance degradation"
+    ],
+    "progressive_hints": [
+      "Beyond the time the CPU spends executing the scheduler code itself, what happens to the data currently sitting in the processor's fast memory when a new task takes over?",
+      "Think about where frequently accessed memory addresses and page translations are stored during active execution; when a new task runs, are those still valid or immediately accessible?",
+      "Consider the 'cold cache' effect and TLB flushes: how does replacing one task's working set with another's force the CPU to stall on main memory accesses shortly after the switch?"
+    ],
+    "learning_objective": "Understand that the true performance cost of a context switch extends far beyond the CPU bookkeeping overhead, driven largely by the indirect hardware penalties of cache and TLB pollution."
+  }
 ]

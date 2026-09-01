@@ -1,5 +1,150 @@
 [
-  {"id":"scale-0001","question":"What is the difference between vertical scaling and horizontal scaling?","type":"trade_off_questions","difficulty":1,"roles":["backend","system_design","devops"],"topics":["system-design","scalability"],"tech_keywords":["scaling"],"companies_common":["Amazon","Google","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["Vertical scaling (scaling up): adding more resources (CPU, RAM) to a single existing machine","Horizontal scaling (scaling out): adding more machines/instances and distributing load across them","Vertical scaling is simpler (no distributed system complexity) but has a hard ceiling (max hardware spec) and creates a single point of failure","Horizontal scaling requires distributing state/load balancing but scales much further and improves fault tolerance, since losing one instance doesn't take the whole system down"],"sample_answer":"Vertical scaling, or scaling up, means adding more resources — more CPU or RAM — to a single existing server. Horizontal scaling, or scaling out, means adding more server instances and distributing the load across all of them. Vertical scaling is simpler since you avoid all the complexity of a distributed system, but it has a hard ceiling — there's a maximum spec of hardware you can buy — and it leaves you with a single point of failure, since that one bigger machine going down takes everything with it. Horizontal scaling requires more upfront design work, like a load balancer and handling shared state across instances, but it scales much further in principle and improves fault tolerance, since losing any single instance doesn't take the whole system down."},"follow_up_hint":"Ask what architectural changes are needed to make an application horizontally scalable if it currently stores session state in local server memory."},
-  {"id":"scale-0002","question":"What does it mean for an application to be 'stateless', and why does statelessness matter for horizontal scaling?","type":"conceptual","difficulty":2,"roles":["backend","system_design"],"topics":["system-design","scalability"],"tech_keywords":["stateless"],"companies_common":["Amazon","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["A stateless application server doesn't store any client-specific session data in its own memory/local disk between requests — any request can be handled by any server instance","Statelessness means any load balancer can route a given request to any healthy instance without needing 'sticky sessions' tied to a specific server","Stateful servers (storing session data locally) require either sticky sessions (limiting load balancing flexibility and fault tolerance) or externalizing that state (e.g. to Redis) to become effectively stateless from the load balancer's perspective","Enables simple, elastic horizontal scaling: instances can be added/removed freely since no instance holds unique, irreplaceable state"],"sample_answer":"A stateless application server doesn't keep any client-specific data, like session information, in its own local memory or disk between requests — every request contains (or can retrieve) everything needed to process it independently. This matters for horizontal scaling because it means a load balancer can route any incoming request to any healthy server instance, since none of them are uniquely 'holding' state a particular client depends on. If a server does store session state locally, you either need sticky sessions, which tie a client to one specific instance and reduce load-balancing flexibility and fault tolerance — since losing that one instance loses that client's session — or you externalize that state to a shared store like Redis, which makes the application servers themselves effectively stateless again from the load balancer's point of view. Statelessness is what lets you freely add or remove server instances to scale elastically, since no instance is irreplaceable."},"follow_up_hint":"Ask them how they'd migrate an existing application using in-memory sessions to be stateless without breaking logged-in users during the migration."},
-  {"id":"scale-0003","question":"How would you scale a database that's becoming a bottleneck as read traffic grows?","type":"scenario_based","difficulty":3,"roles":["backend","system_design"],"topics":["system-design","scalability","dbms"],"tech_keywords":["database-replication","sharding"],"companies_common":["Amazon","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["First lever for read-heavy load: add a caching layer (Redis/Memcached) in front of the database for frequently-read, less frequently-changed data","Read replicas: replicate the primary database to one or more read-only replicas, and route read queries to replicas while writes go to the primary — scales read throughput horizontally","Explains replication introduces replication lag, so reads from a replica can be slightly stale — acceptable for many use cases, but not for reads that must reflect a just-completed write","If write load (not just read load) also becomes the bottleneck, sharding/partitioning the data across multiple database instances is the next, more complex lever"],"sample_answer":"For read-heavy bottlenecks, I'd first look at adding a caching layer, like Redis, in front of the database for data that's read frequently but doesn't change on every request, which can eliminate a large fraction of database hits entirely. Next, I'd add read replicas — replicating the primary database to one or more read-only copies, and routing read queries to those replicas while all writes still go to the primary — which scales read throughput close to linearly by adding more replicas. The catch is replication lag: replicas are usually slightly behind the primary, so reads from a replica can occasionally return marginally stale data, which is fine for most use cases but not for anything that needs to immediately reflect a write that just happened, like showing a user their own just-submitted comment — that specific read might need to go to the primary or use read-your-writes consistency tricks. If write throughput itself eventually becomes the bottleneck too, not just reads, the next and more complex step would be sharding the data across multiple database instances by some partition key."},"follow_up_hint":"Ask how they'd solve the 'read-your-own-writes' problem for a user who just posted a comment but is reading from a lagging replica."}
+  {
+    "id": "scale-0001",
+    "question": "What is the difference between vertical scaling and horizontal scaling?",
+    "type": "trade_off_questions",
+    "difficulty": 1,
+    "roles": [
+      "backend",
+      "system_design",
+      "devops"
+    ],
+    "topics": [
+      "system-design",
+      "scalability"
+    ],
+    "tech_keywords": [
+      "scaling"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Vertical scaling (scaling up): adding more resources (CPU, RAM) to a single existing machine",
+        "Horizontal scaling (scaling out): adding more machines/instances and distributing load across them",
+        "Vertical scaling is simpler (no distributed system complexity) but has a hard ceiling (max hardware spec) and creates a single point of failure",
+        "Horizontal scaling requires distributing state/load balancing but scales much further and improves fault tolerance, since losing one instance doesn't take the whole system down"
+      ],
+      "sample_answer": "Vertical scaling, or scaling up, means adding more resources — more CPU or RAM — to a single existing server. Horizontal scaling, or scaling out, means adding more server instances and distributing the load across all of them. Vertical scaling is simpler since you avoid all the complexity of a distributed system, but it has a hard ceiling — there's a maximum spec of hardware you can buy — and it leaves you with a single point of failure, since that one bigger machine going down takes everything with it. Horizontal scaling requires more upfront design work, like a load balancer and handling shared state across instances, but it scales much further in principle and improves fault tolerance, since losing any single instance doesn't take the whole system down."
+    },
+    "follow_up_hint": "Ask what architectural changes are needed to make an application horizontally scalable if it currently stores session state in local server memory.",
+    "concept": "Scalability Architecture",
+    "sub_concept": "Vertical versus Horizontal Resource Allocation",
+    "expected_reasoning": "A strong candidate begins by defining the fundamental difference in resource allocation strategy between adding power to a single node versus adding more independent nodes. They then systematically contrast the operational trade-offs of both approaches, highlighting simplicity and single-point-of-failure risks on one side versus distributed complexity and fault tolerance on the other. Finally, they reason about constraints, noting physical hardware limits for scaling up and network or state synchronization overhead for scaling out. They structure their response around these architectural limits and operational impacts rather than just reciting definitions.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying horizontal is better without explaining why",
+      "Confuses horizontal scaling with database sharding or load balancing without defining the underlying hardware model",
+      "Claims vertical scaling has no limits whatsoever instead of recognizing hardware ceilings",
+      "Ignores fault tolerance and single points of failure entirely",
+      "Assumes horizontal scaling is always cheaper and easier to implement than vertical scaling"
+    ],
+    "progressive_hints": [
+      "Consider what happens to an application when a single server runs out of memory or CPU during peak traffic.",
+      "Think about the difference between making one machine vastly more powerful versus buying ten smaller machines to share the workload.",
+      "Compare the physical limits of hardware upgrades on a single box against the coordination and state management challenges of running across multiple machines."
+    ],
+    "learning_objective": "Understand the fundamental trade-offs between vertical and horizontal scaling in terms of complexity, cost, limits, and fault tolerance."
+  },
+  {
+    "id": "scale-0002",
+    "question": "What does it mean for an application to be 'stateless', and why does statelessness matter for horizontal scaling?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "system-design",
+      "scalability"
+    ],
+    "tech_keywords": [
+      "stateless"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A stateless application server doesn't store any client-specific session data in its own memory/local disk between requests — any request can be handled by any server instance",
+        "Statelessness means any load balancer can route a given request to any healthy instance without needing 'sticky sessions' tied to a specific server",
+        "Stateful servers (storing session data locally) require either sticky sessions (limiting load balancing flexibility and fault tolerance) or externalizing that state (e.g. to Redis) to become effectively stateless from the load balancer's perspective",
+        "Enables simple, elastic horizontal scaling: instances can be added/removed freely since no instance holds unique, irreplaceable state"
+      ],
+      "sample_answer": "A stateless application server doesn't keep any client-specific data, like session information, in its own local memory or disk between requests — every request contains (or can retrieve) everything needed to process it independently. This matters for horizontal scaling because it means a load balancer can route any incoming request to any healthy server instance, since none of them are uniquely 'holding' state a particular client depends on. If a server does store session state locally, you either need sticky sessions, which tie a client to one specific instance and reduce load-balancing flexibility and fault tolerance — since losing that one instance loses that client's session — or you externalize that state to a shared store like Redis, which makes the application servers themselves effectively stateless again from the load balancer's point of view. Statelessness is what lets you freely add or remove server instances to scale elastically, since no instance is irreplaceable."
+    },
+    "follow_up_hint": "Ask them how they'd migrate an existing application using in-memory sessions to be stateless without breaking logged-in users during the migration.",
+    "concept": "Stateless Architecture",
+    "sub_concept": "Horizontal Scalability and State Management",
+    "expected_reasoning": "A strong candidate begins by defining where data lives during an active user session versus across requests. They analyze how tying session state to a specific server's local memory introduces routing constraints and single points of failure. Next, they connect this architectural constraint to load balancing mechanics, explaining why interchangeable worker nodes simplify traffic distribution. Finally, they contrast local state with externalized state stores to explain how systems achieve elastic scalability.",
+    "common_mistakes": [
+      "States that stateless applications never store any data anywhere, ignoring databases and external caches.",
+      "Claims statelessness is only about avoiding databases rather than managing client sessions.",
+      "Confuses horizontal scaling with vertical scaling when explaining why statelessness helps performance.",
+      "Fails to connect statelessness to load balancer routing flexibility or sticky sessions.",
+      "Defines statelessness purely as a buzzword without explaining the architectural mechanism of state separation."
+    ],
+    "progressive_hints": [
+      "Consider what happens to an active user session if the specific server handling their requests suddenly crashes.",
+      "Think about how a load balancer decides which server to send your second HTTP request to, and what problems arise if your login state is only saved on the first server.",
+      "If servers cannot hold any session memory locally between requests, where does that session data need to live, and how does that freedom change how easily you can add or remove server instances?"
+    ],
+    "learning_objective": "Understand that separating ephemeral session state from application compute instances is the foundational requirement for elastic horizontal scaling and resilient load balancing."
+  },
+  {
+    "id": "scale-0003",
+    "question": "How would you scale a database that's becoming a bottleneck as read traffic grows?",
+    "type": "scenario_based",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "system-design",
+      "scalability",
+      "dbms"
+    ],
+    "tech_keywords": [
+      "database-replication",
+      "sharding"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "First lever for read-heavy load: add a caching layer (Redis/Memcached) in front of the database for frequently-read, less frequently-changed data",
+        "Read replicas: replicate the primary database to one or more read-only replicas, and route read queries to replicas while writes go to the primary — scales read throughput horizontally",
+        "Explains replication introduces replication lag, so reads from a replica can be slightly stale — acceptable for many use cases, but not for reads that must reflect a just-completed write",
+        "If write load (not just read load) also becomes the bottleneck, sharding/partitioning the data across multiple database instances is the next, more complex lever"
+      ],
+      "sample_answer": "For read-heavy bottlenecks, I'd first look at adding a caching layer, like Redis, in front of the database for data that's read frequently but doesn't change on every request, which can eliminate a large fraction of database hits entirely. Next, I'd add read replicas — replicating the primary database to one or more read-only copies, and routing read queries to those replicas while all writes still go to the primary — which scales read throughput close to linearly by adding more replicas. The catch is replication lag: replicas are usually slightly behind the primary, so reads from a replica can occasionally return marginally stale data, which is fine for most use cases but not for anything that needs to immediately reflect a write that just happened, like showing a user their own just-submitted comment — that specific read might need to go to the primary or use read-your-writes consistency tricks. If write throughput itself eventually becomes the bottleneck too, not just reads, the next and more complex step would be sharding the data across multiple database instances by some partition key."
+    },
+    "follow_up_hint": "Ask how they'd solve the 'read-your-own-writes' problem for a user who just posted a comment but is reading from a lagging replica.",
+    "concept": "Database Scalability",
+    "sub_concept": "Handling Read-Heavy Bottlenecks",
+    "expected_reasoning": "A strong candidate begins by clarifying the read-to-write ratio and the nature of the slow queries before jumping straight to a solution. They evaluate caching as the fastest way to deflect traffic, then consider architectural changes like read replicas to scale read capacity horizontally. When introducing replicas, they analyze the trade-off of replication lag and how to route consistency-critical reads. Finally, they anticipate whether write growth will soon follow and discuss when sharding becomes necessary.",
+    "common_mistakes": [
+      "Jumps straight to sharding without considering caching or read replicas which are much simpler first steps",
+      "Fails to mention replication lag or how to handle consistency for writes followed immediately by reads",
+      "Treats all database traffic uniformly without distinguishing between hot static data and dynamic transactional queries",
+      "Suggests scaling vertically indefinitely without addressing hardware and cost limits",
+      "States the conclusion with no justification, such as 'just add Redis' without explaining cache invalidation or hit rates"
+    ],
+    "progressive_hints": [
+      "Before changing the database architecture, what can you do with the queries themselves or temporary storage?",
+      "If caching isn't enough because the entire dataset must be queryable, how can you distribute the read workload across multiple database instances?",
+      "When you split reads and writes across different database nodes, what timing or consistency issue must your application handle between writes and subsequent reads?"
+    ],
+    "learning_objective": "The candidate should understand how to progressively scale read-heavy databases using caching, read replicas, and trade-off analysis around replication lag."
+  }
 ]

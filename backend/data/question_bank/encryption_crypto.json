@@ -1,6 +1,197 @@
 [
-  {"id":"crypto-0001","question":"Explain the difference between symmetric and asymmetric encryption.","type":"conceptual","difficulty":2,"roles":["backend","security"],"topics":["security","cryptography"],"tech_keywords":["encryption","aes","rsa"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["Symmetric encryption uses the same key for both encryption and decryption (e.g. AES) — fast, but requires securely sharing the key between parties beforehand","Asymmetric encryption uses a key pair: a public key (shared openly, used to encrypt) and a private key (kept secret, used to decrypt) — e.g. RSA","Asymmetric is much slower computationally than symmetric, so it's typically used to securely exchange a symmetric session key, then symmetric encryption handles the bulk data (this is how TLS works)","Explains the key distribution problem symmetric encryption has, which asymmetric encryption solves"],"sample_answer":"Symmetric encryption uses the exact same key to both encrypt and decrypt data — it's fast and efficient, like AES, but has a key distribution problem: both parties need to somehow share that secret key beforehand without anyone else intercepting it. Asymmetric encryption uses a mathematically related key pair: a public key that can be shared openly and used to encrypt data, and a private key kept secret that's the only thing able to decrypt it, like RSA. Asymmetric encryption is computationally much slower than symmetric, so in practice, protocols like TLS use a hybrid approach: asymmetric encryption is used just to securely exchange a random symmetric session key, and then the actual bulk data transfer uses fast symmetric encryption with that session key."},"follow_up_hint":"Ask them to walk through how the TLS handshake uses both types of encryption together."},
-  {"id":"crypto-0002","question":"What is a hash function, and what properties make one suitable for storing passwords?","type":"conceptual","difficulty":2,"roles":["backend","security"],"topics":["security","cryptography"],"tech_keywords":["hashing","bcrypt"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["A hash function maps input of any size to a fixed-size output deterministically — same input always produces the same output","For password storage, you need a cryptographic hash that's one-way (computationally infeasible to reverse) and collision-resistant","Critically, a general-purpose fast hash (like plain SHA-256) is a BAD choice for passwords because its speed makes brute-force/dictionary attacks against stolen hashes feasible","Purpose-built password hashing functions (bcrypt, scrypt, Argon2) are deliberately slow and configurable (work factor), and incorporate a per-password salt to defeat precomputed rainbow table attacks"],"sample_answer":"A hash function deterministically maps input of any size to a fixed-size output — the same input always produces the same output, and ideally small changes in input produce completely different outputs. For general cryptographic use you want one-way, collision-resistant properties. But specifically for password storage, a fast general-purpose hash like plain SHA-256 is actually a bad choice, because its speed is exactly what makes it feasible for an attacker with a stolen hash database to brute-force or dictionary-attack passwords at massive scale. Purpose-built password hashing algorithms like bcrypt, scrypt, or Argon2 are deliberately slow and have a tunable 'work factor' that can be increased as hardware gets faster, and they incorporate a random per-password salt automatically, which defeats precomputed rainbow table attacks and ensures two users with the same password get different stored hashes."},"follow_up_hint":"Ask them why adding a salt specifically defeats rainbow table attacks."},
-  {"id":"crypto-0003","question":"What is a digital signature, and how does it provide both authenticity and integrity?","type":"conceptual","difficulty":3,"roles":["backend","security"],"topics":["security","cryptography"],"tech_keywords":["digital-signature"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["A digital signature is created by hashing the message, then encrypting that hash with the sender's PRIVATE key","The recipient decrypts the signature with the sender's PUBLIC key to recover the original hash, and independently hashes the received message to compare","If the hashes match: integrity is confirmed (message wasn't altered in transit) and authenticity is confirmed (only the holder of the private key could have produced a signature decryptable by the matching public key)","Distinguishes signing (uses sender's key pair, proves who sent it) from encryption (uses recipient's key pair, ensures only they can read it) — these are separate, sometimes combined, mechanisms"],"sample_answer":"A digital signature is created by first hashing the message, then encrypting that hash using the sender's private key. The recipient decrypts the signature using the sender's public key to recover the original hash, and separately computes their own hash of the received message; if the two match, that confirms two things at once: integrity, since any tampering with the message in transit would change the hash and cause a mismatch, and authenticity, since only someone holding the corresponding private key could have produced a signature that correctly decrypts with that public key. It's worth distinguishing this from encryption for confidentiality: signing uses the sender's key pair to prove who sent something, while encryption for privacy uses the recipient's key pair so only they can read the content — these are separate mechanisms that can be combined but serve different purposes."},"follow_up_hint":"Ask how a digital certificate (like in TLS) builds on digital signatures to establish trust in a public key's real owner."},
-  {"id":"crypto-0004","question":"What is a man-in-the-middle attack, and how does TLS/HTTPS help prevent it?","type":"scenario_based","difficulty":3,"roles":["backend","security"],"topics":["security"],"tech_keywords":["tls","mitm"],"companies_common":["Amazon","Google"],"source_style":"faang-common","reference_solution":{"key_points":["A man-in-the-middle attack: an attacker secretly intercepts and possibly alters communication between two parties who believe they're communicating directly with each other","Without protection, an attacker on the network path (e.g. a malicious WiFi hotspot) could impersonate the server, reading/modifying traffic","TLS prevents this via certificate verification: the server presents a certificate signed by a trusted Certificate Authority, and the client verifies that signature chain before trusting the connection, ensuring it's really talking to the legitimate server (not an impersonator)","Encryption (established after the handshake) then prevents the attacker from reading or tampering with the actual data even if they can still intercept the encrypted traffic"],"sample_answer":"A man-in-the-middle attack is when an attacker secretly positions themselves between two communicating parties, intercepting and potentially altering the traffic, while both parties believe they're talking directly to each other — a classic example is an attacker running a malicious WiFi hotspot intercepting unencrypted traffic from anyone who connects. TLS/HTTPS defends against this primarily through certificate verification: when connecting to a server, it presents a certificate that's been digitally signed by a trusted Certificate Authority, and the client's browser verifies that signature chain against CAs it already trusts before proceeding — this makes it very hard for an attacker to convincingly impersonate the real server, since they'd need a certificate for that domain signed by a trusted CA, which they can't obtain without controlling the domain. Once that identity is verified and the handshake completes, all subsequent traffic is encrypted, so even if the attacker can still intercept the network traffic, they can't read or meaningfully tamper with its contents."},"follow_up_hint":"Ask what would happen, from a security perspective, if a user's browser just ignored a certificate validation warning and proceeded anyway."}
+  {
+    "id": "crypto-0001",
+    "question": "Explain the difference between symmetric and asymmetric encryption.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "security"
+    ],
+    "topics": [
+      "security",
+      "cryptography"
+    ],
+    "tech_keywords": [
+      "encryption",
+      "aes",
+      "rsa"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Symmetric encryption uses the same key for both encryption and decryption (e.g. AES) — fast, but requires securely sharing the key between parties beforehand",
+        "Asymmetric encryption uses a key pair: a public key (shared openly, used to encrypt) and a private key (kept secret, used to decrypt) — e.g. RSA",
+        "Asymmetric is much slower computationally than symmetric, so it's typically used to securely exchange a symmetric session key, then symmetric encryption handles the bulk data (this is how TLS works)",
+        "Explains the key distribution problem symmetric encryption has, which asymmetric encryption solves"
+      ],
+      "sample_answer": "Symmetric encryption uses the exact same key to both encrypt and decrypt data — it's fast and efficient, like AES, but has a key distribution problem: both parties need to somehow share that secret key beforehand without anyone else intercepting it. Asymmetric encryption uses a mathematically related key pair: a public key that can be shared openly and used to encrypt data, and a private key kept secret that's the only thing able to decrypt it, like RSA. Asymmetric encryption is computationally much slower than symmetric, so in practice, protocols like TLS use a hybrid approach: asymmetric encryption is used just to securely exchange a random symmetric session key, and then the actual bulk data transfer uses fast symmetric encryption with that session key."
+    },
+    "follow_up_hint": "Ask them to walk through how the TLS handshake uses both types of encryption together.",
+    "concept": "Encryption Mechanisms",
+    "sub_concept": "Symmetric Versus Asymmetric Cryptography",
+    "expected_reasoning": "A strong candidate begins by defining the core operational difference: the number and relationship of keys used in each paradigm. They then analyze the primary trade-offs of each approach, contrasting the speed and simplicity of symmetric keys with the secure distribution benefits of asymmetric key pairs. To demonstrate a production-level understanding, they connect the two concepts by explaining how real-world protocols like TLS combine both—using asymmetric cryptography to securely establish a connection before switching to symmetric encryption for performance.",
+    "common_mistakes": [
+      "States the conclusion with no justification by simply saying 'symmetric uses one key, asymmetric uses two' without explaining how encryption and decryption relate to those keys",
+      "Claims asymmetric encryption is always better because it is more secure, ignoring the massive computational overhead and performance penalty",
+      "Fails to mention the key distribution problem, completely missing why asymmetric cryptography was invented in the first place",
+      "Confuses the direction of keys in asymmetric encryption, incorrectly claiming the private key is used to encrypt and the public key to decrypt",
+      "Treats symmetric and asymmetric as competing alternatives for every use case, rather than complementary systems used together in practice like in TLS"
+    ],
+    "progressive_hints": [
+      "Consider how two parties communicate securely if they have never met before and must exchange a secret message over a public network.",
+      "Think about the computational cost of mathematical operations on large prime numbers versus simpler bitwise operations, and how that impacts large data transfers.",
+      "Consider why protocols like HTTPS don't just use one type of encryption for the entire session, but instead start with one method and switch to another."
+    ],
+    "learning_objective": "Understand the operational differences, performance trade-offs, and complementary relationship between symmetric and asymmetric encryption in modern security protocols."
+  },
+  {
+    "id": "crypto-0002",
+    "question": "What is a hash function, and what properties make one suitable for storing passwords?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "security"
+    ],
+    "topics": [
+      "security",
+      "cryptography"
+    ],
+    "tech_keywords": [
+      "hashing",
+      "bcrypt"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A hash function maps input of any size to a fixed-size output deterministically — same input always produces the same output",
+        "For password storage, you need a cryptographic hash that's one-way (computationally infeasible to reverse) and collision-resistant",
+        "Critically, a general-purpose fast hash (like plain SHA-256) is a BAD choice for passwords because its speed makes brute-force/dictionary attacks against stolen hashes feasible",
+        "Purpose-built password hashing functions (bcrypt, scrypt, Argon2) are deliberately slow and configurable (work factor), and incorporate a per-password salt to defeat precomputed rainbow table attacks"
+      ],
+      "sample_answer": "A hash function deterministically maps input of any size to a fixed-size output — the same input always produces the same output, and ideally small changes in input produce completely different outputs. For general cryptographic use you want one-way, collision-resistant properties. But specifically for password storage, a fast general-purpose hash like plain SHA-256 is actually a bad choice, because its speed is exactly what makes it feasible for an attacker with a stolen hash database to brute-force or dictionary-attack passwords at massive scale. Purpose-built password hashing algorithms like bcrypt, scrypt, or Argon2 are deliberately slow and have a tunable 'work factor' that can be increased as hardware gets faster, and they incorporate a random per-password salt automatically, which defeats precomputed rainbow table attacks and ensures two users with the same password get different stored hashes."
+    },
+    "follow_up_hint": "Ask them why adding a salt specifically defeats rainbow table attacks.",
+    "concept": "Cryptographic Hash Functions",
+    "sub_concept": "Password Security and Key Derivation",
+    "expected_reasoning": "A strong candidate begins by defining a hash function's core properties of determinism and fixed-size output. They then pivot from general-purpose hashes to the security constraints required for authentication, recognizing that standard high-speed hashes introduce severe vulnerabilities. Finally, they weigh the necessity of algorithmic slowness and salts to mitigate modern brute-force and rainbow table attacks.",
+    "common_mistakes": [
+      "States that SHA-256 is ideal for password storage without mentioning that its speed makes it dangerous.",
+      "Confuses encryption and hashing, claiming hashes can be decrypted.",
+      "Forgets to mention salts or why they are necessary against rainbow tables.",
+      "Fails to explain why hash functions must be deliberately slow for passwords.",
+      "Provides a circular definition of a hash function without detailing its deterministic nature."
+    ],
+    "progressive_hints": [
+      "Think about what happens if an attacker steals your database of hashed passwords.",
+      "Consider the speed of algorithms like SHA-256 and why that speed might be a liability rather than a benefit when dealing with short, human-chosen strings.",
+      "Look into what purpose-built algorithms like bcrypt or Argon2 do differently regarding computational cost and unique per-user inputs."
+    ],
+    "learning_objective": "Understand why securing passwords requires intentionally slow, salted cryptographic hash functions rather than standard fast-computing hashes."
+  },
+  {
+    "id": "crypto-0003",
+    "question": "What is a digital signature, and how does it provide both authenticity and integrity?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "security"
+    ],
+    "topics": [
+      "security",
+      "cryptography"
+    ],
+    "tech_keywords": [
+      "digital-signature"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A digital signature is created by hashing the message, then encrypting that hash with the sender's PRIVATE key",
+        "The recipient decrypts the signature with the sender's PUBLIC key to recover the original hash, and independently hashes the received message to compare",
+        "If the hashes match: integrity is confirmed (message wasn't altered in transit) and authenticity is confirmed (only the holder of the private key could have produced a signature decryptable by the matching public key)",
+        "Distinguishes signing (uses sender's key pair, proves who sent it) from encryption (uses recipient's key pair, ensures only they can read it) — these are separate, sometimes combined, mechanisms"
+      ],
+      "sample_answer": "A digital signature is created by first hashing the message, then encrypting that hash using the sender's private key. The recipient decrypts the signature using the sender's public key to recover the original hash, and separately computes their own hash of the received message; if the two match, that confirms two things at once: integrity, since any tampering with the message in transit would change the hash and cause a mismatch, and authenticity, since only someone holding the corresponding private key could have produced a signature that correctly decrypts with that public key. It's worth distinguishing this from encryption for confidentiality: signing uses the sender's key pair to prove who sent something, while encryption for privacy uses the recipient's key pair so only they can read the content — these are separate mechanisms that can be combined but serve different purposes."
+    },
+    "follow_up_hint": "Ask how a digital certificate (like in TLS) builds on digital signatures to establish trust in a public key's real owner.",
+    "concept": "Digital Signatures",
+    "sub_concept": "Asymmetric Cryptography and Message Verification",
+    "expected_reasoning": "A strong candidate begins by separating the goals of confidentiality from authenticity and integrity, noting that encryption alone does not prove who sent a message. They then trace the mathematical relationship between asymmetric key pairs, recognizing that signing involves private key operations while verification relies on public keys. Next, they explain why hashing is necessary to handle large messages efficiently rather than directly encrypting the payload with the private key. Finally, they synthesize how the matching of the decrypted signature hash to the locally computed hash simultaneously guarantees non-repudiation and unalterability.",
+    "common_mistakes": [
+      "Confusing digital signatures with asymmetric encryption, claiming the message itself is encrypted with the sender's private key to provide confidentiality.",
+      "Stating that the receiver uses their own private key to decrypt the signature instead of the sender's public key.",
+      "Omitting the role of cryptographic hashing and incorrectly claiming the entire message is signed directly.",
+      "Failing to explain how integrity and authenticity are mathematically distinct outcomes of the verification process.",
+      "Assuming a digital signature prevents unauthorized reading of the message without recognizing it only proves origin and unalterability."
+    ],
+    "progressive_hints": [
+      "Consider what problem asymmetric cryptography solves when you want to prove who sent a message rather than just keeping it secret.",
+      "Think about how you can use a key pair to transform a message summary so that anyone can verify the author, even if the message itself remains unencrypted.",
+      "If you hash the incoming message and compare it to the decrypted result of the signature, what does a successful match tell you about both the sender's identity and the data's state?"
+    ],
+    "learning_objective": "Understand how combining asymmetric key pairs and cryptographic hashing creates mathematical proof of a message's origin and unalterability."
+  },
+  {
+    "id": "crypto-0004",
+    "question": "What is a man-in-the-middle attack, and how does TLS/HTTPS help prevent it?",
+    "type": "scenario_based",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "security"
+    ],
+    "topics": [
+      "security"
+    ],
+    "tech_keywords": [
+      "tls",
+      "mitm"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "A man-in-the-middle attack: an attacker secretly intercepts and possibly alters communication between two parties who believe they're communicating directly with each other",
+        "Without protection, an attacker on the network path (e.g. a malicious WiFi hotspot) could impersonate the server, reading/modifying traffic",
+        "TLS prevents this via certificate verification: the server presents a certificate signed by a trusted Certificate Authority, and the client verifies that signature chain before trusting the connection, ensuring it's really talking to the legitimate server (not an impersonator)",
+        "Encryption (established after the handshake) then prevents the attacker from reading or tampering with the actual data even if they can still intercept the encrypted traffic"
+      ],
+      "sample_answer": "A man-in-the-middle attack is when an attacker secretly positions themselves between two communicating parties, intercepting and potentially altering the traffic, while both parties believe they're talking directly to each other — a classic example is an attacker running a malicious WiFi hotspot intercepting unencrypted traffic from anyone who connects. TLS/HTTPS defends against this primarily through certificate verification: when connecting to a server, it presents a certificate that's been digitally signed by a trusted Certificate Authority, and the client's browser verifies that signature chain against CAs it already trusts before proceeding — this makes it very hard for an attacker to convincingly impersonate the real server, since they'd need a certificate for that domain signed by a trusted CA, which they can't obtain without controlling the domain. Once that identity is verified and the handshake completes, all subsequent traffic is encrypted, so even if the attacker can still intercept the network traffic, they can't read or meaningfully tamper with its contents."
+    },
+    "follow_up_hint": "Ask what would happen, from a security perspective, if a user's browser just ignored a certificate validation warning and proceeded anyway.",
+    "concept": "Transport Layer Security",
+    "sub_concept": "MitM Prevention and Certificate Verification",
+    "expected_reasoning": "A strong candidate first defines the threat model, explaining how an unauthorized actor positions themselves between a client and server to intercept or modify traffic. They then trace how a secure connection establishes trust by analyzing the cryptographic handshake process rather than just stating 'it encrypts data.' They distinguish between identity verification, which uses public key infrastructure and trusted Certificate Authorities to prevent impersonation, and subsequent symmetric encryption, which protects data confidentiality and integrity during transit.",
+    "common_mistakes": [
+      "States that TLS just 'encrypts data' without explaining how identity and server authentication prevent interception in the first place.",
+      "Confuses symmetric and asymmetric encryption roles during the handshake.",
+      "Fails to mention Certificate Authorities or how trust chains work, assuming clients just blindly trust any certificate.",
+      "Believes encryption alone is enough to stop a MitM attack without realizing an attacker could establish two separate encrypted sessions with client and server.",
+      "States the conclusion with no justification or technical details about the handshake."
+    ],
+    "progressive_hints": [
+      "Consider what happens when your traffic travels across an untrusted network like a public Wi-Fi hotspot, and what an attacker positioned along that path could theoretically do.",
+      "Think about how your browser knows the website it is talking to is actually who it claims to be, and what mechanism proves that identity before any data is sent.",
+      "If an attacker can intercept your initial connection attempt, what prevents them from presenting their own security credentials to you while pretending to be the real server?"
+    ],
+    "learning_objective": "Understand how TLS combines trusted certificate authorities for server authentication with cryptographic encryption to guarantee secure, unalterable communication against network-level attackers."
+  }
 ]

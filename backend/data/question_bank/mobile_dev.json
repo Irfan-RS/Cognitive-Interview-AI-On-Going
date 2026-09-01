@@ -1,5 +1,132 @@
 [
-  {"id":"mobile-0001","question":"What is the difference between native mobile development and cross-platform frameworks like React Native or Flutter?","type":"trade_off_questions","difficulty":2,"roles":["mobile_developer","frontend"],"topics":["mobile-development"],"tech_keywords":["react-native","flutter"],"companies_common":["Meta","Uber","Google"],"source_style":"common-interview","reference_solution":{"key_points":["Native development uses each platform's own language/SDK (Swift/Kotlin), giving full access to platform APIs and typically the best performance/UI fidelity, but requires maintaining separate codebases for iOS and Android","Cross-platform frameworks let you write one codebase targeting both platforms, reducing development time/cost, at some cost of performance and needing 'bridge' code for platform-specific features","React Native renders using actual native UI components via a JS bridge (or the newer JSI); Flutter renders its own UI directly via its own rendering engine (Skia), not using native platform widgets at all","Choice depends on team size/budget, how platform-specific/high-performance the UI needs to be, and whether deep native API access is a frequent requirement"],"sample_answer":"Native development means writing separate codebases in each platform's own language and SDK — Swift/Kotlin for iOS/Android — which gives full, first-class access to platform APIs and typically the best performance and most authentic platform-specific UI feel, but means maintaining and testing two codebases in parallel. Cross-platform frameworks like React Native or Flutter let you write mostly one codebase that targets both platforms, significantly reducing development time and cost, at the expense of some performance overhead and occasionally needing platform-specific bridge code for features not covered by the framework. React Native specifically renders using actual native UI components under the hood, communicating via a bridge or the newer JSI layer, while Flutter draws its own UI entirely using its own rendering engine rather than using native platform widgets at all, giving it very consistent rendering across platforms but a slightly less 'native feeling' UI by default. I'd choose native for a small number of platform-specific, performance-critical apps, and cross-platform when shipping to both platforms quickly with a smaller team matters more."},"follow_up_hint":"Ask what kind of app feature would make them lean toward native despite the extra cost (e.g. heavy camera/AR processing, complex custom animations)."},
-  {"id":"mobile-0002","question":"What is the Android/iOS app lifecycle, and why does it matter for how you write mobile code?","type":"conceptual","difficulty":2,"roles":["mobile_developer"],"topics":["mobile-development"],"tech_keywords":["android","ios"],"companies_common":["Google","Meta"],"source_style":"common-interview","reference_solution":{"key_points":["Mobile apps go through defined lifecycle states (created, started, resumed/foreground, paused, stopped, destroyed) controlled by the OS, not fully by the app itself","The OS can pause, background, or kill an app at any time (e.g. to reclaim memory, or when the user switches apps), so state that isn't explicitly saved can be lost","Code needs to correctly save/restore state at the right lifecycle transitions (e.g. onPause/onSaveInstanceState on Android) to avoid losing user progress or leaking resources (unclosed camera, location listeners) when backgrounded","Explains this differs fundamentally from typical desktop/web apps, where the process usually just runs continuously until explicitly closed"],"sample_answer":"Mobile apps move through a defined set of lifecycle states — created, started, resumed to the foreground, paused, stopped, and eventually destroyed — and critically, the operating system controls these transitions, not just the app itself. The OS can pause, background, or even kill an app at any time, for example to reclaim memory when the user switches to another app, so any state that isn't explicitly saved at the right lifecycle callback can simply be lost when the user comes back. This means mobile code has to be written to correctly save and restore state at the right transitions — like Android's onPause or onSaveInstanceState — and to properly release resources like an open camera or an active location listener when the app is backgrounded, to avoid both losing user progress and leaking resources or draining battery. This is a meaningful difference from a typical desktop or web app process, which generally just keeps running continuously until the user explicitly closes it."},"follow_up_hint":"Ask what would happen to unsaved form input if the OS killed the app in the background due to memory pressure, and how they'd prevent losing it."},
-  {"id":"mobile-0003","question":"How would you optimize a mobile app that's experiencing slow scroll performance in a long list?","type":"scenario_based","difficulty":3,"roles":["mobile_developer","frontend"],"topics":["mobile-development","performance"],"tech_keywords":["recyclerview","virtualization"],"companies_common":["Meta","Google","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["Use view recycling/virtualization (RecyclerView on Android, UITableView reuse on iOS, FlatList on React Native) so only visible items are actually rendered/held in memory, not the entire list at once","Avoid expensive work on the main/UI thread during scroll — image decoding, layout calculations, or network calls per item should happen off the main thread or be pre-computed/cached","Reduce per-item view complexity (flatten nested view hierarchies, avoid unnecessary re-measurement/re-layout passes) since scroll performance is very sensitive to per-frame render cost","Profile with the platform's tools (Android Profiler, Xcode Instruments) to find the actual bottleneck rather than guessing"],"sample_answer":"First, I'd make sure the list is using proper view recycling/virtualization — RecyclerView on Android, UITableView's cell reuse on iOS, or FlatList in React Native — so only the currently visible items (plus a small buffer) are actually rendered and held in memory, rather than the entire dataset, which is the single biggest lever for large list performance. I'd also check for expensive work happening on the main/UI thread during scroll, like decoding large images synchronously or making network calls per visible item — that work should be moved off the main thread, cached, or pre-fetched ahead of time instead. I'd look at flattening deeply nested view hierarchies in each list item's layout, since scroll performance is extremely sensitive to per-frame render and layout cost, with every extra layer adding up across every visible row. Rather than guessing, I'd profile with the platform's actual tooling — Android Profiler or Xcode Instruments — to identify the real bottleneck, since it might be something specific like oversized unscaled images rather than a general architectural issue."},"follow_up_hint":"Ask them how they'd specifically diagnose whether the bottleneck is on the main thread versus GPU rendering versus image decoding."}
+  {
+    "id": "mobile-0001",
+    "question": "What is the difference between native mobile development and cross-platform frameworks like React Native or Flutter?",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "mobile_developer",
+      "frontend"
+    ],
+    "topics": [
+      "mobile-development"
+    ],
+    "tech_keywords": [
+      "react-native",
+      "flutter"
+    ],
+    "companies_common": [
+      "Meta",
+      "Uber",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Native development uses each platform's own language/SDK (Swift/Kotlin), giving full access to platform APIs and typically the best performance/UI fidelity, but requires maintaining separate codebases for iOS and Android",
+        "Cross-platform frameworks let you write one codebase targeting both platforms, reducing development time/cost, at some cost of performance and needing 'bridge' code for platform-specific features",
+        "React Native renders using actual native UI components via a JS bridge (or the newer JSI); Flutter renders its own UI directly via its own rendering engine (Skia), not using native platform widgets at all",
+        "Choice depends on team size/budget, how platform-specific/high-performance the UI needs to be, and whether deep native API access is a frequent requirement"
+      ],
+      "sample_answer": "Native development means writing separate codebases in each platform's own language and SDK — Swift/Kotlin for iOS/Android — which gives full, first-class access to platform APIs and typically the best performance and most authentic platform-specific UI feel, but means maintaining and testing two codebases in parallel. Cross-platform frameworks like React Native or Flutter let you write mostly one codebase that targets both platforms, significantly reducing development time and cost, at the expense of some performance overhead and occasionally needing platform-specific bridge code for features not covered by the framework. React Native specifically renders using actual native UI components under the hood, communicating via a bridge or the newer JSI layer, while Flutter draws its own UI entirely using its own rendering engine rather than using native platform widgets at all, giving it very consistent rendering across platforms but a slightly less 'native feeling' UI by default. I'd choose native for a small number of platform-specific, performance-critical apps, and cross-platform when shipping to both platforms quickly with a smaller team matters more."
+    },
+    "follow_up_hint": "Ask what kind of app feature would make them lean toward native despite the extra cost (e.g. heavy camera/AR processing, complex custom animations).",
+    "concept": "Mobile Architecture",
+    "sub_concept": "Native versus Cross-Platform Development Trade-offs",
+    "expected_reasoning": "A strong candidate begins by defining the core architectural distinction: native development uses platform-specific languages and SDKs, whereas cross-platform frameworks aim for code reuse. They then systematically weigh the dimensions of performance, development speed, and maintenance cost for each approach. Next, they contrast how different cross-platform frameworks operate, such as React Native's use of native components versus Flutter's custom rendering engine. Finally, they synthesize these factors to explain how business constraints and technical requirements drive the ultimate selection.",
+    "common_mistakes": [
+      "States that cross-platform is always cheaper and better without acknowledging performance trade-offs.",
+      "Fails to distinguish between how React Native and Flutter render UI differently.",
+      "Claims native development is obsolete because cross-platform tools are fast enough.",
+      "Gives a superficial answer about code sharing without mentioning maintenance of native modules.",
+      "Ignores team expertise and budget as primary decision factors."
+    ],
+    "progressive_hints": [
+      "Consider the fundamental difference in how code is written, compiled, and executed on iOS versus Android in each approach.",
+      "Think about how UI components are actually rendered on the screen and how performance might be impacted when bridging languages.",
+      "Evaluate what happens when your app needs to use a brand new, highly specific device sensor or platform API that cross-platform frameworks haven't wrapped yet."
+    ],
+    "learning_objective": "The candidate should understand how to evaluate architectural trade-offs between native and cross-platform mobile development based on performance, rendering strategies, maintenance costs, and business constraints."
+  },
+  {
+    "id": "mobile-0002",
+    "question": "What is the Android/iOS app lifecycle, and why does it matter for how you write mobile code?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "mobile_developer"
+    ],
+    "topics": [
+      "mobile-development"
+    ],
+    "tech_keywords": [
+      "android",
+      "ios"
+    ],
+    "companies_common": [
+      "Google",
+      "Meta"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Mobile apps go through defined lifecycle states (created, started, resumed/foreground, paused, stopped, destroyed) controlled by the OS, not fully by the app itself",
+        "The OS can pause, background, or kill an app at any time (e.g. to reclaim memory, or when the user switches apps), so state that isn't explicitly saved can be lost",
+        "Code needs to correctly save/restore state at the right lifecycle transitions (e.g. onPause/onSaveInstanceState on Android) to avoid losing user progress or leaking resources (unclosed camera, location listeners) when backgrounded",
+        "Explains this differs fundamentally from typical desktop/web apps, where the process usually just runs continuously until explicitly closed"
+      ],
+      "sample_answer": "Mobile apps move through a defined set of lifecycle states — created, started, resumed to the foreground, paused, stopped, and eventually destroyed — and critically, the operating system controls these transitions, not just the app itself. The OS can pause, background, or even kill an app at any time, for example to reclaim memory when the user switches to another app, so any state that isn't explicitly saved at the right lifecycle callback can simply be lost when the user comes back. This means mobile code has to be written to correctly save and restore state at the right transitions — like Android's onPause or onSaveInstanceState — and to properly release resources like an open camera or an active location listener when the app is backgrounded, to avoid both losing user progress and leaking resources or draining battery. This is a meaningful difference from a typical desktop or web app process, which generally just keeps running continuously until the user explicitly closes it."
+    },
+    "follow_up_hint": "Ask what would happen to unsaved form input if the OS killed the app in the background due to memory pressure, and how they'd prevent losing it."
+  },
+  {
+    "id": "mobile-0003",
+    "question": "How would you optimize a mobile app that's experiencing slow scroll performance in a long list?",
+    "type": "scenario_based",
+    "difficulty": 3,
+    "roles": [
+      "mobile_developer",
+      "frontend"
+    ],
+    "topics": [
+      "mobile-development",
+      "performance"
+    ],
+    "tech_keywords": [
+      "recyclerview",
+      "virtualization"
+    ],
+    "companies_common": [
+      "Meta",
+      "Google",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Use view recycling/virtualization (RecyclerView on Android, UITableView reuse on iOS, FlatList on React Native) so only visible items are actually rendered/held in memory, not the entire list at once",
+        "Avoid expensive work on the main/UI thread during scroll — image decoding, layout calculations, or network calls per item should happen off the main thread or be pre-computed/cached",
+        "Reduce per-item view complexity (flatten nested view hierarchies, avoid unnecessary re-measurement/re-layout passes) since scroll performance is very sensitive to per-frame render cost",
+        "Profile with the platform's tools (Android Profiler, Xcode Instruments) to find the actual bottleneck rather than guessing"
+      ],
+      "sample_answer": "First, I'd make sure the list is using proper view recycling/virtualization — RecyclerView on Android, UITableView's cell reuse on iOS, or FlatList in React Native — so only the currently visible items (plus a small buffer) are actually rendered and held in memory, rather than the entire dataset, which is the single biggest lever for large list performance. I'd also check for expensive work happening on the main/UI thread during scroll, like decoding large images synchronously or making network calls per visible item — that work should be moved off the main thread, cached, or pre-fetched ahead of time instead. I'd look at flattening deeply nested view hierarchies in each list item's layout, since scroll performance is extremely sensitive to per-frame render and layout cost, with every extra layer adding up across every visible row. Rather than guessing, I'd profile with the platform's actual tooling — Android Profiler or Xcode Instruments — to identify the real bottleneck, since it might be something specific like oversized unscaled images rather than a general architectural issue."
+    },
+    "follow_up_hint": "Ask them how they'd specifically diagnose whether the bottleneck is on the main thread versus GPU rendering versus image decoding.",
+    "concept": "UI Performance Optimization",
+    "sub_concept": "Long List Rendering and Scrolling",
+    "expected_reasoning": "A strong candidate begins by identifying that scroll stutter is fundamentally a frame-drop issue caused by missed 16ms budget deadlines on the main thread. They immediately pivot to investigating the rendering pipeline rather than guessing, suggesting platform profiling tools to locate whether the bottleneck lies in layout inflation, view hierarchy depth, or heavy work during scroll events. They then weigh structural architectural changes, prioritizing virtualization to manage memory and draw calls, followed by reducing per-item layout complexity. Finally, they consider offloading non-UI tasks like image decoding or data parsing to background threads to keep the main thread unblocked.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as 'Just use pagination or a recycler view' without explaining why it fixes the frame rate",
+      "Blames the programming language or framework entirely (e.g., 'React Native is just slow') rather than analyzing the actual rendering bottleneck",
+      "Focuses solely on network pagination without addressing rendering, view complexity, or main thread blocking",
+      "Suggests caching every single item in memory all at once, which introduces memory pressure and out-of-memory crashes",
+      "Proposes doing heavy image decoding or network fetching synchronously inside the item render or bind phase"
+    ],
+    "progressive_hints": [
+      "What is happening on the main thread during every single frame of a scroll interaction that causes the UI to stutter?",
+      "You are rendering thousands of items simultaneously and doing layout calculations on things the user cannot even see. How can you limit what the system processes at any given moment?",
+      "If recycling visible views solves the rendering count, what about the cost of inflating deeply nested view hierarchies and doing heavy asset loading inside each individual item?"
+    ],
+    "learning_objective": "Understand how to systematically diagnose and fix mobile UI frame drops by leveraging view virtualization, reducing view hierarchy complexity, and keeping the main thread free from heavy per-item work."
+  }
 ]

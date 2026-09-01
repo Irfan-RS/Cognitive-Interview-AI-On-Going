@@ -1,6 +1,192 @@
 [
-  {"id":"agile-0001","question":"What is the difference between Scrum and Kanban?","type":"conceptual","difficulty":1,"roles":["general_sde","product_manager"],"topics":["agile","process"],"tech_keywords":["scrum","kanban"],"companies_common":["Amazon","Infosys","TCS"],"source_style":"common-interview","reference_solution":{"key_points":["Scrum works in fixed-length iterations (sprints), with defined roles (Scrum Master, Product Owner), ceremonies (standup, sprint planning, review, retro), and a committed sprint backlog","Kanban is a continuous flow model with no fixed iterations — work items move through columns (To Do, In Progress, Done) and new work is pulled in as capacity frees up, limited by WIP (work-in-progress) limits","Scrum suits teams wanting predictable, batched delivery cadences and cross-functional planning cycles; Kanban suits teams with continuously arriving, variable-priority work (like support/ops)","Both are Agile frameworks; the differences are structural (timeboxed batches vs continuous flow), not just terminology"],"sample_answer":"Scrum organizes work into fixed-length iterations called sprints, with defined roles like Scrum Master and Product Owner, and a set of ceremonies — sprint planning, daily standup, sprint review, retrospective — with the team committing to a batch of work for that sprint. Kanban instead uses a continuous flow model with no fixed iterations: work items move through visual columns like To Do, In Progress, and Done, and new work is pulled in as capacity frees up, governed by work-in-progress limits per column rather than sprint commitments. Scrum tends to suit teams that want predictable planning cadences and batched delivery, while Kanban suits teams handling continuously arriving, often reprioritized work, like a support or ops team, where committing to a fixed two-week batch doesn't fit how work actually arrives."},"follow_up_hint":"Ask which they'd choose for a team handling unpredictable production incidents versus a team building a planned feature roadmap."},
-  {"id":"agile-0002","question":"What is the purpose of a sprint retrospective, and how would you run one for a team that's becoming disengaged with the process?","type":"scenario_based","difficulty":2,"roles":["general_sde","product_manager"],"topics":["agile","process"],"tech_keywords":["scrum","retrospective"],"companies_common":["Amazon","Google"],"source_style":"behavioral","reference_solution":{"key_points":["A retrospective is a dedicated time at the end of a sprint for the team to reflect on how they worked (not what they built) and identify concrete process improvements","Key value: continuous improvement — surfacing friction/blockers early rather than letting them silently accumulate across many sprints","For a disengaged team, common causes: retros feel repetitive with no follow-through on past action items, or psychological safety issues preventing honest feedback","Fixes: vary the retro format (not always the same three questions), ensure a small number of concrete action items are actually tracked and revisited next time, and create a safe space for candid feedback (sometimes anonymous)"],"sample_answer":"A retrospective is dedicated time, usually at the end of a sprint, for the team to reflect specifically on how they worked together — process, communication, tooling — rather than what they built, with the goal of surfacing a small number of concrete improvements to try next sprint. Its real value is continuous improvement: catching friction early before it silently compounds across many sprints. If a team has become disengaged with retros, it's often because past action items were raised but never actually followed through on, making the exercise feel pointless, or because there isn't enough psychological safety for people to give honest feedback in front of the group. I'd address that by varying the retro format so it doesn't feel like the same repetitive exercise every time, making sure whatever action items come out of it are genuinely small in number, owned, and revisited at the start of the next retro to close the loop, and considering an anonymous input method if I suspect people are holding back honest feedback."},"follow_up_hint":"Ask them to describe a specific retrospective format besides 'what went well / what didn't / action items'."},
-  {"id":"agile-0003","question":"What is a user story, and what makes a good one according to the INVEST criteria?","type":"conceptual","difficulty":2,"roles":["general_sde","product_manager"],"topics":["agile"],"tech_keywords":["user-story"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["A user story is a short description of a feature from the end-user's perspective, typically 'As a [role], I want [goal], so that [benefit]'","INVEST: Independent (can be developed/delivered without hard dependency on other stories), Negotiable (details can be discussed, not a rigid spec), Valuable (delivers real value to a user/stakeholder)","Estimable (team can reasonably size the effort), Small (fits within a sprint/iteration), Testable (clear acceptance criteria to verify it's done correctly)","Explains user stories intentionally leave implementation detail out, to be filled in through team discussion rather than dictated upfront"],"sample_answer":"A user story is a short description of a piece of functionality written from the end user's perspective, typically in the form 'As a [role], I want [goal], so that [benefit]', focusing on the value delivered rather than implementation detail. The INVEST criteria describe what makes a good one: Independent, meaning it can be built and delivered without a hard dependency blocking it on another story; Negotiable, meaning the specifics can still be discussed and refined by the team rather than being a rigid spec handed down; Valuable, delivering real value to a user or stakeholder on its own; Estimable, meaning the team can reasonably size how much effort it'll take; Small, fitting comfortably within a single sprint; and Testable, having clear enough acceptance criteria that everyone agrees on what 'done' looks like."},"follow_up_hint":"Ask them to rewrite a vague, overly large story to be more INVEST-compliant."},
-  {"id":"agile-0004","question":"How would you handle a situation where the Product Owner keeps changing requirements mid-sprint?","type":"behavioral","difficulty":3,"roles":["general_sde","product_manager"],"topics":["agile"],"tech_keywords":["scrum"],"companies_common":["Amazon","Google","Microsoft"],"source_style":"behavioral","reference_solution":{"key_points":["Scrum's core principle: once a sprint starts, the sprint backlog should be protected from new scope being added mid-sprint, to protect the team's ability to deliver a predictable, focused increment","Approach: have a direct conversation with the PO to understand the urgency behind the change — is it a genuine emergency or can it wait for the next sprint/backlog refinement","If it's not truly urgent, the right move is capturing it in the backlog for prioritization in the next sprint planning, rather than disrupting current sprint commitments","If it IS truly urgent (e.g. a production-impacting issue), an explicit trade-off conversation should happen: something else gets removed from the sprint to make room, rather than silently expanding scope"],"sample_answer":"I'd first have a direct, non-confrontational conversation with the Product Owner to understand why the change feels urgent enough to need to happen mid-sprint rather than going through normal backlog refinement for the next sprint. If it's not a genuine emergency, I'd advocate for capturing it properly in the backlog and prioritizing it in the next sprint planning, since Scrum's core idea is protecting the sprint's committed scope so the team can actually deliver a focused, predictable increment — constantly reshuffling scope mid-sprint undermines that and burns out the team. If it genuinely is urgent, like something production-impacting, I wouldn't just quietly absorb the extra work — I'd make the trade-off explicit: something else planned for this sprint needs to come out to make room, and that decision should be made visibly with the team and PO together, not just imposed."},"follow_up_hint":"Ask what they'd do if this pattern of mid-sprint changes kept recurring sprint after sprint, suggesting a deeper process problem."}
+  {
+    "id": "agile-0001",
+    "question": "What is the difference between Scrum and Kanban?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "general_sde",
+      "product_manager"
+    ],
+    "topics": [
+      "agile",
+      "process"
+    ],
+    "tech_keywords": [
+      "scrum",
+      "kanban"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys",
+      "TCS"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Scrum works in fixed-length iterations (sprints), with defined roles (Scrum Master, Product Owner), ceremonies (standup, sprint planning, review, retro), and a committed sprint backlog",
+        "Kanban is a continuous flow model with no fixed iterations — work items move through columns (To Do, In Progress, Done) and new work is pulled in as capacity frees up, limited by WIP (work-in-progress) limits",
+        "Scrum suits teams wanting predictable, batched delivery cadences and cross-functional planning cycles; Kanban suits teams with continuously arriving, variable-priority work (like support/ops)",
+        "Both are Agile frameworks; the differences are structural (timeboxed batches vs continuous flow), not just terminology"
+      ],
+      "sample_answer": "Scrum organizes work into fixed-length iterations called sprints, with defined roles like Scrum Master and Product Owner, and a set of ceremonies — sprint planning, daily standup, sprint review, retrospective — with the team committing to a batch of work for that sprint. Kanban instead uses a continuous flow model with no fixed iterations: work items move through visual columns like To Do, In Progress, and Done, and new work is pulled in as capacity frees up, governed by work-in-progress limits per column rather than sprint commitments. Scrum tends to suit teams that want predictable planning cadences and batched delivery, while Kanban suits teams handling continuously arriving, often reprioritized work, like a support or ops team, where committing to a fixed two-week batch doesn't fit how work actually arrives."
+    },
+    "follow_up_hint": "Ask which they'd choose for a team handling unpredictable production incidents versus a team building a planned feature roadmap.",
+    "concept": "Agile Process Frameworks",
+    "sub_concept": "Scrum vs Kanban Operational Models",
+    "expected_reasoning": "A strong candidate starts by establishing that both Scrum and Kanban are Agile methodologies aimed at incremental delivery, but they differ fundamentally in execution cadence and work management. They evaluate Scrum around timeboxed batches (sprints), pre-committed backlogs, explicit roles, and structured ceremonies. They then contrast this with Kanban's continuous flow model, highlighting how capacity is managed dynamically via Work-In-Progress (WIP) limits rather than fixed time windows. Finally, they weigh the trade-offs to map each framework to appropriate work patterns, such as scheduled product feature development versus continuous operational or support work.",
+    "common_mistakes": [
+      "Thinking Kanban is just 'Scrum without roles or meetings' rather than a distinct continuous-flow pull system.",
+      "Confusing the tool with the process, such as assuming using a visual board means a team is doing Kanban.",
+      "Treating Kanban as unstructured or lawless because it lacks sprints, missing the strict governance of WIP limits.",
+      "Listing surface-level terminology (e.g., 'Scrum has sprint planning, Kanban has columns') without explaining the core structural differences in work flow.",
+      "Claiming one framework is inherently superior or more 'Agile' than the other without context."
+    ],
+    "progressive_hints": [
+      "Consider how time and scheduling are treated in both approaches—how does work actually get planned and pushed into production?",
+      "Think about iteration vs continuous delivery: one framework forces teams to commit to fixed-length timeboxes, while the other processes work continuously. How does each manage team capacity?",
+      "Contrast Scrum's sprint-based commitment and predefined roles with Kanban's pull-based continuous flow driven by Work-In-Progress (WIP) limits."
+    ],
+    "learning_objective": "Understand the structural differences between Scrum's timeboxed iteration model and Kanban's continuous flow WIP-limited model, as well as the work profiles suited for each."
+  },
+  {
+    "id": "agile-0002",
+    "question": "What is the purpose of a sprint retrospective, and how would you run one for a team that's becoming disengaged with the process?",
+    "type": "scenario_based",
+    "difficulty": 2,
+    "roles": [
+      "general_sde",
+      "product_manager"
+    ],
+    "topics": [
+      "agile",
+      "process"
+    ],
+    "tech_keywords": [
+      "scrum",
+      "retrospective"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "behavioral",
+    "reference_solution": {
+      "key_points": [
+        "A retrospective is a dedicated time at the end of a sprint for the team to reflect on how they worked (not what they built) and identify concrete process improvements",
+        "Key value: continuous improvement — surfacing friction/blockers early rather than letting them silently accumulate across many sprints",
+        "For a disengaged team, common causes: retros feel repetitive with no follow-through on past action items, or psychological safety issues preventing honest feedback",
+        "Fixes: vary the retro format (not always the same three questions), ensure a small number of concrete action items are actually tracked and revisited next time, and create a safe space for candid feedback (sometimes anonymous)"
+      ],
+      "sample_answer": "A retrospective is dedicated time, usually at the end of a sprint, for the team to reflect specifically on how they worked together — process, communication, tooling — rather than what they built, with the goal of surfacing a small number of concrete improvements to try next sprint. Its real value is continuous improvement: catching friction early before it silently compounds across many sprints. If a team has become disengaged with retros, it's often because past action items were raised but never actually followed through on, making the exercise feel pointless, or because there isn't enough psychological safety for people to give honest feedback in front of the group. I'd address that by varying the retro format so it doesn't feel like the same repetitive exercise every time, making sure whatever action items come out of it are genuinely small in number, owned, and revisited at the start of the next retro to close the loop, and considering an anonymous input method if I suspect people are holding back honest feedback."
+    },
+    "follow_up_hint": "Ask them to describe a specific retrospective format besides 'what went well / what didn't / action items'.",
+    "concept": "Agile Retrospectives",
+    "sub_concept": "Addressing Team Disengagement",
+    "expected_reasoning": "A strong candidate begins by defining the core intent of a retrospective—focusing on process, team dynamics, and continuous improvement rather than product output or status updates. They then diagnose why a team might become disengaged, evaluating root causes such as retro fatigue, lack of psychological safety, or a history of action items being ignored. Finally, they formulate a practical strategy that addresses these root causes by introducing varied meeting structures, enforcing strict accountability on a few high-impact action items, and ensuring a safe, open environment.",
+    "common_mistakes": [
+      "Confusing the retrospective with a sprint review or project post-mortem focused on product deliverables.",
+      "Attributing disengagement solely to poor employee attitude rather than systemic process issues or retrospective fatigue.",
+      "Proposing generic fixes like 'encouraging people to talk more' without changing the meeting structure or facilitation technique.",
+      "Suggesting generating long lists of action items without a plan for ownership or follow-through in the next sprint.",
+      "Failing to address psychological safety or anonymous feedback channels for dynamic team issues."
+    ],
+    "progressive_hints": [
+      "Consider the fundamental purpose of a retrospective versus a product demo, and what typically causes developers to view recurring meetings as a waste of time.",
+      "Think about what happens to team morale when feedback is gathered every two weeks but past action items are never reviewed or completed.",
+      "To re-engage the team, how can you change both the facilitation format and the way action items are selected and tracked so members see immediate value?"
+    ],
+    "learning_objective": "Understand how to diagnose the root causes of retrospective fatigue and implement structural adjustments to maintain psychological safety, engagement, and continuous improvement."
+  },
+  {
+    "id": "agile-0003",
+    "question": "What is a user story, and what makes a good one according to the INVEST criteria?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "general_sde",
+      "product_manager"
+    ],
+    "topics": [
+      "agile"
+    ],
+    "tech_keywords": [
+      "user-story"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A user story is a short description of a feature from the end-user's perspective, typically 'As a [role], I want [goal], so that [benefit]'",
+        "INVEST: Independent (can be developed/delivered without hard dependency on other stories), Negotiable (details can be discussed, not a rigid spec), Valuable (delivers real value to a user/stakeholder)",
+        "Estimable (team can reasonably size the effort), Small (fits within a sprint/iteration), Testable (clear acceptance criteria to verify it's done correctly)",
+        "Explains user stories intentionally leave implementation detail out, to be filled in through team discussion rather than dictated upfront"
+      ],
+      "sample_answer": "A user story is a short description of a piece of functionality written from the end user's perspective, typically in the form 'As a [role], I want [goal], so that [benefit]', focusing on the value delivered rather than implementation detail. The INVEST criteria describe what makes a good one: Independent, meaning it can be built and delivered without a hard dependency blocking it on another story; Negotiable, meaning the specifics can still be discussed and refined by the team rather than being a rigid spec handed down; Valuable, delivering real value to a user or stakeholder on its own; Estimable, meaning the team can reasonably size how much effort it'll take; Small, fitting comfortably within a single sprint; and Testable, having clear enough acceptance criteria that everyone agrees on what 'done' looks like."
+    },
+    "follow_up_hint": "Ask them to rewrite a vague, overly large story to be more INVEST-compliant.",
+    "concept": "User Stories",
+    "sub_concept": "INVEST Criteria",
+    "expected_reasoning": "A strong candidate begins by framing user stories as tools for communication rather than detailed, rigid software specifications. They define the standard user story template ('As a... I want... So that...') to highlight the user-centric focus on persona, intent, and value. They then walk through the INVEST acronym systematically, articulating how each quality contributes to manageable and deliverable work within an agile iteration. Finally, they tie the concepts together by noting that acceptance criteria and team discussions fulfill the details left intentionally out of the story description.",
+    "common_mistakes": [
+      "Reciting the letters of the INVEST acronym without explaining what each word practically means in an agile workflow",
+      "Confusing user stories with traditional product requirement documents or low-level technical tasks",
+      "Defining the 'V' (Valuable) from the developer's technical perspective rather than the end-user or business perspective",
+      "Treating stories as fixed contracts rather than negotiable placeholders for team conversation",
+      "Omitting the 'Testable' component or failing to mention acceptance criteria"
+    ],
+    "progressive_hints": [
+      "Consider how agile teams capture software requirements from the perspective of the person using the product, rather than detailing full technical specs upfront.",
+      "Think about the quality standard used to evaluate if a backlog item is ready for sprint planning. What qualities make a story manageable for a development team?",
+      "Recall the INVEST mnemonic: How do independence, negotiability, user value, estimability, small size, and testability ensure a story can be delivered within a single sprint?"
+    ],
+    "learning_objective": "Understand how to structure a user story from an end-user perspective and evaluate its readiness using the INVEST criteria."
+  },
+  {
+    "id": "agile-0004",
+    "question": "How would you handle a situation where the Product Owner keeps changing requirements mid-sprint?",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": [
+      "general_sde",
+      "product_manager"
+    ],
+    "topics": [
+      "agile"
+    ],
+    "tech_keywords": [
+      "scrum"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft"
+    ],
+    "source_style": "behavioral",
+    "reference_solution": {
+      "key_points": [
+        "Scrum's core principle: once a sprint starts, the sprint backlog should be protected from new scope being added mid-sprint, to protect the team's ability to deliver a predictable, focused increment",
+        "Approach: have a direct conversation with the PO to understand the urgency behind the change — is it a genuine emergency or can it wait for the next sprint/backlog refinement",
+        "If it's not truly urgent, the right move is capturing it in the backlog for prioritization in the next sprint planning, rather than disrupting current sprint commitments",
+        "If it IS truly urgent (e.g. a production-impacting issue), an explicit trade-off conversation should happen: something else gets removed from the sprint to make room, rather than silently expanding scope"
+      ],
+      "sample_answer": "I'd first have a direct, non-confrontational conversation with the Product Owner to understand why the change feels urgent enough to need to happen mid-sprint rather than going through normal backlog refinement for the next sprint. If it's not a genuine emergency, I'd advocate for capturing it properly in the backlog and prioritizing it in the next sprint planning, since Scrum's core idea is protecting the sprint's committed scope so the team can actually deliver a focused, predictable increment — constantly reshuffling scope mid-sprint undermines that and burns out the team. If it genuinely is urgent, like something production-impacting, I wouldn't just quietly absorb the extra work — I'd make the trade-off explicit: something else planned for this sprint needs to come out to make room, and that decision should be made visibly with the team and PO together, not just imposed."
+    },
+    "follow_up_hint": "Ask what they'd do if this pattern of mid-sprint changes kept recurring sprint after sprint, suggesting a deeper process problem.",
+    "concept": "Scrum",
+    "sub_concept": "Sprint Commitment",
+    "expected_reasoning": "A strong candidate first clarifies Scrum's core principle of protecting the sprint backlog from new scope. They then consider the Product Owner's request, weighing the urgency and potential impact on the current sprint. The candidate evaluates whether the change is truly urgent and, if not, proposes capturing it in the backlog for prioritization. If urgent, they suggest an explicit trade-off conversation to ensure the team's commitments are not compromised.",
+    "common_mistakes": [
+      "States the conclusion without justification, such as 'We should not change the sprint backlog'"
+    ],
+    "progressive_hints": [
+      "What is the core principle of Scrum that should guide handling new requirements mid-sprint?",
+      "What are the potential impacts of changing the sprint backlog, and how can you assess the urgency of the Product Owner's request?",
+      "What steps should you take if the change is urgent, and how can you ensure the team's commitments are not compromised?"
+    ],
+    "learning_objective": "Understand the importance of protecting sprint commitments in Scrum and how to handle changes to the sprint backlog."
+  }
 ]

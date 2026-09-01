@@ -1,4 +1,98 @@
 [
-  {"id":"mls-0001","question":"How would you design a basic recommendation system for an e-commerce product page ('customers who bought this also bought...')?","type":"system_design","difficulty":4,"roles":["machine_learning_engineer","data_scientist"],"topics":["machine-learning","system-design"],"tech_keywords":["recommendation-systems"],"companies_common":["Amazon","Netflix"],"source_style":"faang-common","reference_solution":{"key_points":["Collaborative filtering approach: find items frequently co-purchased/co-viewed with the current item across many users' histories (item-item similarity), rather than needing to understand the item's actual content","Content-based alternative: recommend items with similar attributes/features (category, price range, brand) to the current one, useful especially for new items with little purchase history yet (cold start)","Explains the 'cold start' problem: a brand-new item has no purchase history for collaborative filtering to use, so content-based signals or simple heuristics (same category, similar price) fill the gap until enough interaction data accumulates","Practical system: precompute item-item similarity scores offline in a batch job (since the full pairwise computation is expensive), then serve precomputed recommendations from a fast lookup at request time rather than computing in real time"],"sample_answer":"I'd approach this primarily with item-item collaborative filtering: look at co-purchase or co-view patterns across many users' histories to find which items are frequently bought or viewed together with the current item, without needing to understand anything about the items' actual content, since 'people who bought X also bought Y' patterns often surface non-obvious but genuinely useful recommendations. For brand-new items with little or no purchase history yet — the classic 'cold start' problem — collaborative filtering doesn't have enough signal, so I'd fall back to content-based recommendations using item attributes like category, price range, and brand to recommend similar items until enough interaction data accumulates. For the actual system design, since computing full pairwise item similarity across a large catalog is computationally expensive, I'd precompute item-item similarity scores in an offline batch job running periodically, and serve the already-computed top recommendations for each item from a fast key-value lookup at actual request time, rather than trying to compute similarity live for every page view."},"follow_up_hint":"Ask them how they'd evaluate whether the recommendation system is actually working well (offline metrics vs online A/B testing)."},
-  {"id":"mls-0002","question":"What is the difference between online (real-time) and batch inference for a machine learning model, and how would you decide which to use?","type":"trade_off_questions","difficulty":3,"roles":["machine_learning_engineer","backend"],"topics":["machine-learning","system-design"],"tech_keywords":["ml-inference"],"companies_common":["Google","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["Online/real-time inference: the model runs prediction on-demand for each incoming request, in the request path, needing low-latency serving infrastructure","Batch inference: predictions are precomputed periodically for all relevant entities (e.g. all users) ahead of time and stored, then simply looked up when needed","Choose online inference when predictions genuinely depend on very fresh, request-specific context that can't be precomputed (e.g. real-time fraud detection using the current transaction's details)","Choose batch inference when predictions can tolerate some staleness and the same set of entities is being predicted for repeatedly (e.g. daily churn-risk scores for all users) — much simpler and cheaper to operate than a low-latency serving system"],"sample_answer":"Online, or real-time, inference runs the model's prediction on-demand as part of handling each incoming request, which requires a serving infrastructure that can meet tight latency requirements reliably. Batch inference instead precomputes predictions periodically — say, once a day — for a whole set of relevant entities, like all users, storing the results somewhere to be simply looked up when needed, rather than computed live. I'd choose online inference when the prediction genuinely depends on fresh, request-specific context that can't be known ahead of time, like real-time fraud detection needing to evaluate the specific details of the transaction happening right now. I'd choose batch inference when some staleness is acceptable and you're predicting for a relatively stable, enumerable set of entities repeatedly, like computing a daily churn-risk score for every user — batch inference is generally much simpler and cheaper to operate, since it avoids needing to run and scale a low-latency model-serving system at all."},"follow_up_hint":"Ask them to design a hybrid approach where most predictions are served from a batch-computed cache, but a real-time fallback handles entities missing from that cache (e.g. a brand-new user)."}
+  {
+    "id": "mls-0001",
+    "question": "How would you design a basic recommendation system for an e-commerce product page ('customers who bought this also bought...')?",
+    "type": "system_design",
+    "difficulty": 4,
+    "roles": [
+      "machine_learning_engineer",
+      "data_scientist"
+    ],
+    "topics": [
+      "machine-learning",
+      "system-design"
+    ],
+    "tech_keywords": [
+      "recommendation-systems"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Netflix"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Collaborative filtering approach: find items frequently co-purchased/co-viewed with the current item across many users' histories (item-item similarity), rather than needing to understand the item's actual content",
+        "Content-based alternative: recommend items with similar attributes/features (category, price range, brand) to the current one, useful especially for new items with little purchase history yet (cold start)",
+        "Explains the 'cold start' problem: a brand-new item has no purchase history for collaborative filtering to use, so content-based signals or simple heuristics (same category, similar price) fill the gap until enough interaction data accumulates",
+        "Practical system: precompute item-item similarity scores offline in a batch job (since the full pairwise computation is expensive), then serve precomputed recommendations from a fast lookup at request time rather than computing in real time"
+      ],
+      "sample_answer": "I'd approach this primarily with item-item collaborative filtering: look at co-purchase or co-view patterns across many users' histories to find which items are frequently bought or viewed together with the current item, without needing to understand anything about the items' actual content, since 'people who bought X also bought Y' patterns often surface non-obvious but genuinely useful recommendations. For brand-new items with little or no purchase history yet — the classic 'cold start' problem — collaborative filtering doesn't have enough signal, so I'd fall back to content-based recommendations using item attributes like category, price range, and brand to recommend similar items until enough interaction data accumulates. For the actual system design, since computing full pairwise item similarity across a large catalog is computationally expensive, I'd precompute item-item similarity scores in an offline batch job running periodically, and serve the already-computed top recommendations for each item from a fast key-value lookup at actual request time, rather than trying to compute similarity live for every page view."
+    },
+    "follow_up_hint": "Ask them how they'd evaluate whether the recommendation system is actually working well (offline metrics vs online A/B testing).",
+    "concept": "Recommendation Systems",
+    "sub_concept": "Item-Item Collaborative Filtering and Cold Start",
+    "expected_reasoning": "A strong candidate begins by clarifying the core use case and scale, distinguishing between the need for real-time serving versus offline heavy lifting. They evaluate collaborative filtering as the primary approach based on user interaction history, but immediately recognize its limitation with new items. This leads them to reason about the cold start problem and propose a content-based or heuristic fallback. Finally, they tie the architecture together by explaining how batch precomputation enables low-latency request-time lookups.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying 'use a machine learning model' without specifying what data or algorithm family.",
+      "Proposes computing full pairwise user-item similarity matrices in real time on every page load.",
+      "Completely ignores the cold start problem for new products that lack purchase history.",
+      "Conflates user-based and item-based collaborative filtering without considering the scaling properties of each.",
+      "Treats the system as a monolithic backend rather than separating offline batch processing from online serving."
+    ],
+    "progressive_hints": [
+      "What kind of historical user data is typically available on an e-commerce platform that can link two different products together?",
+      "If you have millions of items and users, is it feasible to calculate which products are related every time a user loads a page? Where should that heavy computation happen?",
+      "How would your system handle a brand-new product that was just added to the catalog today and has zero purchase history yet?"
+    ],
+    "learning_objective": "The candidate should understand how to balance offline batch computation of item relationships with fast online lookups, while accounting for the cold start problem using alternative signals."
+  },
+  {
+    "id": "mls-0002",
+    "question": "What is the difference between online (real-time) and batch inference for a machine learning model, and how would you decide which to use?",
+    "type": "trade_off_questions",
+    "difficulty": 3,
+    "roles": [
+      "machine_learning_engineer",
+      "backend"
+    ],
+    "topics": [
+      "machine-learning",
+      "system-design"
+    ],
+    "tech_keywords": [
+      "ml-inference"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Online/real-time inference: the model runs prediction on-demand for each incoming request, in the request path, needing low-latency serving infrastructure",
+        "Batch inference: predictions are precomputed periodically for all relevant entities (e.g. all users) ahead of time and stored, then simply looked up when needed",
+        "Choose online inference when predictions genuinely depend on very fresh, request-specific context that can't be precomputed (e.g. real-time fraud detection using the current transaction's details)",
+        "Choose batch inference when predictions can tolerate some staleness and the same set of entities is being predicted for repeatedly (e.g. daily churn-risk scores for all users) — much simpler and cheaper to operate than a low-latency serving system"
+      ],
+      "sample_answer": "Online, or real-time, inference runs the model's prediction on-demand as part of handling each incoming request, which requires a serving infrastructure that can meet tight latency requirements reliably. Batch inference instead precomputes predictions periodically — say, once a day — for a whole set of relevant entities, like all users, storing the results somewhere to be simply looked up when needed, rather than computed live. I'd choose online inference when the prediction genuinely depends on fresh, request-specific context that can't be known ahead of time, like real-time fraud detection needing to evaluate the specific details of the transaction happening right now. I'd choose batch inference when some staleness is acceptable and you're predicting for a relatively stable, enumerable set of entities repeatedly, like computing a daily churn-risk score for every user — batch inference is generally much simpler and cheaper to operate, since it avoids needing to run and scale a low-latency model-serving system at all."
+    },
+    "follow_up_hint": "Ask them to design a hybrid approach where most predictions are served from a batch-computed cache, but a real-time fallback handles entities missing from that cache (e.g. a brand-new user).",
+    "concept": "Model Inference Strategies",
+    "sub_concept": "Online vs Batch Serving Trade-offs",
+    "expected_reasoning": "A strong candidate begins by defining the operational boundary between inference happening synchronously during a request versus asynchronously ahead of time. They then map these paradigms to latency, freshness, and compute constraints. Next, they evaluate cost and system complexity trade-offs, noting that batch amortizes compute over large datasets while online requires expensive low-latency availability. Finally, they use concrete use cases like real-time fraud detection versus nightly user scoring to anchor their decision framework.",
+    "common_mistakes": [
+      "States the definitions of batch and online without providing a decision framework.",
+      "Claims online inference is always better because fresher data is inherently superior.",
+      "Fails to account for infrastructure complexity and cost differences between the two approaches.",
+      "Confuses batch inference with model training or batch training.",
+      "Assumes batch inference cannot be used for user-facing features (ignoring precomputation lookups)."
+    ],
+    "progressive_hints": [
+      "When does a user or system actually need to see the model's prediction relative to when the input data is generated?",
+      "Consider what happens when the features needed for a prediction only exist at the exact moment of the request versus hours beforehand.",
+      "Think about whether you can precompute and store every possible prediction ahead of time, and what factor stops you from doing that for every use case."
+    ],
+    "learning_objective": "The candidate should understand how to evaluate latency, data freshness, and system cost to choose the appropriate model serving architecture."
+  }
 ]

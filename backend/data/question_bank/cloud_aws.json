@@ -1,12 +1,517 @@
 [
-  {"id":"cloud-0001","question":"Explain the difference between EC2, Lambda, and ECS/Fargate as compute options on AWS, and when you'd choose each.","type":"trade_off_questions","difficulty":2,"roles":["backend","general_sde"],"topics":["cloud","devops"],"tech_keywords":["aws","ec2","lambda","ecs","cloud"],"companies_common":["Amazon","Netflix","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["EC2: full virtual machines, most control, you manage the OS and scaling yourself","Lambda: serverless functions, no server management, billed per invocation, best for short-lived event-driven work","ECS/Fargate: managed container orchestration, Fargate removes the need to manage underlying EC2 instances","Choose EC2 for long-running, stateful, or highly customized workloads; Lambda for short bursts of event-driven work; ECS/Fargate for containerized microservices needing more control than Lambda but less ops overhead than raw EC2","Mentions cold starts as a Lambda trade-off for latency-sensitive workloads"],"sample_answer":"EC2 gives full virtual machines with complete control over the OS, at the cost of managing scaling and patching yourself — good for long-running, stateful, or highly customized workloads. Lambda is serverless: you deploy just a function, AWS handles all infrastructure, and you're billed per invocation — ideal for short, event-driven bursts of work, though cold starts can hurt latency-sensitive use cases. ECS/Fargate sits in between: managed container orchestration where Fargate removes the need to provision underlying EC2 instances yourself, a good fit for containerized microservices that need more control than Lambda but less operational overhead than raw EC2."},"follow_up_hint":"Ask about cold start latency in Lambda and how to mitigate it (provisioned concurrency)."},
-  {"id":"cloud-0002","question":"What is the difference between horizontal and vertical scaling, and how does AWS auto-scaling work?","type":"conceptual","difficulty":1,"roles":["backend","devops"],"topics":["cloud","scalability"],"tech_keywords":["aws","scalability","cloud"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["Vertical scaling: bigger instance type (more CPU/RAM) for the same machine","Horizontal scaling: more instances behind a load balancer","AWS Auto Scaling Groups add/remove EC2 instances based on defined metrics (CPU utilization, request count) and min/max/desired capacity","Explains health checks: unhealthy instances are automatically terminated and replaced","Notes horizontal scaling generally suits stateless services better since load can be freely distributed"],"sample_answer":"Vertical scaling means upgrading to a bigger instance type for more CPU/RAM; horizontal scaling means adding more instances behind a load balancer. AWS Auto Scaling Groups automate horizontal scaling: you define a min/max/desired instance count and scaling policies based on metrics like CPU utilization or request count, and AWS automatically launches or terminates instances to match demand, also replacing instances that fail health checks. Horizontal scaling generally suits stateless services better, since traffic can be freely distributed across any healthy instance."},"follow_up_hint":"Ask how they'd design a stateful service (e.g. one needing session affinity) to scale horizontally."},
-  {"id":"cloud-0003","question":"Explain what an S3 bucket policy versus an IAM policy controls, and how they interact.","type":"conceptual","difficulty":2,"roles":["backend","devops"],"topics":["cloud","security"],"tech_keywords":["aws","s3","iam","security"],"companies_common":["Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["An IAM policy is attached to a user/role/group, defining what THAT identity can do across AWS resources","A bucket policy is attached to the S3 bucket itself, defining who can access THAT bucket, regardless of their own IAM permissions","Both are evaluated together; access is granted only if neither denies it and at least one allows it","Bucket policies are useful for cross-account access or public access without modifying every consumer's IAM policy","Explicit Deny in either policy always wins over an Allow elsewhere"],"sample_answer":"An IAM policy is attached to a specific user, role, or group, and defines what that identity is allowed to do across AWS resources. A bucket policy is attached to the S3 bucket itself, defining who is allowed to access that specific bucket, independent of their own IAM permissions — useful for granting cross-account access without modifying every consumer's own IAM setup. AWS evaluates both together: access requires that nothing explicitly denies it and at least one policy explicitly allows it; an explicit Deny anywhere always overrides an Allow elsewhere."},"follow_up_hint":"Ask how they'd grant a Lambda function in another AWS account read access to a specific S3 bucket."},
-  {"id":"cloud-0004","question":"What is a VPC, and why would you place a database in a private subnet rather than a public one?","type":"conceptual","difficulty":2,"roles":["backend","devops"],"topics":["cloud","networking"],"tech_keywords":["aws","vpc","networking","cloud"],"companies_common":["Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["A VPC (Virtual Private Cloud) is an isolated virtual network within AWS where you control IP ranges, subnets, and routing","A public subnet has a route to an internet gateway, giving resources in it a path to/from the public internet","A private subnet has no direct internet gateway route, so resources in it aren't directly reachable from the internet","Placing a database in a private subnet means it's only reachable from within the VPC (e.g. by application servers), reducing its attack surface significantly","Explains a NAT gateway lets private-subnet resources initiate outbound internet connections without being reachable from outside"],"sample_answer":"A VPC is your own isolated virtual network within AWS, where you define IP address ranges, subnets, and routing rules. A public subnet routes traffic to an internet gateway, so resources there can be reached from (and reach) the public internet. A private subnet has no such route, so nothing outside the VPC can directly reach it. Placing a database in a private subnet means only your application servers inside the VPC can reach it — it's never directly exposed to the internet, dramatically shrinking its attack surface. If the database still needs outbound internet access (e.g. for updates), a NAT gateway lets it initiate outbound connections without ever being reachable from the outside."},"follow_up_hint":"Ask what a security group is and how it differs from a network ACL."},
-  {"id":"cloud-0005","question":"Explain the difference between SQS and SNS on AWS, and when you'd use each.","type":"trade_off_questions","difficulty":2,"roles":["backend"],"topics":["cloud","message-queue"],"tech_keywords":["aws","sqs","sns","message-queue"],"companies_common":["Amazon","Netflix"],"source_style":"common-interview","reference_solution":{"key_points":["SQS is a message queue: one message is typically consumed by one consumer, good for decoupling a producer from work that should happen exactly once per message","SNS is a pub/sub topic: one published message can be delivered to many subscribers simultaneously (fan-out)","A common pattern combines both: SNS fans out to multiple SQS queues, one per consumer service, each processing independently","Explains SQS provides durable buffering/retry if a consumer is down; SNS alone doesn't persist messages for offline subscribers unless paired with SQS","Gives a concrete use case for each"],"sample_answer":"SQS is a message queue where each message is typically picked up and processed by one consumer — good for decoupling a producer from background work that should happen exactly once per message, like processing an uploaded file. SNS is a pub/sub topic where one published message fans out to potentially many subscribers at once — good for broadcasting an event, like 'order placed', to multiple interested services simultaneously. A very common pattern combines both: SNS publishes to a topic that fans out into several SQS queues, one per consuming service, so each gets its own durable, retryable queue of the same events."},"follow_up_hint":"Ask what a dead-letter queue is and how it's configured for SQS."},
-  {"id":"cloud-0006","question":"What is Infrastructure as Code, and what problem does a tool like Terraform solve compared to manually configuring resources in the AWS console?","type":"conceptual","difficulty":1,"roles":["devops","backend"],"topics":["cloud","devops"],"tech_keywords":["terraform","cloud","infrastructure-as-code"],"companies_common":["Amazon","Google","HashiCorp"],"source_style":"common-interview","reference_solution":{"key_points":["IaC defines infrastructure in version-controlled configuration files applied by a tool, rather than manual console clicks","Gives repeatability: the same configuration reliably produces the same environment every time","Enables code review of infrastructure changes, same as application code","Terraform specifically is declarative: you describe desired end state, and it computes and applies the diff needed to reach it","Avoids 'configuration drift', where manually-managed infrastructure slowly diverges from what's actually documented"],"sample_answer":"Infrastructure as Code means defining servers, networks, and other resources in version-controlled configuration files, applied by a tool, instead of manually clicking through a cloud console. This gives repeatability — the same configuration reliably produces the same environment — and lets infrastructure changes go through code review like any other code change. Terraform specifically is declarative: you describe the desired end state, and it computes the diff between that and the current real infrastructure, then applies just the necessary changes. This avoids 'configuration drift', where manually-managed infrastructure slowly diverges from what anyone actually knows or has documented."},"follow_up_hint":"Ask what a Terraform state file is and why losing it is a serious operational problem."},
-  {"id":"cloud-0007","question":"Explain the CAP theorem in the context of choosing a managed AWS database service (e.g. DynamoDB vs RDS).","type":"trade_off_questions","difficulty":3,"roles":["backend"],"topics":["cloud","databases","distributed-systems"],"tech_keywords":["aws","dynamodb","rds","cap-theorem"],"companies_common":["Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["CAP theorem: during a network partition, a distributed system must choose between Consistency and Availability","RDS (a traditional relational database) typically favors strong consistency within a single primary, at the cost of availability during a failover","DynamoDB defaults to eventual consistency for higher availability and lower latency at scale, though it also offers a strongly-consistent read option at extra cost","Explains the choice should be driven by the actual use case: financial transactions favor consistency, a high-traffic read-heavy feed can tolerate eventual consistency","Notes this trade-off exists regardless of which specific database is chosen — it's inherent to distributed systems, not a DynamoDB-specific limitation"],"sample_answer":"CAP theorem says a distributed system must trade off Consistency against Availability during a network partition. RDS, being a traditional relational database typically run with a single primary, tends to favor strong consistency, with a failover causing a brief availability gap. DynamoDB defaults to eventual consistency to maximize availability and low latency at massive scale, though it offers a strongly-consistent read option when needed, at some latency cost. The right choice depends on the use case — a financial ledger needs strong consistency, while a social media 'like count' can tolerate briefly stale reads in exchange for always being available and fast."},"follow_up_hint":"Ask them to design the DynamoDB table's partition key strategy for a specific access pattern."},
-  {"id":"cloud-0008","question":"What is a CDN, and how does CloudFront reduce latency for users far from your origin server?","type":"conceptual","difficulty":1,"roles":["frontend","backend"],"topics":["cloud","cdn"],"tech_keywords":["aws","cloudfront","cdn"],"companies_common":["Amazon","Netflix","Cloudflare"],"source_style":"common-interview","reference_solution":{"key_points":["A CDN caches content at geographically distributed edge locations closer to end users","CloudFront routes a user's request to the nearest edge location rather than the origin server","Reduces round-trip latency and offloads traffic from the origin","Explains cache invalidation/TTL as the mechanism controlling freshness of edge-cached content","Mentions CDNs are also used for DDoS mitigation and can accelerate dynamic content, not just static assets"],"sample_answer":"A CDN caches content at many geographically distributed edge locations, so a user's request is served from a nearby location instead of traveling all the way to the origin server, cutting round-trip latency significantly. CloudFront specifically routes each request to whichever edge location is closest to that user. This also offloads load from the origin, since most requests never reach it. Cached content freshness is controlled via TTLs and cache invalidation, and content changes usually need explicit invalidation to propagate quickly across edges."},"follow_up_hint":"Ask how they'd handle caching for content that's personalized per user."},
-  {"id":"cloud-0009","question":"Explain what a Kubernetes Pod is and why it's the smallest deployable unit rather than a single container directly.","type":"conceptual","difficulty":2,"roles":["devops","backend"],"topics":["cloud","kubernetes"],"tech_keywords":["kubernetes","cloud","docker"],"companies_common":["Google","Amazon","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["A Pod is one or more tightly-coupled containers sharing the same network namespace and storage volumes","Containers in a Pod can communicate via localhost and share the same IP address","Sidecar containers (e.g. a logging agent alongside the main app) are the classic reason for multi-container Pods","Explains a Pod is scheduled as a single unit — all its containers land on the same node together","Notes most Pods in practice run just one container, but the abstraction supports tightly-coupled multi-container patterns"],"sample_answer":"A Pod is Kubernetes' smallest deployable unit — one or more containers that are tightly coupled enough to share the same network namespace (same IP, can talk via localhost) and storage volumes. The classic reason for a multi-container Pod is a sidecar pattern, like a logging or service-mesh proxy container running alongside the main application container, since they need to be scheduled together on the same node and share resources. Most Pods in practice just run a single container, but the Pod abstraction exists specifically to support these tightly-coupled multi-container cases cleanly."},"follow_up_hint":"Ask them to explain what a Kubernetes Service does and why Pods need one given their ephemeral IPs."},
-  {"id":"cloud-0010","question":"What is the difference between a load balancer's Layer 4 and Layer 7 operation, and give an AWS example of each.","type":"conceptual","difficulty":2,"roles":["backend","devops"],"topics":["cloud","networking"],"tech_keywords":["aws","load-balancing","networking"],"companies_common":["Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["Layer 4 (transport) load balancing routes based on IP/port without inspecting the actual application request content","Layer 7 (application) load balancing inspects the actual HTTP request (path, headers, host) to make routing decisions","AWS Network Load Balancer (NLB) operates at Layer 4 — very high throughput, low latency, protocol-agnostic","AWS Application Load Balancer (ALB) operates at Layer 7 — supports path-based/host-based routing, useful for microservices behind one load balancer","Explains why ALB has slightly more overhead per request due to content inspection"],"sample_answer":"Layer 4 load balancing routes based on IP and port without looking at the actual application-level request, making it very fast and protocol-agnostic — AWS's Network Load Balancer works this way, suited for extremely high-throughput, low-latency needs. Layer 7 load balancing inspects the actual HTTP request — path, headers, host — to make smarter routing decisions, like sending /api requests to one backend service and /static to another. AWS's Application Load Balancer works at this layer, which is the natural fit for routing to multiple microservices behind one load balancer, at the cost of slightly more per-request overhead from content inspection."},"follow_up_hint":"Ask when they'd choose NLB over ALB despite losing path-based routing."}
+  {
+    "id": "cloud-0001",
+    "question": "Explain the difference between EC2, Lambda, and ECS/Fargate as compute options on AWS, and when you'd choose each.",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "cloud",
+      "devops"
+    ],
+    "tech_keywords": [
+      "aws",
+      "ec2",
+      "lambda",
+      "ecs",
+      "cloud"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Netflix",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "EC2: full virtual machines, most control, you manage the OS and scaling yourself",
+        "Lambda: serverless functions, no server management, billed per invocation, best for short-lived event-driven work",
+        "ECS/Fargate: managed container orchestration, Fargate removes the need to manage underlying EC2 instances",
+        "Choose EC2 for long-running, stateful, or highly customized workloads; Lambda for short bursts of event-driven work; ECS/Fargate for containerized microservices needing more control than Lambda but less ops overhead than raw EC2",
+        "Mentions cold starts as a Lambda trade-off for latency-sensitive workloads"
+      ],
+      "sample_answer": "EC2 gives full virtual machines with complete control over the OS, at the cost of managing scaling and patching yourself — good for long-running, stateful, or highly customized workloads. Lambda is serverless: you deploy just a function, AWS handles all infrastructure, and you're billed per invocation — ideal for short, event-driven bursts of work, though cold starts can hurt latency-sensitive use cases. ECS/Fargate sits in between: managed container orchestration where Fargate removes the need to provision underlying EC2 instances yourself, a good fit for containerized microservices that need more control than Lambda but less operational overhead than raw EC2."
+    },
+    "follow_up_hint": "Ask about cold start latency in Lambda and how to mitigate it (provisioned concurrency).",
+    "concept": "AWS Compute Services",
+    "sub_concept": "Infrastructure Abstraction Trade-offs",
+    "expected_reasoning": "A strong candidate begins by framing the architectural spectrum from infrastructure-heavy control to fully managed serverless execution. They systematically evaluate each service across operational overhead, scaling characteristics, billing models, and workload longevity. Rather than just listing features, they map specific workloads—such as legacy monoliths, containerized microservices, and event-driven triggers—to the compute option that minimizes cost and maintenance. Finally, they contrast operational trade-offs like cold starts, infrastructure sizing, and provisioning latency.",
+    "common_mistakes": [
+      "States that Lambda is always cheaper without mentioning request volume or execution duration.",
+      "Treats ECS and EC2 as completely separate compute paradigms rather than container orchestration versus raw VMs.",
+      "Fails to mention infrastructure management and scaling responsibilities for EC2.",
+      "Ignores Lambda execution time limits and cold start latency implications for certain workloads.",
+      "Provides a static list of definitions without comparing how and when to choose between them based on trade-offs."
+    ],
+    "progressive_hints": [
+      "Consider the spectrum of control versus management overhead when choosing how to run code in the cloud.",
+      "Think about what you have to patch and scale yourself versus what AWS handles for you across these three models.",
+      "Evaluate how workload longevity, containerization needs, and event-driven patterns dictate the choice between VMs, containers, and functions."
+    ],
+    "learning_objective": "The candidate should understand how to evaluate trade-offs in infrastructure control, operational overhead, and cost models when choosing between virtual machines, containers, and serverless functions on AWS."
+  },
+  {
+    "id": "cloud-0002",
+    "question": "What is the difference between horizontal and vertical scaling, and how does AWS auto-scaling work?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "backend",
+      "devops"
+    ],
+    "topics": [
+      "cloud",
+      "scalability"
+    ],
+    "tech_keywords": [
+      "aws",
+      "scalability",
+      "cloud"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Vertical scaling: bigger instance type (more CPU/RAM) for the same machine",
+        "Horizontal scaling: more instances behind a load balancer",
+        "AWS Auto Scaling Groups add/remove EC2 instances based on defined metrics (CPU utilization, request count) and min/max/desired capacity",
+        "Explains health checks: unhealthy instances are automatically terminated and replaced",
+        "Notes horizontal scaling generally suits stateless services better since load can be freely distributed"
+      ],
+      "sample_answer": "Vertical scaling means upgrading to a bigger instance type for more CPU/RAM; horizontal scaling means adding more instances behind a load balancer. AWS Auto Scaling Groups automate horizontal scaling: you define a min/max/desired instance count and scaling policies based on metrics like CPU utilization or request count, and AWS automatically launches or terminates instances to match demand, also replacing instances that fail health checks. Horizontal scaling generally suits stateless services better, since traffic can be freely distributed across any healthy instance."
+    },
+    "follow_up_hint": "Ask how they'd design a stateful service (e.g. one needing session affinity) to scale horizontally.",
+    "concept": "Cloud Scalability",
+    "sub_concept": "Horizontal Versus Vertical Scaling and Automated Resource Management",
+    "expected_reasoning": "A strong candidate begins by contrasting the architectural philosophy of scaling up versus scaling out, explicitly weighing hardware limits and downtime against distributed complexity and statelessness. They then transition to operational mechanics, explaining how cloud platforms like AWS automate this elasticity through metric monitoring, capacity boundaries, and load balancers. They anchor their explanation in practical trade-offs, such as why state management dictates which scaling strategy is viable.",
+    "common_mistakes": [
+      "Confusing horizontal scaling with vertical scaling or treating them as interchangeable terms",
+      "Stating that horizontal scaling is always better without acknowledging state management challenges",
+      "Failing to mention load balancers when describing how horizontal scaling distributes traffic",
+      "Describing AWS Auto Scaling purely in abstract terms without mentioning metrics like CPU utilization or capacity limits",
+      "Ignoring instance replacement and health checks as part of the auto-scaling lifecycle"
+    ],
+    "progressive_hints": [
+      "Consider the fundamental difference between making a single server more powerful versus adding more servers to a fleet.",
+      "Think about how incoming traffic is distributed across multiple machines, and what triggers an infrastructure platform to decide when to add or remove those machines automatically.",
+      "Reflect on how AWS Auto Scaling Groups use health checks, metrics like CPU utilization, and min/max boundaries to manage a fleet behind a load balancer, and why stateless design makes this feasible."
+    ],
+    "learning_objective": "Understand the architectural trade-offs between scaling up and scaling out, and how cloud platforms automate horizontal capacity management."
+  },
+  {
+    "id": "cloud-0003",
+    "question": "Explain what an S3 bucket policy versus an IAM policy controls, and how they interact.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "devops"
+    ],
+    "topics": [
+      "cloud",
+      "security"
+    ],
+    "tech_keywords": [
+      "aws",
+      "s3",
+      "iam",
+      "security"
+    ],
+    "companies_common": [
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "An IAM policy is attached to a user/role/group, defining what THAT identity can do across AWS resources",
+        "A bucket policy is attached to the S3 bucket itself, defining who can access THAT bucket, regardless of their own IAM permissions",
+        "Both are evaluated together; access is granted only if neither denies it and at least one allows it",
+        "Bucket policies are useful for cross-account access or public access without modifying every consumer's IAM policy",
+        "Explicit Deny in either policy always wins over an Allow elsewhere"
+      ],
+      "sample_answer": "An IAM policy is attached to a specific user, role, or group, and defines what that identity is allowed to do across AWS resources. A bucket policy is attached to the S3 bucket itself, defining who is allowed to access that specific bucket, independent of their own IAM permissions — useful for granting cross-account access without modifying every consumer's own IAM setup. AWS evaluates both together: access requires that nothing explicitly denies it and at least one policy explicitly allows it; an explicit Deny anywhere always overrides an Allow elsewhere."
+    },
+    "follow_up_hint": "Ask how they'd grant a Lambda function in another AWS account read access to a specific S3 bucket.",
+    "concept": "Cloud Identity and Access Management",
+    "sub_concept": "Resource-based versus Identity-based Access Control",
+    "expected_reasoning": "A strong candidate begins by distinguishing where each policy lives, separating identity-bound permissions from resource-bound permissions. They then trace the evaluation flow, recognizing that an access request must pass through both policy types simultaneously. Next, they analyze precedence rules, noting how explicit denials override allows and how both policies must align or at least not object. Finally, they provide practical context on when to use each, such as managing cross-account access via bucket policies versus managing internal team permissions via IAM.",
+    "common_mistakes": [
+      "States that IAM policies alone control access to S3 without mentioning bucket policies.",
+      "Confuses bucket policies with bucket ACLs or object ownership settings.",
+      "Assumes that if an IAM policy allows access, the bucket policy is ignored.",
+      "Fails to explain the evaluation logic and how explicit denies interact.",
+      "Provides a surface-level definition without explaining a real-world use case for using them together."
+    ],
+    "progressive_hints": [
+      "Consider where each policy is attached: one lives on the user or role, while the other lives directly on the resource itself. How does that change who they apply to?",
+      "When a request is made to S3, AWS evaluates multiple authorization mechanisms at once. Think about how an identity-based policy and a resource-based policy work together to either grant or block access.",
+      "Remember the golden rule of AWS policy evaluation regarding 'Deny' versus 'Allow', and consider how a bucket policy enables cross-account access where changing the caller's IAM policy isn't possible."
+    ],
+    "learning_objective": "Understand how identity-based and resource-based policies interact in AWS to collaboratively secure access to resources while respecting explicit denials."
+  },
+  {
+    "id": "cloud-0004",
+    "question": "What is a VPC, and why would you place a database in a private subnet rather than a public one?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "devops"
+    ],
+    "topics": [
+      "cloud",
+      "networking"
+    ],
+    "tech_keywords": [
+      "aws",
+      "vpc",
+      "networking",
+      "cloud"
+    ],
+    "companies_common": [
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A VPC (Virtual Private Cloud) is an isolated virtual network within AWS where you control IP ranges, subnets, and routing",
+        "A public subnet has a route to an internet gateway, giving resources in it a path to/from the public internet",
+        "A private subnet has no direct internet gateway route, so resources in it aren't directly reachable from the internet",
+        "Placing a database in a private subnet means it's only reachable from within the VPC (e.g. by application servers), reducing its attack surface significantly",
+        "Explains a NAT gateway lets private-subnet resources initiate outbound internet connections without being reachable from outside"
+      ],
+      "sample_answer": "A VPC is your own isolated virtual network within AWS, where you define IP address ranges, subnets, and routing rules. A public subnet routes traffic to an internet gateway, so resources there can be reached from (and reach) the public internet. A private subnet has no such route, so nothing outside the VPC can directly reach it. Placing a database in a private subnet means only your application servers inside the VPC can reach it — it's never directly exposed to the internet, dramatically shrinking its attack surface. If the database still needs outbound internet access (e.g. for updates), a NAT gateway lets it initiate outbound connections without ever being reachable from the outside."
+    },
+    "follow_up_hint": "Ask what a security group is and how it differs from a network ACL.",
+    "concept": "Virtual Private Cloud",
+    "sub_concept": "Subnetting and Network Isolation",
+    "expected_reasoning": "A strong candidate begins by defining the VPC as a boundary of isolated network control and quickly contrasts public and private subnets based on routing rules. They trace the flow of traffic to explain why exposing a database to the internet introduces severe security risks. Rather than stopping at isolation, they consider how internal applications communicate with the database while still keeping external traffic blocked, and address how private resources handle necessary outbound traffic like software patches.",
+    "common_mistakes": [
+      "States the conclusion that private is more secure without explaining the underlying routing mechanisms or internet gateways",
+      "Confuses a private subnet with having no network connectivity at all, forgetting about internal routing and NAT",
+      "Believes a database in a public subnet is safe as long as it has a strong password or security group",
+      "Fails to explain how application servers in the VPC actually reach the database if it has no public IP",
+      "Thinks a VPC is a physical piece of hardware rather than a virtualized network construct"
+    ],
+    "progressive_hints": [
+      "What determines whether a resource inside a subnet can be reached directly from the outside internet?",
+      "Consider the role of the internet gateway and how routing tables dictate where traffic can flow for public versus private subnets.",
+      "If your database is in a subnet with no route to an internet gateway, how do your application servers reach it, and how does that isolate your data from attackers?"
+    ],
+    "learning_objective": "Understand how network isolation via VPC subnets and routing rules protects sensitive infrastructure like databases from public internet exposure."
+  },
+  {
+    "id": "cloud-0005",
+    "question": "Explain the difference between SQS and SNS on AWS, and when you'd use each.",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "cloud",
+      "message-queue"
+    ],
+    "tech_keywords": [
+      "aws",
+      "sqs",
+      "sns",
+      "message-queue"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Netflix"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "SQS is a message queue: one message is typically consumed by one consumer, good for decoupling a producer from work that should happen exactly once per message",
+        "SNS is a pub/sub topic: one published message can be delivered to many subscribers simultaneously (fan-out)",
+        "A common pattern combines both: SNS fans out to multiple SQS queues, one per consumer service, each processing independently",
+        "Explains SQS provides durable buffering/retry if a consumer is down; SNS alone doesn't persist messages for offline subscribers unless paired with SQS",
+        "Gives a concrete use case for each"
+      ],
+      "sample_answer": "SQS is a message queue where each message is typically picked up and processed by one consumer — good for decoupling a producer from background work that should happen exactly once per message, like processing an uploaded file. SNS is a pub/sub topic where one published message fans out to potentially many subscribers at once — good for broadcasting an event, like 'order placed', to multiple interested services simultaneously. A very common pattern combines both: SNS publishes to a topic that fans out into several SQS queues, one per consuming service, so each gets its own durable, retryable queue of the same events."
+    },
+    "follow_up_hint": "Ask what a dead-letter queue is and how it's configured for SQS.",
+    "concept": "Distributed Messaging",
+    "sub_concept": "Publish-Subscribe vs Message Queue Architecture",
+    "expected_reasoning": "A strong candidate begins by identifying the fundamental architectural distinction between point-to-point queues and publish-subscribe broadcast patterns. They analyze how messages are distributed to consumers, noting that one is designed for work distribution and load leveling while the other is meant for event notification and fan-out. Next, they examine durability and retry semantics, evaluating how each system behaves when a downstream consumer is temporarily unavailable. Finally, they synthesize these traits into common integration patterns, recognizing how combining both services solves complex architectural challenges.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'use SQS for queues and SNS for notifications' without explaining why.",
+      "Claims SNS stores messages indefinitely for offline consumers just like SQS does.",
+      "Assumes a message sent to SNS can be processed by multiple workers competing from the same subscription without configuring individual endpoints.",
+      "Fails to mention the fan-out pattern combining both services.",
+      "Confuses the polling mechanism of SQS with the push mechanism of SNS."
+    ],
+    "progressive_hints": [
+      "What is the primary difference in how many consumers receive a single message in each service?",
+      "Think about what happens to a message sent to SNS if all subscribers are currently offline or unavailable.",
+      "If you need one event to trigger three completely different independent downstream microservices, how would you combine SNS and SQS together?"
+    ],
+    "learning_objective": "The candidate should understand how to choose between point-to-point queuing and pub-sub broadcasting, and how combining SQS and SNS enables reliable fan-out architectures."
+  },
+  {
+    "id": "cloud-0006",
+    "question": "What is Infrastructure as Code, and what problem does a tool like Terraform solve compared to manually configuring resources in the AWS console?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "devops",
+      "backend"
+    ],
+    "topics": [
+      "cloud",
+      "devops"
+    ],
+    "tech_keywords": [
+      "terraform",
+      "cloud",
+      "infrastructure-as-code"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "HashiCorp"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "IaC defines infrastructure in version-controlled configuration files applied by a tool, rather than manual console clicks",
+        "Gives repeatability: the same configuration reliably produces the same environment every time",
+        "Enables code review of infrastructure changes, same as application code",
+        "Terraform specifically is declarative: you describe desired end state, and it computes and applies the diff needed to reach it",
+        "Avoids 'configuration drift', where manually-managed infrastructure slowly diverges from what's actually documented"
+      ],
+      "sample_answer": "Infrastructure as Code means defining servers, networks, and other resources in version-controlled configuration files, applied by a tool, instead of manually clicking through a cloud console. This gives repeatability — the same configuration reliably produces the same environment — and lets infrastructure changes go through code review like any other code change. Terraform specifically is declarative: you describe the desired end state, and it computes the diff between that and the current real infrastructure, then applies just the necessary changes. This avoids 'configuration drift', where manually-managed infrastructure slowly diverges from what anyone actually knows or has documented."
+    },
+    "follow_up_hint": "Ask what a Terraform state file is and why losing it is a serious operational problem.",
+    "concept": "Infrastructure as Code",
+    "sub_concept": "Declarative Provisioning Versus Manual Cloud Management",
+    "expected_reasoning": "A strong candidate begins by contrasting the manual, error-prone nature of point-and-click cloud consoles with programmatic definition. They reason about the lifecycle of infrastructure, identifying how unmanaged environments suffer from drift and lack of version control. Next, they explain how tools like Terraform abstract these problems by representing infrastructure as declarative text files. Finally, they weigh the benefits of compute-diff execution plans against imperative scripts, showing how state tracking enables safe, repeatable, and reviewable deployments.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying 'Terraform is faster than the console.'",
+      "Confuses Infrastructure as Code with simple shell scripts or procedural bash provisioning.",
+      "Fails to mention version control or collaboration benefits like code reviews.",
+      "Overlooks the core mechanism of declarative state management and diff computation, treating Terraform like a glorified API wrapper.",
+      "Ignores the problem of configuration drift entirely."
+    ],
+    "progressive_hints": [
+      "Think about what happens to a cloud environment over six months when three different engineers make manual changes through the web console.",
+      "Consider how treating infrastructure files the exact same way you treat application source code changes your team's review and deployment workflow.",
+      "Focus on how a declarative tool compares its execution plan against the real-world API state to figure out what needs to change without you specifying every step."
+    ],
+    "learning_objective": "Understand how defining infrastructure through version-controlled, declarative configuration files eliminates manual toil, prevents configuration drift, and brings software engineering best practices to cloud environments."
+  },
+  {
+    "id": "cloud-0007",
+    "question": "Explain the CAP theorem in the context of choosing a managed AWS database service (e.g. DynamoDB vs RDS).",
+    "type": "trade_off_questions",
+    "difficulty": 3,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "cloud",
+      "databases",
+      "distributed-systems"
+    ],
+    "tech_keywords": [
+      "aws",
+      "dynamodb",
+      "rds",
+      "cap-theorem"
+    ],
+    "companies_common": [
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "CAP theorem: during a network partition, a distributed system must choose between Consistency and Availability",
+        "RDS (a traditional relational database) typically favors strong consistency within a single primary, at the cost of availability during a failover",
+        "DynamoDB defaults to eventual consistency for higher availability and lower latency at scale, though it also offers a strongly-consistent read option at extra cost",
+        "Explains the choice should be driven by the actual use case: financial transactions favor consistency, a high-traffic read-heavy feed can tolerate eventual consistency",
+        "Notes this trade-off exists regardless of which specific database is chosen — it's inherent to distributed systems, not a DynamoDB-specific limitation"
+      ],
+      "sample_answer": "CAP theorem says a distributed system must trade off Consistency against Availability during a network partition. RDS, being a traditional relational database typically run with a single primary, tends to favor strong consistency, with a failover causing a brief availability gap. DynamoDB defaults to eventual consistency to maximize availability and low latency at massive scale, though it offers a strongly-consistent read option when needed, at some latency cost. The right choice depends on the use case — a financial ledger needs strong consistency, while a social media 'like count' can tolerate briefly stale reads in exchange for always being available and fast."
+    },
+    "follow_up_hint": "Ask them to design the DynamoDB table's partition key strategy for a specific access pattern.",
+    "concept": "CAP Theorem",
+    "sub_concept": "Distributed Database Trade-offs in AWS",
+    "expected_reasoning": "A strong candidate begins by defining the CAP theorem strictly in the context of a network partition, clarifying that consistency and availability are mutually exclusive choices when communication fails. They then map this foundational theory to concrete AWS services, contrasting a traditional single-primary relational database like Amazon RDS with a distributed NoSQL system like DynamoDB. Rather than treating these databases as black boxes, the candidate analyzes how their underlying architectures handle replication and partitions. Finally, they evaluate these architectural choices against real-world business requirements, recognizing that the right service depends entirely on whether data correctness or system uptime is prioritized for the specific use case.",
+    "common_mistakes": [
+      "Reciting the CAP theorem definition without applying it to any actual AWS services",
+      "Stating that you can have all three (Consistency, Availability, and Partition Tolerance) under normal operating conditions",
+      "Claiming DynamoDB has zero consistency because it defaults to eventual consistency, ignoring its strong consistency options",
+      "Treating RDS as a distributed system that violates CAP, misunderstanding how single-primary replication works",
+      "Assuming one AWS database service is universally better than the other without discussing business constraints"
+    ],
+    "progressive_hints": [
+      "When a network cable is cut between two database replicas, what happens to the guarantee that every read returns the absolute latest write?",
+      "Think about what happens to a multi-node database when it cannot synchronize updates across availability zones during a transient network split.",
+      "Consider how Amazon RDS prioritizing single-primary accuracy versus DynamoDB prioritizing multi-node uptime maps to the choice between Consistency and Availability during a partition."
+    ],
+    "learning_objective": "Understand that distributed databases must trade off between consistency and availability during network partitions, and how real-world AWS services implement these compromises."
+  },
+  {
+    "id": "cloud-0008",
+    "question": "What is a CDN, and how does CloudFront reduce latency for users far from your origin server?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "frontend",
+      "backend"
+    ],
+    "topics": [
+      "cloud",
+      "cdn"
+    ],
+    "tech_keywords": [
+      "aws",
+      "cloudfront",
+      "cdn"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Netflix",
+      "Cloudflare"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A CDN caches content at geographically distributed edge locations closer to end users",
+        "CloudFront routes a user's request to the nearest edge location rather than the origin server",
+        "Reduces round-trip latency and offloads traffic from the origin",
+        "Explains cache invalidation/TTL as the mechanism controlling freshness of edge-cached content",
+        "Mentions CDNs are also used for DDoS mitigation and can accelerate dynamic content, not just static assets"
+      ],
+      "sample_answer": "A CDN caches content at many geographically distributed edge locations, so a user's request is served from a nearby location instead of traveling all the way to the origin server, cutting round-trip latency significantly. CloudFront specifically routes each request to whichever edge location is closest to that user. This also offloads load from the origin, since most requests never reach it. Cached content freshness is controlled via TTLs and cache invalidation, and content changes usually need explicit invalidation to propagate quickly across edges."
+    },
+    "follow_up_hint": "Ask how they'd handle caching for content that's personalized per user.",
+    "concept": "Content Delivery Network",
+    "sub_concept": "Edge Caching and Latency Reduction",
+    "expected_reasoning": "A strong candidate begins by identifying the core bottleneck of serving users globally from a single origin server: physical distance and network round-trip time. They then deduce that placing proxy servers closer to end users shortens that distance and avoids hitting the origin repeatedly. Next, they explain how routing requests to these localized edge locations offloads the core infrastructure while improving performance. Finally, they account for data freshness, recognizing that caching requires a mechanism like TTL or invalidation to handle updates.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'it makes websites faster' without explaining why distance matters.",
+      "Confuses a CDN with a database replica or load balancer, missing the caching and geographic edge aspect entirely.",
+      "Only mentions static assets like images, ignoring how modern CDNs also optimize dynamic content and API requests.",
+      "Ignores the problem of stale data, failing to mention cache invalidation, TTL, or how updates propagate.",
+      "Treats the edge location as a separate independent server rather than a proxy that fetches from and syncs with the origin."
+    ],
+    "progressive_hints": [
+      "Think about what physically happens to a data packet when a user in Tokyo requests an asset hosted on a server in Virginia.",
+      "If fetching from the origin every single time is the bottleneck, where else could that requested data live so it's physically closer?",
+      "Consider how a global network of proxy servers handles the trade-off between serving data quickly from nearby and ensuring the data doesn't become permanently outdated."
+    ],
+    "learning_objective": "The candidate should understand how geographically distributed edge networks reduce latency and protect origin servers through strategic caching and intelligent request routing."
+  },
+  {
+    "id": "cloud-0009",
+    "question": "Explain what a Kubernetes Pod is and why it's the smallest deployable unit rather than a single container directly.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "devops",
+      "backend"
+    ],
+    "topics": [
+      "cloud",
+      "kubernetes"
+    ],
+    "tech_keywords": [
+      "kubernetes",
+      "cloud",
+      "docker"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A Pod is one or more tightly-coupled containers sharing the same network namespace and storage volumes",
+        "Containers in a Pod can communicate via localhost and share the same IP address",
+        "Sidecar containers (e.g. a logging agent alongside the main app) are the classic reason for multi-container Pods",
+        "Explains a Pod is scheduled as a single unit — all its containers land on the same node together",
+        "Notes most Pods in practice run just one container, but the abstraction supports tightly-coupled multi-container patterns"
+      ],
+      "sample_answer": "A Pod is Kubernetes' smallest deployable unit — one or more containers that are tightly coupled enough to share the same network namespace (same IP, can talk via localhost) and storage volumes. The classic reason for a multi-container Pod is a sidecar pattern, like a logging or service-mesh proxy container running alongside the main application container, since they need to be scheduled together on the same node and share resources. Most Pods in practice just run a single container, but the Pod abstraction exists specifically to support these tightly-coupled multi-container cases cleanly."
+    },
+    "follow_up_hint": "Ask them to explain what a Kubernetes Service does and why Pods need one given their ephemeral IPs.",
+    "concept": "Kubernetes Pods",
+    "sub_concept": "Multi-container architecture and scheduling boundaries",
+    "expected_reasoning": "A strong candidate begins by defining the Pod not just as a wrapper, but as a logical host for one or more containers that share a fate. They analyze the isolation boundaries of containers, realizing that multiple distinct containers often need to cooperate closely on the same machine. By discussing network and storage sharing, they derive why containers within a Pod can talk via localhost and mount the same volumes. Finally, they explain the scheduling implication, noting that Kubernetes schedules a Pod as an atomic unit to ensure these tightly-coupled components always land on the same node.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'a Pod is just a container wrapper' without explaining why multiple containers are supported.",
+      "Claims that every Pod must contain multiple containers rather than recognizing single-container Pods are the norm with multi-container as an exception.",
+      "Confuses container runtime isolation with Pod-level sharing, incorrectly stating that containers in different Pods share a network namespace.",
+      "Believes containers in a Pod share a CPU and memory limit globally rather than having independent resource requests while sharing the Linux namespace.",
+      "Misses the co-scheduling aspect entirely, failing to explain why Kubernetes needs to treat the Pod as the atomic unit of scheduling."
+    ],
+    "progressive_hints": [
+      "Think about what happens when two applications need to run on the exact same machine to communicate efficiently and share files.",
+      "Consider what network and storage resources standard containers isolate from one another, and how you would bridge them if two processes needed to act like they were running on the same localhost.",
+      "If you have a main web application and a separate log-shipping agent that need to share a local Unix socket and disk volume, how does Kubernetes ensure they land on the exact same physical node together?"
+    ],
+    "learning_objective": "Understand that a Kubernetes Pod is a shared execution context of tightly-coupled containers that share storage, networking, and lifecycle management as the atomic unit of scheduling."
+  },
+  {
+    "id": "cloud-0010",
+    "question": "What is the difference between a load balancer's Layer 4 and Layer 7 operation, and give an AWS example of each.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "devops"
+    ],
+    "topics": [
+      "cloud",
+      "networking"
+    ],
+    "tech_keywords": [
+      "aws",
+      "load-balancing",
+      "networking"
+    ],
+    "companies_common": [
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Layer 4 (transport) load balancing routes based on IP/port without inspecting the actual application request content",
+        "Layer 7 (application) load balancing inspects the actual HTTP request (path, headers, host) to make routing decisions",
+        "AWS Network Load Balancer (NLB) operates at Layer 4 — very high throughput, low latency, protocol-agnostic",
+        "AWS Application Load Balancer (ALB) operates at Layer 7 — supports path-based/host-based routing, useful for microservices behind one load balancer",
+        "Explains why ALB has slightly more overhead per request due to content inspection"
+      ],
+      "sample_answer": "Layer 4 load balancing routes based on IP and port without looking at the actual application-level request, making it very fast and protocol-agnostic — AWS's Network Load Balancer works this way, suited for extremely high-throughput, low-latency needs. Layer 7 load balancing inspects the actual HTTP request — path, headers, host — to make smarter routing decisions, like sending /api requests to one backend service and /static to another. AWS's Application Load Balancer works at this layer, which is the natural fit for routing to multiple microservices behind one load balancer, at the cost of slightly more per-request overhead from content inspection."
+    },
+    "follow_up_hint": "Ask when they'd choose NLB over ALB despite losing path-based routing.",
+    "concept": "Load Balancing",
+    "sub_concept": "Layer 4 vs Layer 7 Traffic Routing",
+    "expected_reasoning": "A strong candidate first establishes the OSI model foundation, identifying the distinction between transport and application layers. They then analyze how visibility into the request payload changes the routing capabilities, contrasting blind packet forwarding with content-aware decisions. Following this, they weigh the performance and architectural trade-offs, noting how deeper inspection introduces latency in exchange for advanced routing flexibility. Finally, they map these architectural principles to concrete cloud offerings to demonstrate practical applicability.",
+    "common_mistakes": [
+      "Confusing Layer 4 and Layer 7 by stating NLB inspects HTTP headers.",
+      "Claiming ALB has better performance and lower latency than NLB without qualification.",
+      "Stating the definitions of the OSI layers without explaining how it applies to load balancing decisions.",
+      "Providing AWS load balancer examples without linking them to their correct layer.",
+      "Failing to mention any trade-offs like overhead or protocol support."
+    ],
+    "progressive_hints": [
+      "Think about how deep into the network packet or application request a load balancer needs to look to make a routing decision.",
+      "Consider what information is available if you only look at TCP/UDP ports versus looking inside an HTTP header or URL path.",
+      "If you needed to route traffic based on whether the URL path contains '/images' or '/video', which layer of the OSI model would you need to operate at?"
+    ],
+    "learning_objective": "Understand the trade-offs between transport-level and application-level load balancing regarding throughput, inspection capability, and architectural flexibility."
+  }
 ]

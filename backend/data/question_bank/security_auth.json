@@ -4,11 +4,26 @@
     "question": "Explain the difference between authentication and authorization with a concrete example.",
     "type": "conceptual",
     "difficulty": 1,
-    "roles": ["backend", "fullstack", "general_sde"],
-    "topics": ["security", "authentication"],
-    "tech_keywords": ["authentication", "authorization", "security"],
+    "roles": [
+      "backend",
+      "fullstack",
+      "general_sde"
+    ],
+    "topics": [
+      "security",
+      "authentication"
+    ],
+    "tech_keywords": [
+      "authentication",
+      "authorization",
+      "security"
+    ],
     "concepts": [],
-    "companies_common": ["Amazon", "Microsoft", "Stripe"],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Stripe"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -25,20 +40,56 @@
       "What HTTP status code should a server return for an authenticated but unauthorized request?",
       "How would you design role-based access control for a multi-tenant application?"
     ],
-    "evaluation_criteria": ["correctness", "completeness", "examples"],
+    "evaluation_criteria": [
+      "correctness",
+      "completeness",
+      "examples"
+    ],
     "scoring_rubric": {},
-    "status": "verified"
+    "status": "verified",
+    "concept": "Identity And Access Management",
+    "sub_concept": "Authentication vs Authorization Distinction",
+    "expected_reasoning": "A strong candidate begins by defining the sequential relationship between proving identity and granting access rights. They establish that these are two distinct phases of a security pipeline, where the first answers 'who are you' and the second answers 'what are you allowed to do'. They then construct a clear, real-world metaphor or system example, such as an airport or office building, to map each phase to concrete actions. Finally, they highlight the operational dependency: authorization cannot occur without a successfully completed authentication step.",
+    "common_mistakes": [
+      "States the conclusion with no justification or conflates the two terms as interchangeable.",
+      "Claims authorization happens before authentication in a request lifecycle.",
+      "Uses an example where the user is neither authenticated nor authorized, confusing the failure modes.",
+      "Focuses purely on technical implementations like OAuth or JWTs without explaining the underlying conceptual separation.",
+      "Fails to provide a concrete, real-world or system example."
+    ],
+    "progressive_hints": [
+      "Think about the sequence of events when you try to enter a secure building or use an application. What has to happen the very first time you show up versus every time you try to open a specific door?",
+      "Consider the two fundamental questions a security system must ask about you: 'Are you who you say you are?' and 'Do you have the key to this specific room?' How do those map to separate checks?",
+      "Imagine a scenario where a user successfully logs in with their password, but then clicks a button and gets an 'Access Denied' message. Which security check passed, and which one failed?"
+    ],
+    "learning_objective": "The candidate should understand that authentication and authorization are separate, sequential phases of security where identity verification strictly precedes permission enforcement."
   },
   {
     "id": "sec-0002",
     "question": "Explain how OAuth 2.0's authorization code flow works, step by step.",
     "type": "explanation",
     "difficulty": 3,
-    "roles": ["backend", "fullstack"],
-    "topics": ["security", "authentication", "oauth"],
-    "tech_keywords": ["oauth", "authentication", "security"],
+    "roles": [
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "security",
+      "authentication",
+      "oauth"
+    ],
+    "tech_keywords": [
+      "oauth",
+      "authentication",
+      "security"
+    ],
     "concepts": [],
-    "companies_common": ["Amazon", "Google", "Stripe", "Microsoft"],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Stripe",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -55,20 +106,58 @@
       "What is PKCE and why does it matter for public clients like mobile apps?",
       "How does a refresh token differ from an access token in this flow?"
     ],
-    "evaluation_criteria": ["correctness", "completeness", "technical_depth"],
+    "evaluation_criteria": [
+      "correctness",
+      "completeness",
+      "technical_depth"
+    ],
     "scoring_rubric": {},
-    "status": "verified"
+    "status": "verified",
+    "concept": "OAuth 2.0 Authorization",
+    "sub_concept": "Authorization Code Flow Mechanics",
+    "expected_reasoning": "A strong candidate begins by framing OAuth 2.0 as a delegation protocol rather than an authentication protocol, separating the client application, the authorization server, and the resource server. They trace the lifecycle of a request by establishing the trust boundaries first—specifically identifying which components execute in the vulnerable browser environment versus a secure backend server. They then methodically walk through the state transitions, explaining why an intermediary artifact (the authorization code) is necessary before issuing a powerful credential like an access token. Finally, they conclude by analyzing the security properties of the server-to-server token exchange, highlighting how it prevents token leakage.",
+    "common_mistakes": [
+      "States the conclusion with no justification by listing steps without explaining the architectural reasons behind them",
+      "Confuses OAuth 2.0 with authentication (OpenID Connect), treating access tokens as user identity proofs",
+      "Fails to explain why the authorization code is exchanged server-side, missing the security risk of browser exposure",
+      "Treats the authorization code and the access token as the same thing or interchangeable credentials",
+      "Leaves out the role of the resource server entirely, focusing only on the client and authorization server interactions",
+      "Omits the user consent and redirection mechanics, starting the explanation directly at the token exchange"
+    ],
+    "progressive_hints": [
+      "Think about the primary entities involved in this transaction and where each one is executing—some are in a user's browser, while others are on secure backend servers.",
+      "Consider why the client application doesn't just ask for the access token directly from the browser in a single step. What security artifact is introduced to bridge the public and private environments?",
+      "If the authorization code is intercepted in the browser's URL query parameters, why is it useless to an attacker on its own without another secret piece of information held by the client?"
+    ],
+    "learning_objective": "Understand how the OAuth 2.0 authorization code flow uses decoupled frontend redirects and secure backend exchanges to prevent credential theft."
   },
   {
     "id": "sec-0003",
     "question": "What is a JWT, and what are the security risks of storing one in localStorage versus an httpOnly cookie?",
     "type": "trade_off_questions",
     "difficulty": 3,
-    "roles": ["backend", "frontend", "fullstack"],
-    "topics": ["security", "authentication", "jwt"],
-    "tech_keywords": ["jwt", "security", "authentication", "cookies"],
+    "roles": [
+      "backend",
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "security",
+      "authentication",
+      "jwt"
+    ],
+    "tech_keywords": [
+      "jwt",
+      "security",
+      "authentication",
+      "cookies"
+    ],
     "concepts": [],
-    "companies_common": ["Amazon", "Stripe", "Microsoft"],
+    "companies_common": [
+      "Amazon",
+      "Stripe",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -85,20 +174,53 @@
       "How would you implement token refresh without exposing the refresh token to XSS?",
       "What does the SameSite cookie attribute actually prevent?"
     ],
-    "evaluation_criteria": ["correctness", "trade_off_awareness", "technical_depth"],
+    "evaluation_criteria": [
+      "correctness",
+      "trade_off_awareness",
+      "technical_depth"
+    ],
     "scoring_rubric": {},
-    "status": "verified"
+    "status": "verified",
+    "concept": "Token Authentication Security",
+    "sub_concept": "Client-side Storage Mechanisms and Threat Modeling",
+    "expected_reasoning": "A strong candidate begins by defining the structure and stateless nature of a JSON Web Token, emphasizing its cryptographic signature. They then systematically analyze the two primary client storage vectors by evaluating their exposure to specific client-side web vulnerabilities. Instead of declaring one storage option universally superior, they contrast how localStorage exposes tokens to Cross-Site Scripting (XSS) while httpOnly cookies protect against script access yet require explicit defense against Cross-Site Request Forgery (CSRF). Finally, they synthesize these trade-offs by discussing defense-in-depth strategies like short token lifespans and cookie attributes.",
+    "common_mistakes": [
+      "States that httpOnly cookies are universally secure without mentioning CSRF vulnerability.",
+      "Claims localStorage is completely safe if you use HTTPS.",
+      "Provides a surface-level definition of JWT without explaining its cryptographic verification or stateless claims.",
+      "Fails to mention JavaScript accessibility as the distinguishing factor between localStorage and cookies.",
+      "Ignores mitigation strategies like SameSite attributes or token expiration policies."
+    ],
+    "progressive_hints": [
+      "How does the browser interact differently with JavaScript running on the page versus incoming HTTP responses regarding token visibility?",
+      "Consider what happens if a malicious script is successfully injected onto your page via an XSS vulnerability, and where your tokens are currently residing.",
+      "If you move the token to an httpOnly cookie to prevent script theft, what implicit browser behavior on subsequent cross-site requests introduces a new security vector you must mitigate?"
+    ],
+    "learning_objective": "The candidate should understand that choosing a JWT storage mechanism involves trading off vulnerability to XSS token theft against vulnerability to CSRF attacks, requiring intentional architectural mitigations for whichever path is chosen."
   },
   {
     "id": "sec-0004",
     "question": "Explain what SQL injection is and how parameterized queries prevent it.",
     "type": "explanation",
     "difficulty": 1,
-    "roles": ["backend", "fullstack"],
-    "topics": ["security", "sql-injection"],
-    "tech_keywords": ["sql", "security"],
+    "roles": [
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "security",
+      "sql-injection"
+    ],
+    "tech_keywords": [
+      "sql",
+      "security"
+    ],
     "concepts": [],
-    "companies_common": ["Amazon", "Microsoft", "Infosys"],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Infosys"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -111,21 +233,57 @@
       "sample_answer": "SQL injection occurs when user input is concatenated directly into a query string, letting an attacker craft input that changes the query's meaning — e.g. entering `' OR '1'='1` into a login field to make the WHERE clause always true. Parameterized queries fix this by sending the query template and the data values to the database as two separate things; the database never re-parses the data as SQL syntax, so the input is always treated as a literal value no matter what it contains. This should be the default for any query touching user input, with least-privilege database accounts as an additional defense-in-depth layer."
     },
     "follow_up_hint": "Ask them to spot the SQL injection vulnerability in a given code snippet.",
-    "follow_up_questions": ["What is a second-order SQL injection?", "How does an ORM help prevent SQL injection by default?"],
-    "evaluation_criteria": ["correctness", "examples"],
+    "follow_up_questions": [
+      "What is a second-order SQL injection?",
+      "How does an ORM help prevent SQL injection by default?"
+    ],
+    "evaluation_criteria": [
+      "correctness",
+      "examples"
+    ],
     "scoring_rubric": {},
-    "status": "verified"
+    "status": "verified",
+    "concept": "SQL Injection Prevention",
+    "sub_concept": "Parameterized Queries and Query Structure Separation",
+    "expected_reasoning": "A strong candidate begins by defining the vulnerability as an injection of untrusted user input directly into query strings, causing the interpreter to confuse data with executable code. They then trace how an attacker exploits this to alter query logic, such as bypassing authentication checks. Next, they explain the mechanism of parameterized queries, highlighting how the database treats the inputs strictly as literal values rather than syntax. Finally, they contrast this architectural guarantee with brittle approaches like manual string escaping or blacklisting, and note the importance of defense-in-depth principles like least privilege.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as just saying 'use prepared statements' without explaining why",
+      "Confuses input sanitization or regex filtering with a complete silver bullet defense",
+      "Fails to explain the mechanics of how the database separates query structure from data values",
+      "Gives a vague definition of SQL injection without a concrete example of how input alters query syntax",
+      "Misses secondary defenses like least-privilege database user permissions entirely"
+    ],
+    "progressive_hints": [
+      "Consider what happens when a web application glues raw user input directly onto the end of a database command string.",
+      "Think about how the database parser distinguishes between the SQL commands you wrote and the data values supplied by the user.",
+      "If the database engine receives the SQL command template and the user-supplied parameters through separate channels, how does it process special characters like quotes?"
+    ],
+    "learning_objective": "Understand that SQL injection occurs when data mixes with executable query syntax, and that parameterized queries structurally separate code from data to eliminate the vulnerability."
   },
   {
     "id": "sec-0005",
     "question": "What is Cross-Site Scripting (XSS), and what are the differences between stored, reflected, and DOM-based XSS?",
     "type": "explanation",
     "difficulty": 2,
-    "roles": ["frontend", "fullstack"],
-    "topics": ["security", "xss"],
-    "tech_keywords": ["xss", "security", "javascript"],
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "security",
+      "xss"
+    ],
+    "tech_keywords": [
+      "xss",
+      "security",
+      "javascript"
+    ],
     "concepts": [],
-    "companies_common": ["Amazon", "Meta", "Microsoft"],
+    "companies_common": [
+      "Amazon",
+      "Meta",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -138,21 +296,57 @@
       "sample_answer": "XSS lets an attacker get their own script to run in another user's browser, under the victim site's origin, giving access to cookies, local storage, or the ability to act as the user. Stored XSS persists the payload server-side, like in a comment field, so it hits every viewer. Reflected XSS embeds the payload in the request itself (e.g. a search query parameter) and only affects the one victim tricked into clicking that crafted link. DOM-based XSS never touches the server — client-side JavaScript itself unsafely writes untrusted data (like a URL fragment) into the DOM, e.g. via innerHTML. Defenses include escaping/encoding output by context, and a Content Security Policy restricting what scripts can execute."
     },
     "follow_up_hint": "Ask how a Content Security Policy header helps mitigate XSS even if an injection point exists.",
-    "follow_up_questions": ["Why is innerHTML more dangerous than textContent for inserting user data?", "What is a CSP nonce?"],
-    "evaluation_criteria": ["correctness", "completeness", "technical_depth"],
+    "follow_up_questions": [
+      "Why is innerHTML more dangerous than textContent for inserting user data?",
+      "What is a CSP nonce?"
+    ],
+    "evaluation_criteria": [
+      "correctness",
+      "completeness",
+      "technical_depth"
+    ],
     "scoring_rubric": {},
-    "status": "verified"
+    "status": "verified",
+    "concept": "Cross Site Scripting",
+    "sub_concept": "Vector Types and Execution Contexts",
+    "expected_reasoning": "A strong candidate begins by defining XSS as a vulnerability where untrusted input executes arbitrary script within a victim's browser context, bypassing origin policies. They then systematically differentiate the vectors based on data flow and storage: Stored XSS persists data on the server for all future visitors, Reflected XSS passes data through a single request-response cycle, and DOM-based XSS executes purely client-side via insecure DOM sinks. Finally, they tie these mechanism distinctions to appropriate defensive strategies like context-aware encoding and Content Security Policy.",
+    "common_mistakes": [
+      "Confusing Stored and Reflected XSS by incorrectly assuming all user input must touch a database to be dangerous.",
+      "Stating that DOM-based XSS requires the server to reflect the malicious payload in its response.",
+      "Giving a vague definition of XSS without mentioning that the script executes inside the victim's browser session.",
+      "Listing general security headers like CORS or CSRF tokens as the primary defenses against XSS.",
+      "Providing only definitions without explaining the distinct execution context or data lifecycle of each type."
+    ],
+    "progressive_hints": [
+      "Consider where the malicious payload lives before it reaches the victim's browser in each scenario.",
+      "Think about the lifecycle of the malicious input: does it touch a server database, travel in a single request parameter, or stay entirely within client-side JavaScript execution?",
+      "Focus on whether the server ever sees or stores the payload, particularly in the case of DOM-based XSS where the vulnerability exists entirely within client-side scripts reading and writing to the document object model."
+    ],
+    "learning_objective": "The candidate should understand how untrusted data can be weaponized into executable scripts across different injection vectors, and how to apply targeted defenses based on where the vulnerability occurs."
   },
   {
     "id": "sec-0006",
     "question": "Explain password hashing: why shouldn't passwords be stored in plaintext or with a fast hash like MD5, and what should be used instead?",
     "type": "explanation",
     "difficulty": 2,
-    "roles": ["backend"],
-    "topics": ["security", "authentication"],
-    "tech_keywords": ["security", "authentication", "hashing"],
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "security",
+      "authentication"
+    ],
+    "tech_keywords": [
+      "security",
+      "authentication",
+      "hashing"
+    ],
     "concepts": [],
-    "companies_common": ["Amazon", "Microsoft", "Stripe"],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Stripe"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -165,21 +359,56 @@
       "sample_answer": "Storing plaintext passwords means one database leak exposes every user's actual password, which is catastrophic given password reuse across sites. Fast general-purpose hashes like MD5 or SHA-1 are deliberately optimized for speed, which is exactly the wrong property for password storage — it makes brute-forcing billions of guesses per second, or using precomputed rainbow tables, cheap for an attacker who gets the hash. Purpose-built algorithms like bcrypt, scrypt, or Argon2 are deliberately slow and configurable to get slower over time, and they incorporate a unique random salt per password automatically, so identical passwords produce different hashes and precomputed tables don't work."
     },
     "follow_up_hint": "Ask what a 'work factor' or 'cost parameter' means for bcrypt, and why it should be increased over time.",
-    "follow_up_questions": ["What is a pepper, and how does it differ from a salt?", "How would you handle migrating a legacy MD5-hashed password database to bcrypt?"],
-    "evaluation_criteria": ["correctness", "technical_depth"],
+    "follow_up_questions": [
+      "What is a pepper, and how does it differ from a salt?",
+      "How would you handle migrating a legacy MD5-hashed password database to bcrypt?"
+    ],
+    "evaluation_criteria": [
+      "correctness",
+      "technical_depth"
+    ],
     "scoring_rubric": {},
-    "status": "verified"
+    "status": "verified",
+    "concept": "Password Hashing",
+    "sub_concept": "Cryptographic protection against brute-force and dictionary attacks",
+    "expected_reasoning": "A strong candidate begins by analyzing the security risk of database compromises, reasoning that human-chosen passwords have low entropy and require proactive defense mechanisms. They contrast the goals of general-purpose cryptographic hashes (speed and collision resistance) with the requirements of credential storage (deliberate computational expense and memory hardness). They then weigh how adding random data mitigates precomputation attacks, tracing how modern algorithms integrate all these protections into a unified design.",
+    "common_mistakes": [
+      "Stating that passwords shouldn't be stored in plaintext just because 'it's insecure' without explaining the blast radius of a breach.",
+      "Claiming that MD5 or SHA-256 are secure because they are 'one-way cryptographic functions', ignoring their vulnerability to brute-forcing due to high evaluation speeds.",
+      "Treating salting as an optional separate step rather than an integral mechanism built into modern password hash storage formats.",
+      "Confusing encryption with hashing, incorrectly suggesting passwords can be decrypted if the key is lost.",
+      "Failing to mention work factors or tunable parameters, missing the core feature that makes modern algorithms future-proof against hardware improvements."
+    ],
+    "progressive_hints": [
+      "What makes a cryptographic hash function like MD5 computationally appealing for checksums, and how might that property backfire when applied to low-entropy user passwords?",
+      "Think about how an attacker with stolen database records can test millions of dictionary words per second against a fast hash, and what architectural adjustments could force them to slow down significantly.",
+      "Consider why adding unique random data per user stops attackers from reusing precomputed lookup tables, and how dedicated algorithms combine this random data with a computationally expensive loop."
+    ],
+    "learning_objective": "Understand that secure credential storage requires purpose-built, computationally expensive, and salted hashing algorithms rather than fast general-purpose cryptographic hashes or plaintext."
   },
   {
     "id": "sec-0007",
     "question": "What is the principle of least privilege, and give an example of applying it in a cloud infrastructure setup.",
     "type": "conceptual",
     "difficulty": 2,
-    "roles": ["backend", "devops"],
-    "topics": ["security", "cloud"],
-    "tech_keywords": ["security", "aws", "iam"],
+    "roles": [
+      "backend",
+      "devops"
+    ],
+    "topics": [
+      "security",
+      "cloud"
+    ],
+    "tech_keywords": [
+      "security",
+      "aws",
+      "iam"
+    ],
     "concepts": [],
-    "companies_common": ["Amazon", "Microsoft"],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -192,21 +421,57 @@
       "sample_answer": "Least privilege means granting only the exact permissions something needs to do its job, and nothing more, so that if it's compromised or misused, the damage is contained. A concrete example: an AWS Lambda function that only needs to read from one specific S3 bucket should have an IAM role scoped to s3:GetObject on that one bucket's ARN, not broad S3 access or, worse, AdministratorAccess granted out of convenience. The same principle applies to human access — engineers should get short-lived, scoped elevated access for a specific task rather than permanent standing admin rights."
     },
     "follow_up_hint": "Ask how they'd audit an existing system to find over-permissioned roles.",
-    "follow_up_questions": ["What is privilege escalation, and how does least privilege reduce that risk?"],
-    "evaluation_criteria": ["correctness", "examples", "practical_understanding"],
+    "follow_up_questions": [
+      "What is privilege escalation, and how does least privilege reduce that risk?"
+    ],
+    "evaluation_criteria": [
+      "correctness",
+      "examples",
+      "practical_understanding"
+    ],
     "scoring_rubric": {},
-    "status": "verified"
+    "status": "verified",
+    "concept": "Principle of Least Privilege",
+    "sub_concept": "Cloud IAM Permission Scoping",
+    "expected_reasoning": "A strong candidate first defines the core philosophy of minimizing access rights to strictly what is required for a function or user to perform its task. They then analyze how this limits the blast radius during a security breach or credential leak. To ground this, they construct a practical cloud scenario, contrasting a secure, narrowly scoped IAM policy with a hazardous over-permissioned setup like broad administrative access. Finally, they extend this reasoning to operational realities, distinguishing between permanent standing privileges and temporary, audited access for human operators.",
+    "common_mistakes": [
+      "States the definition of least privilege with no justification or context.",
+      "Gives a cloud example that still grants wildcards like s3:* or AdministratorAccess out of convenience.",
+      "Only considers machine-to-machine service permissions and forgets human access entirely.",
+      "Confuses least privilege with basic network firewalls or security groups rather than identity and access management.",
+      "Fails to explain the security benefit, such as containing the blast radius of a compromised credential."
+    ],
+    "progressive_hints": [
+      "What security risk are you introducing when a service account is given broad permissions 'just in case'?",
+      "Think about how an attacker leverages a compromised application component. How do permissions dictate how far they can move laterally?",
+      "Consider a specific AWS Lambda function that only needs to read objects from one S3 bucket. What does its exact IAM policy look like compared to using a pre-made administrator role?"
+    ],
+    "learning_objective": "The candidate should understand that restricting access rights to the absolute minimum necessary for a specific task is a foundational security control that limits blast radius for both systems and humans."
   },
   {
     "id": "sec-0008",
     "question": "Explain what HTTPS/TLS protects against, and what happens during the TLS handshake at a high level.",
     "type": "explanation",
     "difficulty": 2,
-    "roles": ["backend", "fullstack"],
-    "topics": ["security", "networking"],
-    "tech_keywords": ["tls", "https", "security"],
+    "roles": [
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "security",
+      "networking"
+    ],
+    "tech_keywords": [
+      "tls",
+      "https",
+      "security"
+    ],
     "concepts": [],
-    "companies_common": ["Amazon", "Google", "Cloudflare"],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Cloudflare"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -219,21 +484,55 @@
       "sample_answer": "TLS protects three things: confidentiality (no one can read the traffic), integrity (tampering is detectable), and authenticity (you're actually talking to who you think you are). During the handshake, the client and server agree on a cipher suite, and the server presents a certificate signed by a trusted Certificate Authority to prove its identity. They use asymmetric cryptography briefly — often via a Diffie-Hellman exchange — to securely agree on a shared symmetric session key without ever transmitting it directly, then switch to fast symmetric encryption for the actual data, since asymmetric crypto is too slow for bulk transfer. Validating the certificate against a trusted root CA chain is what prevents a man-in-the-middle from impersonating the server."
     },
     "follow_up_hint": "Ask what happens if a client encounters a self-signed or expired certificate, and why browsers reject those by default.",
-    "follow_up_questions": ["What is certificate pinning and when would you use it?"],
-    "evaluation_criteria": ["correctness", "technical_depth"],
+    "follow_up_questions": [
+      "What is certificate pinning and when would you use it?"
+    ],
+    "evaluation_criteria": [
+      "correctness",
+      "technical_depth"
+    ],
     "scoring_rubric": {},
-    "status": "verified"
+    "status": "verified",
+    "concept": "Transport Layer Security",
+    "sub_concept": "Handshake Protocol and Security Guarantees",
+    "expected_reasoning": "A strong candidate begins by separating the overarching security guarantees into distinct properties: confidentiality, integrity, and authenticity. They then trace the lifecycle of a connection chronologically, explaining how asymmetric cryptography is used initially for secure key exchange and authentication before transitioning to symmetric encryption for performance. Finally, they articulate how certificate authorities establish trust to prevent interception or tampering by malicious intermediaries.",
+    "common_mistakes": [
+      "Stating that HTTPS encrypts the entire connection using asymmetric keys the entire time without mentioning the switch to symmetric encryption.",
+      "Failing to mention authenticity and certificates, focusing solely on encryption.",
+      "Vaguely stating 'it makes the connection secure' without defining what threats (sniffing, tampering, spoofing) are mitigated.",
+      "Ignoring the role of Certificate Authorities in verifying the server's identity.",
+      "Confusing the transport layer protocol with application layer security mechanisms."
+    ],
+    "progressive_hints": [
+      "Think about the three core security pillars: how do we keep data secret, prove who is talking, and ensure messages aren't modified?",
+      "Consider why we don't use the exact same type of cryptography for the initial handshake as we do for streaming gigabytes of video data.",
+      "Ask yourself how your browser inherently trusts that 'google.com' is actually Google and not an attacker sitting on your local network."
+    ],
+    "learning_objective": "The candidate should understand how TLS combines asymmetric and symmetric cryptography alongside digital certificates to achieve confidentiality, integrity, and authenticity efficiently."
   },
   {
     "id": "sec-0009",
     "question": "What is rate limiting, and why is it a security control, not just a performance one?",
     "type": "conceptual",
     "difficulty": 2,
-    "roles": ["backend"],
-    "topics": ["security", "api-design"],
-    "tech_keywords": ["rate-limiting", "security", "api"],
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "security",
+      "api-design"
+    ],
+    "tech_keywords": [
+      "rate-limiting",
+      "security",
+      "api"
+    ],
     "concepts": [],
-    "companies_common": ["Amazon", "Stripe", "Uber"],
+    "companies_common": [
+      "Amazon",
+      "Stripe",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -246,21 +545,57 @@
       "sample_answer": "Rate limiting caps how many requests a given client can make within a time window. On the security side, it directly mitigates brute-force login attempts and credential stuffing attacks, where an attacker tries many password guesses or leaked credential pairs rapidly — without a limit, that's cheap and fast for the attacker. It also protects against API scraping and abuse. On the performance side, it protects the backend from being overwhelmed even by legitimate traffic spikes. It should be scoped per identity — per user, API key, or IP — rather than globally, so limiting one abusive client doesn't degrade service for everyone else."
     },
     "follow_up_hint": "Ask how they'd design rate limiting specifically to slow down brute-force login attempts without locking out legitimate users who mistype their password once.",
-    "follow_up_questions": ["What is the difference between rate limiting and throttling?"],
-    "evaluation_criteria": ["correctness", "practical_understanding"],
+    "follow_up_questions": [
+      "What is the difference between rate limiting and throttling?"
+    ],
+    "evaluation_criteria": [
+      "correctness",
+      "practical_understanding"
+    ],
     "scoring_rubric": {},
-    "status": "verified"
+    "status": "verified",
+    "concept": "Rate Limiting",
+    "sub_concept": "Security vs Performance Controls",
+    "expected_reasoning": "A strong candidate begins by defining rate limiting as a mechanism to cap client requests within a time window. They then pivot to distinguish its dual purposes, moving beyond simple infrastructure protection to explore malicious intent. They derive why protecting endpoints from automated abuse like credential stuffing and scraping requires identifying the requester rather than just throttling globally. Finally, they discuss the trade-offs of different identification scopes, such as per-IP versus per-user.",
+    "common_mistakes": [
+      "States that rate limiting is purely for performance and server stability without mentioning security.",
+      "Claims it is exclusively a security control while ignoring its role in managing traffic spikes.",
+      "Suggests applying limits globally across the entire application rather than per-identity.",
+      "Lists algorithms like token bucket without explaining why rate limiting matters conceptually.",
+      "Fails to give concrete examples of security abuses prevented, such as brute-force attacks or scraping."
+    ],
+    "progressive_hints": [
+      "Beyond handling accidental traffic surges, what automated behaviors might an attacker use an API for?",
+      "Think about what happens when an attacker tries thousands of guessed passwords per second against a login endpoint.",
+      "If an actor is sending millions of requests to scrape data or guess credentials, how does capping their rate per identity protect both the system and the user accounts?"
+    ],
+    "learning_objective": "Understand that rate limiting functions dually as a performance shield against traffic surges and a critical security defense against automated abuse and brute-force attacks."
   },
   {
     "id": "sec-0010",
     "question": "Explain what CORS is, and why a server needs to explicitly opt in to allowing cross-origin requests.",
     "type": "explanation",
     "difficulty": 2,
-    "roles": ["frontend", "backend", "fullstack"],
-    "topics": ["security", "cors"],
-    "tech_keywords": ["cors", "security", "http"],
+    "roles": [
+      "frontend",
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "security",
+      "cors"
+    ],
+    "tech_keywords": [
+      "cors",
+      "security",
+      "http"
+    ],
     "concepts": [],
-    "companies_common": ["Amazon", "Meta", "Microsoft"],
+    "companies_common": [
+      "Amazon",
+      "Meta",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -273,9 +608,30 @@
       "sample_answer": "CORS is how a server explicitly opts a specific cross-origin caller into reading its responses, relaxing the browser's default Same-Origin Policy. Critically, the server still receives and processes the request — it's the browser that blocks the calling JavaScript from reading the response unless the server's Access-Control-Allow-Origin header authorizes that origin. For requests using custom headers or methods like PUT/DELETE, the browser first sends an automatic OPTIONS 'preflight' request to check permission before sending the real one. This is purely a browser-side protection — a non-browser client like curl or another backend service isn't restricted by CORS at all."
     },
     "follow_up_hint": "Ask why a JSON POST request with a custom Content-Type header triggers a preflight but a simple form POST doesn't.",
-    "follow_up_questions": ["What does Access-Control-Allow-Credentials do and why is it separate from Allow-Origin?"],
-    "evaluation_criteria": ["correctness", "technical_depth"],
+    "follow_up_questions": [
+      "What does Access-Control-Allow-Credentials do and why is it separate from Allow-Origin?"
+    ],
+    "evaluation_criteria": [
+      "correctness",
+      "technical_depth"
+    ],
     "scoring_rubric": {},
-    "status": "verified"
+    "status": "verified",
+    "concept": "Cross-Origin Resource Sharing",
+    "sub_concept": "Same-Origin Policy Relaxation",
+    "expected_reasoning": "A strong candidate begins by identifying the default restriction imposed by browsers—the Same-Origin Policy—which prevents web pages from reading data from different origins. They then explain that CORS exists as a controlled mechanism to safely relax this restriction rather than disable it entirely. They derive the need for server opt-in by noting that the browser must have explicit permission from the resource owner before exposing sensitive response data to untrusted scripts. Finally, they distinguish between simple requests and preflighted requests, acknowledging that the browser enforces these rules independently of server-side execution.",
+    "common_mistakes": [
+      "States that CORS is a server-side security mechanism that blocks hackers or curl requests, misunderstanding that it is strictly browser-enforced.",
+      "Believes CORS blocks the outgoing request from reaching the server, rather than blocking the JavaScript client from reading the response.",
+      "Claims that enabling CORS disables security entirely, ignoring that servers can specify exact allowed origins and methods.",
+      "Fails to mention preflight requests or the role of HTTP headers like Access-Control-Allow-Origin.",
+      "Confuses CORS with JSONP or authentication tokens like JWT/cookies."
+    ],
+    "progressive_hints": [
+      "What security boundary does your browser enforce by default when a script on one domain tries to fetch data from another?",
+      "Think about who is actually enforcing this block—is it the server rejecting the request, or the browser withholding the response?",
+      "If the browser initiates a request but blocks your JavaScript from reading the outcome, what specific signal must the server send back to grant permission?"
+    ],
+    "learning_objective": "Understand that CORS is a browser-enforced mechanism requiring explicit server opt-in to safely share resources across different origins without compromising user data."
   }
 ]

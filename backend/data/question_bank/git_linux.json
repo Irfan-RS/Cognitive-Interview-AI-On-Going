@@ -1,12 +1,476 @@
 [
-  {"id":"git-0001","question":"What is the difference between `git merge` and `git rebase`?","type":"conceptual","difficulty":1,"roles":["general_sde"],"topics":["git","version-control"],"tech_keywords":["git"],"companies_common":["Amazon","Microsoft","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["Merge creates a new merge commit joining two branch histories, preserving both branches' actual commit history","Rebase replays your branch's commits on top of another branch, producing a linear history with no merge commit","Rebase rewrites commit hashes, which is dangerous on shared/public branches since collaborators' histories diverge","Merge preserves true history (what actually happened, when); rebase produces a cleaner but rewritten history","Rule of thumb: rebase local/private branches before sharing, merge for integrating shared branches"],"sample_answer":"Merge combines two branches by creating a new merge commit that has both branches as parents, preserving exactly what happened and when. Rebase instead replays your branch's commits one by one on top of another branch's tip, producing a clean, linear history with no merge commit — but it rewrites commit hashes, which breaks history for anyone else who already has the old commits, so it should only be done on local/unshared branches."},"follow_up_hint":"Ask what 'golden rule of rebasing' means and why rebasing a shared branch is dangerous."},
-  {"id":"git-0002","question":"How would you undo the last commit, keeping the changes staged, versus discarding them entirely?","type":"practical_implementation","difficulty":1,"roles":["general_sde"],"topics":["git"],"tech_keywords":["git"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["`git reset --soft HEAD~1` undoes the commit but keeps changes staged","`git reset --mixed HEAD~1` (default) undoes the commit and unstages changes, keeping them in the working directory","`git reset --hard HEAD~1` discards the commit and all changes entirely — irreversible without reflog","Explains reflog as a safety net for recovering from an accidental hard reset","Distinguishes reset (rewrites local history) from revert (creates a new commit undoing changes, safe for shared history)"],"sample_answer":"`git reset --soft HEAD~1` removes the last commit but keeps its changes staged, ready to re-commit. `git reset --mixed HEAD~1` (the default) also unstages them, leaving changes in the working directory. `git reset --hard HEAD~1` discards the commit and its changes entirely — recoverable only via git reflog if at all. For a commit already pushed/shared, `git revert` is safer since it creates a new commit undoing the changes rather than rewriting history."},"follow_up_hint":"Ask what git reflog is and how it can recover a 'lost' commit after a hard reset."},
-  {"id":"git-0003","question":"Explain what a merge conflict is and how you'd resolve one.","type":"practical_implementation","difficulty":1,"roles":["general_sde"],"topics":["git"],"tech_keywords":["git"],"companies_common":["Infosys","TCS","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["A merge conflict happens when the same lines were changed differently on both branches being merged, and Git can't auto-resolve it","Git marks the conflicting sections in the file with conflict markers (<<<<<<<, =======, >>>>>>>)","Resolution means manually editing the file to keep the correct combination of changes, removing the markers","After editing, stage the resolved file and complete the merge/rebase with a commit","Mentions using a merge tool or IDE integration to visualize conflicts more easily"],"sample_answer":"A merge conflict occurs when the same lines of a file were changed differently on both branches, and Git can't automatically decide which version is correct. Git marks the conflicting section directly in the file with <<<<<<<, =======, >>>>>>> markers showing both versions. Resolving it means manually editing the file to keep the right combination of changes and removing the markers, then staging the file and completing the merge or rebase with a commit."},"follow_up_hint":"Ask how they'd resolve a conflict during an interactive rebase versus a merge."},
-  {"id":"git-0004","question":"What is the difference between `git fetch` and `git pull`?","type":"conceptual","difficulty":1,"roles":["general_sde"],"topics":["git"],"tech_keywords":["git"],"companies_common":["Infosys","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["git fetch downloads new commits/refs from the remote but doesn't change your local working branch","git pull is fetch followed by an automatic merge (or rebase, if configured) into your current branch","fetch lets you review incoming changes before integrating them; pull integrates immediately","Explains this matters when you want to see what changed upstream before merging it into your work"],"sample_answer":"git fetch downloads new commits and branch references from the remote repository but doesn't touch your current working branch at all. git pull does a fetch and then immediately merges (or rebases, depending on configuration) those changes into your current branch. Fetch is safer when you want to review what changed upstream before integrating it; pull is more convenient when you just want to stay in sync immediately."},"follow_up_hint":"Ask how to configure git pull to rebase instead of merge by default."},
-  {"id":"git-0005","question":"Explain what git cherry-pick does and a scenario where you'd use it.","type":"practical_implementation","difficulty":2,"roles":["general_sde"],"topics":["git"],"tech_keywords":["git"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["cherry-pick applies a specific commit from one branch onto another, without merging the entire branch","Useful for backporting a bug fix to a release branch without pulling in unrelated feature commits","Creates a new commit with a new hash, even though the content is the same as the original","Can cause conflicts if the target branch has diverged in the same area"],"sample_answer":"git cherry-pick applies the changes from one specific commit onto your current branch, without merging the entire source branch. A common use case is backporting a critical bug fix from the main branch to an older release branch, where you want just that one fix, not the dozens of unrelated feature commits that came after it on main. It creates a brand-new commit with a new hash, even though the actual code change is identical to the original."},"follow_up_hint":"Ask what happens if the cherry-picked commit conflicts with the target branch."},
-  {"id":"git-0006","question":"What is a Linux inode, and how does it relate to hard links versus symbolic links?","type":"conceptual","difficulty":2,"roles":["backend","devops"],"topics":["linux","operating-systems"],"tech_keywords":["linux"],"companies_common":["Amazon","Nvidia"],"source_style":"common-interview","reference_solution":{"key_points":["An inode stores a file's metadata (permissions, size, timestamps, data block pointers) but not its name","A filename is just a directory entry pointing to an inode","A hard link is another directory entry pointing to the SAME inode — indistinguishable from the 'original'","A symbolic link is a separate file containing a path string pointing to another file/path, with its own inode","Explains deleting the original file breaks a symlink (dangling link) but a hard link still works since the inode/data persists until all hard links are removed"],"sample_answer":"An inode holds a file's actual metadata — permissions, size, timestamps, and pointers to its data blocks — but not its name; a filename is just an entry in a directory mapping a name to an inode number. A hard link is another directory entry pointing to that exact same inode, so there's no real 'original' versus 'link' distinction — deleting one just removes that directory entry, and the data persists until all hard links to it are gone. A symbolic link is a different kind of file entirely, with its own inode, that just stores a path string pointing elsewhere — if that target is deleted or moved, the symlink becomes a dangling reference."},"follow_up_hint":"Ask why hard links can't span across different filesystems/partitions but symlinks can."},
-  {"id":"git-0007","question":"Explain the difference between `chmod 755` and `chmod 644` and what the numbers mean.","type":"practical_implementation","difficulty":1,"roles":["backend","devops"],"topics":["linux"],"tech_keywords":["linux","chmod"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["Each digit represents permissions for owner, group, and others respectively, as a sum of read(4)+write(2)+execute(1)","755 = owner rwx(7), group r-x(5), others r-x(5) — typical for an executable script/directory","644 = owner rw-(6), group r--(4), others r--(4) — typical for a regular non-executable file","Explains why directories need the execute bit (to be 'entered'/listed properly), distinct from files"],"sample_answer":"Each digit is a sum of read(4), write(2), and execute(1) permissions, in order for owner, group, and others. 755 means the owner has read+write+execute (7), while group and others have read+execute (5) — typical for an executable script or a directory, since directories need the execute bit to be traversed. 644 means the owner has read+write (6), and group/others have read-only (4) — typical for a regular data file that shouldn't be executed."},"follow_up_hint":"Ask what the execute permission actually means for a directory versus a regular file."},
-  {"id":"git-0008","question":"How would you find which process is using a specific port on Linux, and how would you kill it?","type":"practical_implementation","difficulty":1,"roles":["backend","devops"],"topics":["linux"],"tech_keywords":["linux","networking"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["`lsof -i :PORT` or `netstat -tulpn | grep PORT` lists the process using a given port","This reveals the process ID (PID) associated with that port","`kill PID` sends SIGTERM (graceful shutdown request); `kill -9 PID` sends SIGKILL (immediate, forceful termination)","Explains preferring SIGTERM first, since it lets the process clean up (close files, flush buffers) before exiting"],"sample_answer":"`lsof -i :PORT` (or `netstat -tulpn | grep PORT` on some systems) lists which process is bound to a given port, including its PID. From there, `kill PID` sends SIGTERM, a graceful shutdown request the process can catch and clean up after; `kill -9 PID` sends SIGKILL, which terminates it immediately with no chance to clean up. I'd generally try SIGTERM first and only escalate to SIGKILL if the process doesn't respond, since abrupt termination can leave files or resources in an inconsistent state."},"follow_up_hint":"Ask what happens to a process's open file descriptors and child processes when it's killed with SIGKILL."},
-  {"id":"git-0009","question":"What is the difference between a process and a daemon on Linux?","type":"conceptual","difficulty":1,"roles":["backend","devops"],"topics":["linux","operating-systems"],"tech_keywords":["linux"],"companies_common":["Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["A daemon is a background process, typically detached from any controlling terminal, running independently of user login sessions","Daemons often start at boot and run continuously providing a service (e.g. a web server, cron)","Explains a normal foreground process is tied to a terminal session and typically ends when that session closes","Naming convention: daemons often end in 'd' (sshd, httpd)"],"sample_answer":"A daemon is a background process detached from any controlling terminal, designed to run independently of any user's login session — it keeps running even after you log out. A normal foreground process is typically tied to the terminal session that started it and ends when that session closes. Daemons often start automatically at boot and provide an ongoing service, like sshd handling SSH connections or a cron daemon running scheduled jobs — by convention many daemon names end in 'd'."},"follow_up_hint":"Ask how a process detaches itself to become a daemon (double-fork, setsid)."},
-  {"id":"git-0010","question":"Explain what a Git rebase --interactive is used for, and give an example of squashing commits.","type":"practical_implementation","difficulty":2,"roles":["general_sde"],"topics":["git"],"tech_keywords":["git"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["Interactive rebase lets you reorder, edit, squash, or drop commits before they're shared","Squashing combines multiple commits into one, useful for cleaning up a messy series of 'WIP'/fixup commits before merging","`git rebase -i HEAD~N` opens an editor listing the last N commits with actions (pick, squash, edit, drop) to choose per commit","Explains this rewrites history, so it should only be done before pushing/sharing the branch"],"sample_answer":"Interactive rebase lets you edit a series of commits before sharing them — reordering, editing messages, squashing multiple commits into one, or dropping unwanted ones entirely. Running `git rebase -i HEAD~3` opens an editor listing the last 3 commits, where you'd change 'pick' to 'squash' on the commits you want merged into the previous one, producing a single clean commit instead of a messy trail of 'fix typo' or 'WIP' commits. Since this rewrites commit history, it should only be done on commits that haven't been pushed/shared yet."},"follow_up_hint":"Ask what happens if you try to interactively rebase commits that have already been pushed and others have pulled."}
+  {
+    "id": "git-0001",
+    "question": "What is the difference between `git merge` and `git rebase`?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "git",
+      "version-control"
+    ],
+    "tech_keywords": [
+      "git"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Merge creates a new merge commit joining two branch histories, preserving both branches' actual commit history",
+        "Rebase replays your branch's commits on top of another branch, producing a linear history with no merge commit",
+        "Rebase rewrites commit hashes, which is dangerous on shared/public branches since collaborators' histories diverge",
+        "Merge preserves true history (what actually happened, when); rebase produces a cleaner but rewritten history",
+        "Rule of thumb: rebase local/private branches before sharing, merge for integrating shared branches"
+      ],
+      "sample_answer": "Merge combines two branches by creating a new merge commit that has both branches as parents, preserving exactly what happened and when. Rebase instead replays your branch's commits one by one on top of another branch's tip, producing a clean, linear history with no merge commit — but it rewrites commit hashes, which breaks history for anyone else who already has the old commits, so it should only be done on local/unshared branches."
+    },
+    "follow_up_hint": "Ask what 'golden rule of rebasing' means and why rebasing a shared branch is dangerous.",
+    "concept": "Git History Management",
+    "sub_concept": "Branch Integration Strategies",
+    "expected_reasoning": "A strong candidate starts by defining how both commands alter the commit graph differently. They explain that merge preserves the exact chronological timeline by creating a distinct integration node, while rebase linearizes history by reapplying individual patches. Next, they weigh the structural trade-offs: merge keeps a complete audit trail at the cost of a non-linear graph, whereas rebase creates a clean, readable timeline but rewrites commit SHAs. Finally, they evaluate safety constraints, noting why rewriting shared history causes divergence and team synchronization issues.",
+    "common_mistakes": [
+      "States that merge and rebase do the exact same thing just with different visuals",
+      "Claims rebase deletes commits instead of replaying them with new hashes",
+      "Fails to mention the safety implications of rewriting history on shared public branches",
+      "Confuses the direction in which commits are moved or applied during a rebase",
+      "Provides a shallow definition like 'merge combines code and rebase doesn't'"
+    ],
+    "progressive_hints": [
+      "Think about what happens to the shape of the commit graph and the individual commit IDs in both scenarios.",
+      "Consider how each command treats the timeline of the source branch relative to the target branch—one creates a new node, the other shifts the starting point.",
+      "Focus on what happens to commit hashes when history is replayed versus when a dedicated integration commit is introduced."
+    ],
+    "learning_objective": "Understand how git merge and git rebase structurally alter commit graphs differently, and when to use each based on collaboration safety and history cleanliness trade-offs."
+  },
+  {
+    "id": "git-0002",
+    "question": "How would you undo the last commit, keeping the changes staged, versus discarding them entirely?",
+    "type": "practical_implementation",
+    "difficulty": 1,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "git"
+    ],
+    "tech_keywords": [
+      "git"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "`git reset --soft HEAD~1` undoes the commit but keeps changes staged",
+        "`git reset --mixed HEAD~1` (default) undoes the commit and unstages changes, keeping them in the working directory",
+        "`git reset --hard HEAD~1` discards the commit and all changes entirely — irreversible without reflog",
+        "Explains reflog as a safety net for recovering from an accidental hard reset",
+        "Distinguishes reset (rewrites local history) from revert (creates a new commit undoing changes, safe for shared history)"
+      ],
+      "sample_answer": "`git reset --soft HEAD~1` removes the last commit but keeps its changes staged, ready to re-commit. `git reset --mixed HEAD~1` (the default) also unstages them, leaving changes in the working directory. `git reset --hard HEAD~1` discards the commit and its changes entirely — recoverable only via git reflog if at all. For a commit already pushed/shared, `git revert` is safer since it creates a new commit undoing the changes rather than rewriting history."
+    },
+    "follow_up_hint": "Ask what git reflog is and how it can recover a 'lost' commit after a hard reset.",
+    "concept": "Git History Management",
+    "sub_concept": "Commit Reset and Destructive Changes",
+    "expected_reasoning": "A strong candidate begins by separating the concept of undoing a commit from the fate of the working files and staging area. They systematically evaluate how different reset flags dictate where the changes land—keeping them staged, moving them to the working directory, or dropping them completely. They consider the safety implications of destructive actions and immediately identify the reflog as a recovery mechanism. Finally, they contrast local history rewriting with safe collaboration practices like reverting.",
+    "common_mistakes": [
+      "States the git command with no justification or explanation of where the files go",
+      "Confuses git reset with git revert and applies them interchangeably to shared branches",
+      "Believes git reset --hard is permanently unrecoverable without mentioning the reflog",
+      "Fails to distinguish between the staging area and the working directory during a reset",
+      "Suggests deleting the .git directory or using complex checkout maneuvers instead of reset"
+    ],
+    "progressive_hints": [
+      "Think about what happens to your files when you uncommit something—do they stay in your working directory, your staging area, or disappear?",
+      "You are looking for the family of git commands that modifies HEAD and pointer positions. Which flag controls what happens to the index versus the working tree?",
+      "The command starts with 'git reset' followed by a flag like --soft or --hard. How do those flags alter the destination of your modified files?"
+    ],
+    "learning_objective": "Understand how to safely manipulate local commit history using git reset flags while managing the state of the staging area and working directory."
+  },
+  {
+    "id": "git-0003",
+    "question": "Explain what a merge conflict is and how you'd resolve one.",
+    "type": "practical_implementation",
+    "difficulty": 1,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "git"
+    ],
+    "tech_keywords": [
+      "git"
+    ],
+    "companies_common": [
+      "Infosys",
+      "TCS",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A merge conflict happens when the same lines were changed differently on both branches being merged, and Git can't auto-resolve it",
+        "Git marks the conflicting sections in the file with conflict markers (<<<<<<<, =======, >>>>>>>)",
+        "Resolution means manually editing the file to keep the correct combination of changes, removing the markers",
+        "After editing, stage the resolved file and complete the merge/rebase with a commit",
+        "Mentions using a merge tool or IDE integration to visualize conflicts more easily"
+      ],
+      "sample_answer": "A merge conflict occurs when the same lines of a file were changed differently on both branches, and Git can't automatically decide which version is correct. Git marks the conflicting section directly in the file with <<<<<<<, =======, >>>>>>> markers showing both versions. Resolving it means manually editing the file to keep the right combination of changes and removing the markers, then staging the file and completing the merge or rebase with a commit."
+    },
+    "follow_up_hint": "Ask how they'd resolve a conflict during an interactive rebase versus a merge.",
+    "concept": "Git Version Control",
+    "sub_concept": "Merge Conflict Resolution",
+    "expected_reasoning": "A strong candidate begins by defining the mechanical trigger of a conflict when Git's automatic line-by-line diff fails due to overlapping edits. They then walk through identifying the markers left in the affected source code files to locate the divergent changes. Next, they explain the manual or tool-assisted decision-making process required to choose or combine the code states. Finally, they cover the workflow steps needed to finalize the resolution by staging the file and completing the commit.",
+    "common_mistakes": [
+      "States the conclusion with no justification, e.g., 'I just use the click button in VS Code' without knowing what actually happens underneath.",
+      "Believes merge conflicts mean Git is broken or that code is permanently lost.",
+      "Forgets to remove the literal conflict markers (<<<<<<<, =======, >>>>>>>) before committing.",
+      "Fails to mention staging the resolved files before completing the merge.",
+      "Confuses a merge conflict with a pull request review or a standard branch push rejection."
+    ],
+    "progressive_hints": [
+      "What is Git actually trying to do when you run 'git merge', and at what point does it stop and ask for your help?",
+      "When Git stops because it can't figure out which lines to keep, how does it physically signal this inside the source code files?",
+      "Once you have edited the file to keep the correct code and removed the special characters, what exact Git commands must you run to finalize the merge process?"
+    ],
+    "learning_objective": "Understand that merge conflicts are normal interruptions when overlapping code changes occur, and resolve them by inspecting markers, editing the file, and completing the commit workflow."
+  },
+  {
+    "id": "git-0004",
+    "question": "What is the difference between `git fetch` and `git pull`?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "git"
+    ],
+    "tech_keywords": [
+      "git"
+    ],
+    "companies_common": [
+      "Infosys",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "git fetch downloads new commits/refs from the remote but doesn't change your local working branch",
+        "git pull is fetch followed by an automatic merge (or rebase, if configured) into your current branch",
+        "fetch lets you review incoming changes before integrating them; pull integrates immediately",
+        "Explains this matters when you want to see what changed upstream before merging it into your work"
+      ],
+      "sample_answer": "git fetch downloads new commits and branch references from the remote repository but doesn't touch your current working branch at all. git pull does a fetch and then immediately merges (or rebases, depending on configuration) those changes into your current branch. Fetch is safer when you want to review what changed upstream before integrating it; pull is more convenient when you just want to stay in sync immediately."
+    },
+    "follow_up_hint": "Ask how to configure git pull to rebase instead of merge by default.",
+    "concept": "Git Workflow",
+    "sub_concept": "Remote Repository Synchronization",
+    "expected_reasoning": "A strong candidate begins by separating the action of retrieving remote data from the action of integrating it into the local working environment. They analyze how git represents remote states through tracking branches versus local working trees. They derive the mechanics of each command by explaining that one is strictly a safe, non-destructive download step while the other combines downloading with a local merge or rebase. Finally, they weigh the safety and inspection benefits of separating these actions against the convenience of doing them in one go.",
+    "common_mistakes": [
+      "States that git pull and git fetch do the exact same thing with different flags",
+      "Claims that git fetch automatically updates the working directory",
+      "States the conclusion with no justification, such as just saying pull is fetch plus merge without explaining why or when to use each",
+      "Believes git pull only fetches without merging",
+      "Confuses local branches with remote tracking branches during the synchronization process"
+    ],
+    "progressive_hints": [
+      "Think about the difference between downloading information to your machine and actually changing the files you are currently working on.",
+      "Consider what happens to your working directory and your current branch's history when you run each command.",
+      "If one command only updates your local repository's knowledge of the remote state without touching your files, what must the other command be doing automatically behind the scenes?"
+    ],
+    "learning_objective": "The candidate will understand that git fetch safely retrieves remote changes for inspection without modifying local work, whereas git pull immediately combines those changes into the current branch."
+  },
+  {
+    "id": "git-0005",
+    "question": "Explain what git cherry-pick does and a scenario where you'd use it.",
+    "type": "practical_implementation",
+    "difficulty": 2,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "git"
+    ],
+    "tech_keywords": [
+      "git"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "cherry-pick applies a specific commit from one branch onto another, without merging the entire branch",
+        "Useful for backporting a bug fix to a release branch without pulling in unrelated feature commits",
+        "Creates a new commit with a new hash, even though the content is the same as the original",
+        "Can cause conflicts if the target branch has diverged in the same area"
+      ],
+      "sample_answer": "git cherry-pick applies the changes from one specific commit onto your current branch, without merging the entire source branch. A common use case is backporting a critical bug fix from the main branch to an older release branch, where you want just that one fix, not the dozens of unrelated feature commits that came after it on main. It creates a brand-new commit with a new hash, even though the actual code change is identical to the original."
+    },
+    "follow_up_hint": "Ask what happens if the cherry-picked commit conflicts with the target branch.",
+    "concept": "Git Cherry Pick",
+    "sub_concept": "Selective commit application across branches",
+    "expected_reasoning": "A strong candidate first identifies the limitation of standard merging, which pulls in entire histories, and recognizes that surgical precision is needed for isolated changes. They explain the mechanics of taking a specific commit hash and reapplying its delta onto a different current branch. They then reason through the identity of the resulting commit, noting that it generates a new commit hash due to a new parent and timestamp, despite containing identical file changes. Finally, they anticipate operational side-effects like merge conflicts and detached HEAD states.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'it copies a commit' without explaining the mechanics or implications.",
+      "Confuses cherry-picking with standard merging or rebasing, claiming it brings over an entire branch history.",
+      "Fails to mention that cherry-picking creates a brand new commit with a different hash.",
+      "Ignores potential merge conflicts that occur when the target branch has diverged.",
+      "Thinks cherry-picking physically moves the original commit rather than creating a copy."
+    ],
+    "progressive_hints": [
+      "Think about what happens when you want just one specific fix from a feature branch moved to production, without bringing along all the unfinished work on that branch.",
+      "Instead of merging two branches together, consider how you might isolate a single commit hash and apply its exact changes to your current working branch.",
+      "If you apply a commit from branch A onto branch B, think about whether the original commit hash stays the same or if Git generates a new one for the target branch."
+    ],
+    "learning_objective": "The candidate should understand how to selectively apply individual commits across divergent branches using cherry-pick while managing resulting commit hashes and conflict risks."
+  },
+  {
+    "id": "git-0006",
+    "question": "What is a Linux inode, and how does it relate to hard links versus symbolic links?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "devops"
+    ],
+    "topics": [
+      "linux",
+      "operating-systems"
+    ],
+    "tech_keywords": [
+      "linux"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Nvidia"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "An inode stores a file's metadata (permissions, size, timestamps, data block pointers) but not its name",
+        "A filename is just a directory entry pointing to an inode",
+        "A hard link is another directory entry pointing to the SAME inode — indistinguishable from the 'original'",
+        "A symbolic link is a separate file containing a path string pointing to another file/path, with its own inode",
+        "Explains deleting the original file breaks a symlink (dangling link) but a hard link still works since the inode/data persists until all hard links are removed"
+      ],
+      "sample_answer": "An inode holds a file's actual metadata — permissions, size, timestamps, and pointers to its data blocks — but not its name; a filename is just an entry in a directory mapping a name to an inode number. A hard link is another directory entry pointing to that exact same inode, so there's no real 'original' versus 'link' distinction — deleting one just removes that directory entry, and the data persists until all hard links to it are gone. A symbolic link is a different kind of file entirely, with its own inode, that just stores a path string pointing elsewhere — if that target is deleted or moved, the symlink becomes a dangling reference."
+    },
+    "follow_up_hint": "Ask why hard links can't span across different filesystems/partitions but symlinks can.",
+    "concept": "File System Inodes",
+    "sub_concept": "Metadata Storage and Link Mechanics",
+    "expected_reasoning": "A strong candidate begins by separating the concept of a file's name from its underlying data storage, identifying the inode as the structural anchor for metadata and block pointers. They reason about how directories map human-readable names to these numeric inode identifiers rather than owning the file data directly. Next, they deduce the mechanics of hard links by recognizing them as multiple entries sharing the exact same inode number, meaning the file data persists as long as at least one link remains. Finally, they contrast this with symbolic links by reasoning that a symlink must store a separate path reference and rely on its own unique inode, making it vulnerable to dangling states if the target path disappears.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying 'hard links point to inodes and symlinks don't' without explaining how directory entries work.",
+      "Confuses the inode contents by claiming a file's name or data blocks are stored directly inside the inode structure.",
+      "Believes that deleting the original file automatically deletes a hard link or invalidates access to the underlying data.",
+      "Assumes a symbolic link shares the same inode number as the file it references.",
+      "Fails to explain what happens to the file data when the final hard link is removed."
+    ],
+    "progressive_hints": [
+      "Think about what separates a file's human-readable name from the actual data stored on the disk.",
+      "Consider what happens inside the filesystem when you have two different directory paths pointing to the exact same block of data versus when one file just points to another filename string.",
+      "Ask yourself how the operating system tracks reference counts and data availability when a user deletes one of multiple paths pointing to the same file content."
+    ],
+    "learning_objective": "Understand that Unix filesystems decouple file metadata and data from filenames via inodes, allowing multiple directory entries to share data directly (hard links) or indirectly via path redirection (symbolic links)."
+  },
+  {
+    "id": "git-0007",
+    "question": "Explain the difference between `chmod 755` and `chmod 644` and what the numbers mean.",
+    "type": "practical_implementation",
+    "difficulty": 1,
+    "roles": [
+      "backend",
+      "devops"
+    ],
+    "topics": [
+      "linux"
+    ],
+    "tech_keywords": [
+      "linux",
+      "chmod"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Each digit represents permissions for owner, group, and others respectively, as a sum of read(4)+write(2)+execute(1)",
+        "755 = owner rwx(7), group r-x(5), others r-x(5) — typical for an executable script/directory",
+        "644 = owner rw-(6), group r--(4), others r--(4) — typical for a regular non-executable file",
+        "Explains why directories need the execute bit (to be 'entered'/listed properly), distinct from files"
+      ],
+      "sample_answer": "Each digit is a sum of read(4), write(2), and execute(1) permissions, in order for owner, group, and others. 755 means the owner has read+write+execute (7), while group and others have read+execute (5) — typical for an executable script or a directory, since directories need the execute bit to be traversed. 644 means the owner has read+write (6), and group/others have read-only (4) — typical for a regular data file that shouldn't be executed."
+    },
+    "follow_up_hint": "Ask what the execute permission actually means for a directory versus a regular file.",
+    "concept": "Linux File Permissions",
+    "sub_concept": "Octal Notation and Access Control",
+    "expected_reasoning": "A strong candidate begins by breaking down octal permission notation into its three constituent digits representing owner, group, and others. They then derive the numeric values by summing read (4), write (2), and execute (1) bit values for each category. Next, they contrast the specific usage contexts for 755 and 644, identifying that executables require execute permissions while standard data files do not. Finally, they distinguish how the execute bit functions differently on directories versus regular files.",
+    "common_mistakes": [
+      "States the numbers mean 755 and 644 without explaining what the individual digits or values 4, 2, and 1 represent.",
+      "Confuses the order of the digits, thinking they apply to read, write, and execute rather than owner, group, and others.",
+      "Claims 755 means everyone can write to the file, ignoring that group and others only have read and execute permissions.",
+      "Fails to explain why an executable script or directory needs the execute bit compared to a regular text file.",
+      "Guesses that higher numbers mean higher security rather than broader permission access."
+    ],
+    "progressive_hints": [
+      "Look at how the three-digit number is split up—who does each digit apply to in Linux file permissions?",
+      "Think about what permissions are represented by the individual numbers 4, 2, and 1, and how adding them together yields digits like 7, 6, and 5.",
+      "Consider why a binary or a script needs the execute permission while a standard document or text file does not."
+    ],
+    "learning_objective": "The candidate should understand how octal permissions encode read, write, and execute access for owners, groups, and others in Unix-like operating systems."
+  },
+  {
+    "id": "git-0008",
+    "question": "How would you find which process is using a specific port on Linux, and how would you kill it?",
+    "type": "practical_implementation",
+    "difficulty": 1,
+    "roles": [
+      "backend",
+      "devops"
+    ],
+    "topics": [
+      "linux"
+    ],
+    "tech_keywords": [
+      "linux",
+      "networking"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "`lsof -i :PORT` or `netstat -tulpn | grep PORT` lists the process using a given port",
+        "This reveals the process ID (PID) associated with that port",
+        "`kill PID` sends SIGTERM (graceful shutdown request); `kill -9 PID` sends SIGKILL (immediate, forceful termination)",
+        "Explains preferring SIGTERM first, since it lets the process clean up (close files, flush buffers) before exiting"
+      ],
+      "sample_answer": "`lsof -i :PORT` (or `netstat -tulpn | grep PORT` on some systems) lists which process is bound to a given port, including its PID. From there, `kill PID` sends SIGTERM, a graceful shutdown request the process can catch and clean up after; `kill -9 PID` sends SIGKILL, which terminates it immediately with no chance to clean up. I'd generally try SIGTERM first and only escalate to SIGKILL if the process doesn't respond, since abrupt termination can leave files or resources in an inconsistent state."
+    },
+    "follow_up_hint": "Ask what happens to a process's open file descriptors and child processes when it's killed with SIGKILL.",
+    "concept": "Network Port Management",
+    "sub_concept": "Identifying and terminating processes bound to network ports",
+    "expected_reasoning": "A strong candidate first identifies the need to inspect the operating system's active network connections to locate the conflicting process. They recognize that diagnostic tools like netstat or lsof can map a port number to a Process ID (PID). Once the PID is acquired, they consider process lifecycle management and articulate the difference between graceful and forceful termination signals. Finally, they weigh the risks of data corruption or unfinished transactions, which leads them to prioritize graceful shutdown methods before resorting to forceful ones.",
+    "common_mistakes": [
+      "Immediately jumps to suggesting kill -9 without checking which process is running or trying a graceful termination first",
+      "Confuses port numbers with process IDs or tries to kill the port number directly",
+      "Only knows one diagnostic command (e.g., netstat) and fails to mention alternatives like ss or lsof",
+      "States the kill command with no justification of the signal types involved",
+      "Forgets that inspecting system ports typically requires root or elevated privileges"
+    ],
+    "progressive_hints": [
+      "What kind of operating system diagnostic utilities exist to inspect active network listeners and their associated process metadata?",
+      "You have found the Process ID using a tool like lsof or netstat. How does Linux signal a process to stop, and are there different levels of forcefulness?",
+      "Why might you prefer sending a default SIGTERM signal before escalating to a SIGKILL when stopping a network service?"
+    ],
+    "learning_objective": "The candidate should understand how to diagnose port conflicts using Linux utilities and how to safely manage process lifecycles using appropriate termination signals."
+  },
+  {
+    "id": "git-0009",
+    "question": "What is the difference between a process and a daemon on Linux?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "backend",
+      "devops"
+    ],
+    "topics": [
+      "linux",
+      "operating-systems"
+    ],
+    "tech_keywords": [
+      "linux"
+    ],
+    "companies_common": [
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A daemon is a background process, typically detached from any controlling terminal, running independently of user login sessions",
+        "Daemons often start at boot and run continuously providing a service (e.g. a web server, cron)",
+        "Explains a normal foreground process is tied to a terminal session and typically ends when that session closes",
+        "Naming convention: daemons often end in 'd' (sshd, httpd)"
+      ],
+      "sample_answer": "A daemon is a background process detached from any controlling terminal, designed to run independently of any user's login session — it keeps running even after you log out. A normal foreground process is typically tied to the terminal session that started it and ends when that session closes. Daemons often start automatically at boot and provide an ongoing service, like sshd handling SSH connections or a cron daemon running scheduled jobs — by convention many daemon names end in 'd'."
+    },
+    "follow_up_hint": "Ask how a process detaches itself to become a daemon (double-fork, setsid).",
+    "concept": "Process Management",
+    "sub_concept": "Daemons vs Foreground Processes",
+    "expected_reasoning": "A strong candidate begins by defining the fundamental unit of execution in Linux, a process, and then categorizes them based on their lifecycle and interaction with users. They systematically analyze the relationship between standard processes and their controlling terminals, noting how terminal closure signals the process to terminate. Next, they contrast this with background service processes, exploring how daemons detach from terminal sessions and inherit specific PPID characteristics (like adoption by init/systemd). Finally, they tie this structural difference to practical use cases, such as system boot persistence and long-running server tasks.",
+    "common_mistakes": [
+      "States that a daemon is a completely different type of kernel object than a process, rather than realizing a daemon is simply a regular process running in the background.",
+      "Assumes all background jobs running with an ampersand are technically daemons.",
+      "Fails to mention the relationship between controlling terminals, user login sessions, and process lifetime.",
+      "Gives a superficial answer focused solely on naming conventions (ending in 'd') without explaining the underlying architectural difference.",
+      "Confuses daemons with kernel threads."
+    ],
+    "progressive_hints": [
+      "Consider what happens to a standard command you run in your terminal when you close the terminal window.",
+      "Think about how background system services keep running even after every user logs out of the system.",
+      "Focus on the terminal session attachment and parent-child process hierarchy that governs whether a process survives a user disconnection."
+    ],
+    "learning_objective": "Understand how background system daemons differ structurally and behaviorally from standard user-initiated foreground processes in Linux."
+  },
+  {
+    "id": "git-0010",
+    "question": "Explain what a Git rebase --interactive is used for, and give an example of squashing commits.",
+    "type": "practical_implementation",
+    "difficulty": 2,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "git"
+    ],
+    "tech_keywords": [
+      "git"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Interactive rebase lets you reorder, edit, squash, or drop commits before they're shared",
+        "Squashing combines multiple commits into one, useful for cleaning up a messy series of 'WIP'/fixup commits before merging",
+        "`git rebase -i HEAD~N` opens an editor listing the last N commits with actions (pick, squash, edit, drop) to choose per commit",
+        "Explains this rewrites history, so it should only be done before pushing/sharing the branch"
+      ],
+      "sample_answer": "Interactive rebase lets you edit a series of commits before sharing them — reordering, editing messages, squashing multiple commits into one, or dropping unwanted ones entirely. Running `git rebase -i HEAD~3` opens an editor listing the last 3 commits, where you'd change 'pick' to 'squash' on the commits you want merged into the previous one, producing a single clean commit instead of a messy trail of 'fix typo' or 'WIP' commits. Since this rewrites commit history, it should only be done on commits that haven't been pushed/shared yet."
+    },
+    "follow_up_hint": "Ask what happens if you try to interactively rebase commits that have already been pushed and others have pulled.",
+    "concept": "Git History Rewriting",
+    "sub_concept": "Interactive Rebase and Squashing",
+    "expected_reasoning": "A strong candidate first identifies the problem of maintaining a clean, readable commit history when working with many temporary or incremental commits. They explain the mechanism of interactive rebase by describing how it presents a chronological list of recent commits with modifiable action commands. Next, they detail the specific use case of squashing, explaining how combining multiple small commits into a single cohesive commit improves code review and project history. Finally, they weigh the risks of rewriting git history, explicitly noting that these operations should never be performed on shared or pushed branches to avoid disrupting other contributors.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'it combines commits' without explaining how or why",
+      "Confuses git rebase with git merge, missing the history-rewriting aspect entirely",
+      "Fails to mention the safety rule about not rebasing or squashing already pushed commits",
+      "Describes the command syntax without explaining the underlying concept of modifying commit ancestry",
+      "Confuses squashing with cherry-picking or stashing"
+    ],
+    "progressive_hints": [
+      "Think about what your local commit history typically looks like after a day of frantic coding with lots of 'WIP' messages.",
+      "Consider the command that allows you to step through and alter a range of your recent commits before anyone else sees them.",
+      "If you have five small commits that fix typos in the same feature, how can you combine them into a single commit using the interactive editor?"
+    ],
+    "learning_objective": "Understand how to use git rebase --interactive to curate a clean, professional commit history by combining and editing local commits before sharing them."
+  }
 ]

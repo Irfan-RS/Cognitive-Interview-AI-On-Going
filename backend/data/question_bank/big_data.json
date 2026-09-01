@@ -1,4 +1,99 @@
 [
-  {"id":"bd-0001","question":"What is MapReduce, and what problem was it designed to solve?","type":"conceptual","difficulty":3,"roles":["data_engineer","backend"],"topics":["big-data"],"tech_keywords":["mapreduce","hadoop"],"companies_common":["Google","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["MapReduce is a programming model for processing very large datasets in parallel across many machines, popularized by Google and implemented open-source in Hadoop","Map phase: applies a function to each input record independently, producing intermediate key-value pairs — fully parallelizable since records are processed independently","Reduce phase: aggregates/combines all intermediate values sharing the same key (after a 'shuffle' step groups them) into a final result","Solves the problem of processing data far too large to fit on or be processed efficiently by a single machine, by distributing both computation and data across a cluster, and framework-handling fault tolerance/scheduling automatically"],"sample_answer":"MapReduce is a programming model for processing enormous datasets in parallel across a cluster of many machines, popularized by Google and made widely available through the open-source Hadoop implementation. It splits the work into two phases: the Map phase applies a function to each individual input record independently, producing intermediate key-value pairs, and since each record is processed independently, this step is fully parallelizable across the cluster. Then a 'shuffle' step groups all intermediate values sharing the same key together, and the Reduce phase aggregates or combines those grouped values into the final output. This model solves the problem of processing datasets far too large to fit on or be efficiently processed by a single machine, by distributing both the data and the computation across many machines, while the underlying framework automatically handles scheduling, retries, and fault tolerance if individual machines fail during the job."},"follow_up_hint":"Ask them to design a MapReduce job that counts word frequency across a massive collection of text files."},
-  {"id":"bd-0002","question":"What is data partitioning/sharding in a data warehouse, and why does it matter for query performance at scale?","type":"conceptual","difficulty":3,"roles":["data_engineer","backend"],"topics":["big-data","dbms"],"tech_keywords":["data-warehouse","partitioning"],"companies_common":["Google","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["Partitioning splits a large table into smaller physical chunks based on a partition key (commonly date/time for analytical tables), so queries can skip irrelevant partitions entirely rather than scanning the full table","This 'partition pruning' dramatically reduces the amount of data scanned for time-bounded queries, which matters a lot for both performance and cost in systems that charge by data scanned","Choosing a good partition key depends on actual query patterns — a poorly chosen key (or a query that doesn't filter on it) provides no pruning benefit at all","Different from sharding across separate database instances (used for write scalability); partitioning here typically refers to splitting data within a single logical table/warehouse for query efficiency"],"sample_answer":"Partitioning splits a large table into smaller physical chunks based on a chosen partition key — very commonly date or time for analytical/warehouse tables — so that a query filtering on a date range can skip scanning irrelevant partitions entirely rather than scanning the whole table. This 'partition pruning' can dramatically cut down both query latency and cost, which matters a lot in warehouse systems like BigQuery or Redshift that charge based on the amount of data actually scanned. The key is choosing a partition key that actually matches real query patterns — if queries mostly filter by date, partitioning by date gives huge wins, but if a query doesn't filter on the partition key at all, pruning provides no benefit and the query still has to scan everything. It's worth distinguishing this from sharding across separate database instances for write scalability — partitioning here is more about organizing data within a single logical table or warehouse specifically to make queries more efficient."},"follow_up_hint":"Ask them what would happen to query performance if a table were partitioned by date but most queries filtered by customer_id instead."}
+  {
+    "id": "bd-0001",
+    "question": "What is MapReduce, and what problem was it designed to solve?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "data_engineer",
+      "backend"
+    ],
+    "topics": [
+      "big-data"
+    ],
+    "tech_keywords": [
+      "mapreduce",
+      "hadoop"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "MapReduce is a programming model for processing very large datasets in parallel across many machines, popularized by Google and implemented open-source in Hadoop",
+        "Map phase: applies a function to each input record independently, producing intermediate key-value pairs — fully parallelizable since records are processed independently",
+        "Reduce phase: aggregates/combines all intermediate values sharing the same key (after a 'shuffle' step groups them) into a final result",
+        "Solves the problem of processing data far too large to fit on or be processed efficiently by a single machine, by distributing both computation and data across a cluster, and framework-handling fault tolerance/scheduling automatically"
+      ],
+      "sample_answer": "MapReduce is a programming model for processing enormous datasets in parallel across a cluster of many machines, popularized by Google and made widely available through the open-source Hadoop implementation. It splits the work into two phases: the Map phase applies a function to each individual input record independently, producing intermediate key-value pairs, and since each record is processed independently, this step is fully parallelizable across the cluster. Then a 'shuffle' step groups all intermediate values sharing the same key together, and the Reduce phase aggregates or combines those grouped values into the final output. This model solves the problem of processing datasets far too large to fit on or be efficiently processed by a single machine, by distributing both the data and the computation across many machines, while the underlying framework automatically handles scheduling, retries, and fault tolerance if individual machines fail during the job."
+    },
+    "follow_up_hint": "Ask them to design a MapReduce job that counts word frequency across a massive collection of text files.",
+    "concept": "Distributed Data Processing",
+    "sub_concept": "MapReduce Programming Model",
+    "expected_reasoning": "A strong candidate begins by framing the core hardware and scaling constraints of handling data that exceeds a single machine's storage and memory capacity. They then break down the computation into two distinct functional phases, explaining why separating independent data transformation from grouped aggregation enables massive horizontal parallelism. They detail the intermediate network boundary—the shuffle phase—as the critical bridge and bottleneck between these phases. Finally, they articulate how the model abstracts away low-level infrastructure concerns like network topology, task scheduling, and node failure recovery.",
+    "common_mistakes": [
+      "Describing MapReduce merely as a database query language or SQL substitute rather than a low-level programming model.",
+      "Stating that MapReduce solves the problem without explaining why a single machine fails (memory, CPU, storage limits).",
+      "Confusing the shuffle phase with the map or reduce operations, ignoring how keys are grouped and routed across nodes.",
+      "Failing to mention fault tolerance and assuming the framework is just a parallel loop construct.",
+      "Treating MapReduce as a modern real-time streaming engine rather than a batch-oriented processing paradigm."
+    ],
+    "progressive_hints": [
+      "Think about the physical limitations you hit when a dataset grows from gigabytes to petabytes on a single server.",
+      "If you had to process billions of log lines across fifty different computers, how would you divide the work so each computer doesn't need to talk to the others initially, and how would you bring related pieces together afterward?",
+      "Consider how splitting an operation into a phase that transforms independent records and a phase that groups matching keys allows a framework to automatically distribute both the data and the execution without manual thread management."
+    ],
+    "learning_objective": "Understand how breaking large-scale data workflows into decoupled mapping and reducing phases enables automated parallelization, fault tolerance, and horizontal scaling across clusters."
+  },
+  {
+    "id": "bd-0002",
+    "question": "What is data partitioning/sharding in a data warehouse, and why does it matter for query performance at scale?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "data_engineer",
+      "backend"
+    ],
+    "topics": [
+      "big-data",
+      "dbms"
+    ],
+    "tech_keywords": [
+      "data-warehouse",
+      "partitioning"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Partitioning splits a large table into smaller physical chunks based on a partition key (commonly date/time for analytical tables), so queries can skip irrelevant partitions entirely rather than scanning the full table",
+        "This 'partition pruning' dramatically reduces the amount of data scanned for time-bounded queries, which matters a lot for both performance and cost in systems that charge by data scanned",
+        "Choosing a good partition key depends on actual query patterns — a poorly chosen key (or a query that doesn't filter on it) provides no pruning benefit at all",
+        "Different from sharding across separate database instances (used for write scalability); partitioning here typically refers to splitting data within a single logical table/warehouse for query efficiency"
+      ],
+      "sample_answer": "Partitioning splits a large table into smaller physical chunks based on a chosen partition key — very commonly date or time for analytical/warehouse tables — so that a query filtering on a date range can skip scanning irrelevant partitions entirely rather than scanning the whole table. This 'partition pruning' can dramatically cut down both query latency and cost, which matters a lot in warehouse systems like BigQuery or Redshift that charge based on the amount of data actually scanned. The key is choosing a partition key that actually matches real query patterns — if queries mostly filter by date, partitioning by date gives huge wins, but if a query doesn't filter on the partition key at all, pruning provides no benefit and the query still has to scan everything. It's worth distinguishing this from sharding across separate database instances for write scalability — partitioning here is more about organizing data within a single logical table or warehouse specifically to make queries more efficient."
+    },
+    "follow_up_hint": "Ask them what would happen to query performance if a table were partitioned by date but most queries filtered by customer_id instead.",
+    "concept": "Data Partitioning",
+    "sub_concept": "Partition Pruning and Query Optimization in Data Warehouses",
+    "expected_reasoning": "A strong candidate begins by defining the core mechanism of splitting a large logical table into physically distinct storage segments based on a chosen key. They then analyze how query engines interact with these segments, explaining that queries containing filters on the partition key can entirely bypass irrelevant data. They proceed to evaluate the operational implications, noting how skipping physical reads drastically reduces both execution latency and monetary costs in pay-per-scan data warehouses. Finally, they weigh the trade-offs of key selection, emphasizing that a mismatch between the partition key and actual query predicates renders the optimization completely ineffective.",
+    "common_mistakes": [
+      "Confusing data partitioning within a data warehouse with horizontal sharding across separate database instances for write scaling",
+      "Stating that partitioning makes queries faster without explaining the underlying mechanism of skipping data scans",
+      "Failing to mention the direct economic impact of data volume reduction in cloud data warehouses that charge per terabyte scanned",
+      "Assuming any column makes a good partition key without considering actual query access patterns",
+      "Treating partitioning as a magic bullet that speeds up every type of query regardless of filters"
+    ],
+    "progressive_hints": [
+      "Think about what happens to a query scanning a billion-row table when you only care about data from a single month.",
+      "Consider how the database engine can physically organize data files on disk so it can completely ignore irrelevant chunks of a table before executing a scan.",
+      "If your table is split into separate files by date, and your query asks for yesterday's data, what does the query planner do with the files from last year?"
+    ],
+    "learning_objective": "Understand how physical data organization via partitioning enables partition pruning to drastically reduce query latency and costs in analytical data warehouses."
+  }
 ]

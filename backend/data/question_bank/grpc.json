@@ -1,4 +1,97 @@
 [
-  {"id":"grpc-0001","question":"What is gRPC, and how does it compare to a traditional REST/JSON API?","type":"trade_off_questions","difficulty":3,"roles":["backend","system_design"],"topics":["api-design","microservices"],"tech_keywords":["grpc","protobuf"],"companies_common":["Google","Uber","Netflix"],"source_style":"faang-common","reference_solution":{"key_points":["gRPC uses Protocol Buffers (protobuf) for serialization — a compact binary format with a strict, versioned schema (.proto files), versus REST's typically human-readable but larger JSON payloads","Runs over HTTP/2 by default, getting multiplexing and header compression for free, and enables streaming (client streaming, server streaming, bidirectional streaming), which plain REST doesn't support natively","Strongly-typed contracts auto-generate client/server code in many languages from the same .proto definition, reducing manual API client maintenance and type mismatches","Trade-off: less human-readable/debuggable directly (binary format, needs tooling to inspect), and browser support historically required a proxy (gRPC-Web) since browsers can't fully speak raw gRPC/HTTP2 framing"],"sample_answer":"gRPC uses Protocol Buffers for serialization, a compact binary format defined by a strict, versioned schema in .proto files, which is more efficient over the wire than REST's typically larger, human-readable JSON payloads. It runs over HTTP/2 by default, getting connection multiplexing and header compression for free, and natively supports streaming — client streaming, server streaming, and full bidirectional streaming — which plain REST/JSON doesn't support without extra layers like WebSockets. Because the API contract is strongly typed and defined once in a .proto file, gRPC tooling can auto-generate client and server code in many languages from that single definition, reducing the risk of manual client/server type mismatches. The trade-offs are that the binary format is much less human-readable and harder to debug directly with something like curl, without dedicated tooling, and browser support historically required a translation proxy like gRPC-Web, since browsers can't fully speak raw gRPC framing over HTTP/2 the way a backend service can. I'd reach for gRPC for internal service-to-service communication where performance and strong typing matter, and REST/JSON for public-facing APIs where broad compatibility and human debuggability matter more."},"follow_up_hint":"Ask them why gRPC is popular for internal microservice-to-microservice communication specifically, but less common for public-facing APIs."},
-  {"id":"grpc-0002","question":"What is Protocol Buffers (protobuf), and why is schema evolution/backward compatibility handled the way it is (field numbers)?","type":"conceptual","difficulty":4,"roles":["backend"],"topics":["api-design"],"tech_keywords":["protobuf"],"companies_common":["Google"],"source_style":"faang-common","reference_solution":{"key_points":["Protobuf serializes structured data into a compact binary format based on a schema (.proto file) defining fields, their types, and unique field numbers","Each field is identified on the wire by its NUMBER, not its name — this is what enables safe schema evolution: adding a new field with a new number doesn't break old code parsing a message that doesn't include it, and old fields can be safely ignored by new code if removed correctly (marked reserved, not reused)","Rules for safe evolution: never reuse/change an existing field's number once used in production, add new fields as optional, use 'reserved' to mark removed field numbers/names as permanently off-limits","This wire-format design is what lets services on different versions of a schema (some updated, some not yet) interoperate without breaking during a rolling deployment"],"sample_answer":"Protocol Buffers serialize structured data into a compact binary format defined by a schema written in a .proto file, which declares each field's name, type, and — critically — a unique numeric tag. On the actual wire format, a field is identified by that number, not by its name, which is exactly what makes safe schema evolution possible: a service can add a brand new field with a new number, and an older service that doesn't know about that field simply ignores it when parsing, without erroring or breaking. The evolution rules follow directly from this: you should never reuse or change an already-used field number, new fields should generally be added as optional so old messages without them still parse validly, and if you remove a field, you should mark its number and name as 'reserved' so it's never accidentally reused later with a different meaning, which would corrupt data for anything still holding an old serialized message. This design is exactly what lets different services running different versions of the same schema interoperate safely during a rolling deployment, where some instances have the new schema and some briefly still have the old one."},"follow_up_hint":"Ask them what would go wrong if a field number were reused for a different field type after the old field was removed."}
+  {
+    "id": "grpc-0001",
+    "question": "What is gRPC, and how does it compare to a traditional REST/JSON API?",
+    "type": "trade_off_questions",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "api-design",
+      "microservices"
+    ],
+    "tech_keywords": [
+      "grpc",
+      "protobuf"
+    ],
+    "companies_common": [
+      "Google",
+      "Uber",
+      "Netflix"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "gRPC uses Protocol Buffers (protobuf) for serialization — a compact binary format with a strict, versioned schema (.proto files), versus REST's typically human-readable but larger JSON payloads",
+        "Runs over HTTP/2 by default, getting multiplexing and header compression for free, and enables streaming (client streaming, server streaming, bidirectional streaming), which plain REST doesn't support natively",
+        "Strongly-typed contracts auto-generate client/server code in many languages from the same .proto definition, reducing manual API client maintenance and type mismatches",
+        "Trade-off: less human-readable/debuggable directly (binary format, needs tooling to inspect), and browser support historically required a proxy (gRPC-Web) since browsers can't fully speak raw gRPC/HTTP2 framing"
+      ],
+      "sample_answer": "gRPC uses Protocol Buffers for serialization, a compact binary format defined by a strict, versioned schema in .proto files, which is more efficient over the wire than REST's typically larger, human-readable JSON payloads. It runs over HTTP/2 by default, getting connection multiplexing and header compression for free, and natively supports streaming — client streaming, server streaming, and full bidirectional streaming — which plain REST/JSON doesn't support without extra layers like WebSockets. Because the API contract is strongly typed and defined once in a .proto file, gRPC tooling can auto-generate client and server code in many languages from that single definition, reducing the risk of manual client/server type mismatches. The trade-offs are that the binary format is much less human-readable and harder to debug directly with something like curl, without dedicated tooling, and browser support historically required a translation proxy like gRPC-Web, since browsers can't fully speak raw gRPC framing over HTTP/2 the way a backend service can. I'd reach for gRPC for internal service-to-service communication where performance and strong typing matter, and REST/JSON for public-facing APIs where broad compatibility and human debuggability matter more."
+    },
+    "follow_up_hint": "Ask them why gRPC is popular for internal microservice-to-microservice communication specifically, but less common for public-facing APIs.",
+    "concept": "API Protocols",
+    "sub_concept": "gRPC versus REST Architecture",
+    "expected_reasoning": "A strong candidate begins by contrasting the core transport and data serialization layers of both protocols. They analyze how binary serialization with strict schemas differs from human-readable text formats, then evaluate network transport efficiency including HTTP/2 multiplexing versus traditional HTTP/1.1 or basic HTTP/2 usage in REST. Finally, they weigh operational trade-offs such as language-agnostic code generation and native streaming capabilities against reduced human-readability and browser compatibility challenges.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply claiming 'gRPC is faster than REST' without explaining protobuf or HTTP/2 transport mechanisms.",
+      "Claims gRPC runs over a custom TCP protocol instead of standard HTTP/2.",
+      "Ignores streaming capabilities entirely, treating gRPC as just a different syntax for request-response RPC calls.",
+      "Fails to mention tooling requirements and debugging friction caused by gRPC's binary payload format.",
+      "Assumes REST cannot use HTTP/2 or that JSON cannot be validated, missing the nuance of protocol layers."
+    ],
+    "progressive_hints": [
+      "What underlying layers of the OSI or network stack differentiate how data is structured and transported in these two styles?",
+      "Think about what happens to payload size and connection management when you shift from a text-based format over individual connections to a binary format multiplexed over a single connection.",
+      "Consider the development lifecycle impact: how contracts are defined, how client libraries are built, and how easily a developer can debug traffic in network inspection tools."
+    ],
+    "learning_objective": "Understand when and why to choose gRPC over REST by weighing the benefits of binary serialization, strict schemas, and HTTP/2 multiplexing against the trade-offs of human-readability and debugging complexity."
+  },
+  {
+    "id": "grpc-0002",
+    "question": "What is Protocol Buffers (protobuf), and why is schema evolution/backward compatibility handled the way it is (field numbers)?",
+    "type": "conceptual",
+    "difficulty": 4,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "api-design"
+    ],
+    "tech_keywords": [
+      "protobuf"
+    ],
+    "companies_common": [
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Protobuf serializes structured data into a compact binary format based on a schema (.proto file) defining fields, their types, and unique field numbers",
+        "Each field is identified on the wire by its NUMBER, not its name — this is what enables safe schema evolution: adding a new field with a new number doesn't break old code parsing a message that doesn't include it, and old fields can be safely ignored by new code if removed correctly (marked reserved, not reused)",
+        "Rules for safe evolution: never reuse/change an existing field's number once used in production, add new fields as optional, use 'reserved' to mark removed field numbers/names as permanently off-limits",
+        "This wire-format design is what lets services on different versions of a schema (some updated, some not yet) interoperate without breaking during a rolling deployment"
+      ],
+      "sample_answer": "Protocol Buffers serialize structured data into a compact binary format defined by a schema written in a .proto file, which declares each field's name, type, and — critically — a unique numeric tag. On the actual wire format, a field is identified by that number, not by its name, which is exactly what makes safe schema evolution possible: a service can add a brand new field with a new number, and an older service that doesn't know about that field simply ignores it when parsing, without erroring or breaking. The evolution rules follow directly from this: you should never reuse or change an already-used field number, new fields should generally be added as optional so old messages without them still parse validly, and if you remove a field, you should mark its number and name as 'reserved' so it's never accidentally reused later with a different meaning, which would corrupt data for anything still holding an old serialized message. This design is exactly what lets different services running different versions of the same schema interoperate safely during a rolling deployment, where some instances have the new schema and some briefly still have the old one."
+    },
+    "follow_up_hint": "Ask them what would go wrong if a field number were reused for a different field type after the old field was removed.",
+    "concept": "Protocol Buffers",
+    "sub_concept": "Schema Evolution and Wire Format",
+    "expected_reasoning": "A strong candidate starts by defining Protocol Buffers as a mechanism for serializing structured data into a compact binary format using an explicit schema. They then analyze how wire-level encoding works, realizing that transmitting human-readable field names would be inefficient. By connecting field identification to unique numeric tags rather than string names, they deduce why rolling deployments and backward-compatible changes become possible. Finally, they articulate the operational rules required to maintain this safety, such as never reusing deleted field numbers.",
+    "common_mistakes": [
+      "States that protobuf uses field names on the wire like JSON or XML, completely missing the binary format mechanism.",
+      "Explains what protobuf is but fails to connect field numbers to backward compatibility or schema evolution.",
+      "Claims that schema evolution is handled by making fields optional without explaining how the wire format actually uses tags.",
+      "Suggests that old field numbers can be safely reused once a field is deprecated.",
+      "Provides a superficial answer focusing only on compression and speed without addressing versioning challenges during rolling deployments."
+    ],
+    "progressive_hints": [
+      "Think about what information actually gets sent across the network when a protobuf message is serialized versus what is kept only in the .proto file.",
+      "Consider how a parser reading an older version of a message handles a field it has never seen before, or vice-versa. What acts as the permanent anchor for a field?",
+      "If field names were transmitted on the wire, renaming a field would break compatibility. What mechanism prevents this and allows fields to be added or omitted entirely without breaking parsers?"
+    ],
+    "learning_objective": "Understand how Protocol Buffers uses numeric tags in its binary wire format to decouple data serialization from field names, enabling safe schema evolution and rolling deployments across distributed systems."
+  }
 ]

@@ -1,4 +1,97 @@
 [
-  {"id":"iac-0001","question":"What is Infrastructure as Code, and what problems does it solve compared to manually configuring servers?","type":"conceptual","difficulty":2,"roles":["devops"],"topics":["devops","infrastructure"],"tech_keywords":["terraform","iac"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["IaC defines infrastructure (servers, networks, databases) in version-controlled configuration files, applied by a tool, rather than manually clicking through a cloud console or running ad-hoc scripts","Solves 'configuration drift': manual changes made directly on a server/console diverge silently over time from documentation, making environments inconsistent and hard to reproduce","Enables code review, versioning, and rollback of infrastructure changes just like application code, and makes it possible to reliably recreate an entire environment from scratch","Tools like Terraform are declarative — you describe the desired end state, and the tool figures out what changes are needed to reach it, rather than scripting each imperative step"],"sample_answer":"Infrastructure as Code means defining infrastructure — servers, networks, databases, load balancers — in version-controlled configuration files that a tool applies automatically, rather than manually clicking through a cloud console or running one-off scripts by hand. This solves the 'configuration drift' problem, where manual changes made directly on a server or in a console diverge silently over time from any documentation, making environments inconsistent and hard to reliably reproduce, especially under pressure during an incident. It also brings the same practices used for application code to infrastructure — code review before a change is applied, version history, and the ability to roll back a bad change — and makes it possible to recreate an entire environment reliably from scratch if needed, rather than depending on institutional knowledge of manual setup steps. Tools like Terraform are declarative, meaning you describe the desired end state of your infrastructure, and the tool computes and applies whatever changes are needed to get from the current state to that desired state, rather than you scripting each individual imperative step yourself."},"follow_up_hint":"Ask them what a Terraform 'plan' does and why reviewing it before 'apply' matters."},
-  {"id":"iac-0002","question":"What is Terraform state, and why is managing it carefully important, especially with multiple team members?","type":"conceptual","difficulty":3,"roles":["devops"],"topics":["devops","infrastructure"],"tech_keywords":["terraform"],"companies_common":["Amazon","Google"],"source_style":"faang-common","reference_solution":{"key_points":["Terraform state is a file tracking the mapping between resources declared in configuration and the actual real-world infrastructure objects Terraform created for them, along with their current attributes","Terraform uses this state to compute a diff (plan) between the desired configuration and what actually exists, deciding what to create/update/destroy","If two people run Terraform simultaneously against local, un-shared state files, they can corrupt each other's changes or cause conflicting/duplicate infrastructure — hence the need for remote, shared state (e.g. in an S3 bucket) with locking (e.g. via DynamoDB) to prevent concurrent modification","State files can contain sensitive data (resource attributes, sometimes secrets), so they need to be stored securely, not committed to a public/plain git repo"],"sample_answer":"Terraform state is a file that tracks the mapping between the resources declared in your configuration and the actual real-world infrastructure objects Terraform has created for them, along with their current known attributes. Terraform relies on this state to compute a plan — the diff between what your configuration says should exist and what the state says already exists — deciding exactly what needs to be created, updated, or destroyed to reconcile the two. Managing state carefully matters a lot with multiple team members because if two people run Terraform using their own local, un-shared state files at the same time, they can easily corrupt each other's changes or end up creating duplicate or conflicting infrastructure without either person realizing it. The standard fix is storing state remotely in a shared backend, like an S3 bucket, combined with a locking mechanism, like a DynamoDB table, so only one person's Terraform run can modify the state at a time. It's also worth noting state files can contain sensitive data, including some secrets embedded in resource attributes, so they need to be stored securely and never committed in plain text to a public or shared git repository."},"follow_up_hint":"Ask them what would happen, concretely, if two engineers ran `terraform apply` at the exact same time against unlocked shared state."}
+  {
+    "id": "iac-0001",
+    "question": "What is Infrastructure as Code, and what problems does it solve compared to manually configuring servers?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "devops"
+    ],
+    "topics": [
+      "devops",
+      "infrastructure"
+    ],
+    "tech_keywords": [
+      "terraform",
+      "iac"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "IaC defines infrastructure (servers, networks, databases) in version-controlled configuration files, applied by a tool, rather than manually clicking through a cloud console or running ad-hoc scripts",
+        "Solves 'configuration drift': manual changes made directly on a server/console diverge silently over time from documentation, making environments inconsistent and hard to reproduce",
+        "Enables code review, versioning, and rollback of infrastructure changes just like application code, and makes it possible to reliably recreate an entire environment from scratch",
+        "Tools like Terraform are declarative — you describe the desired end state, and the tool figures out what changes are needed to reach it, rather than scripting each imperative step"
+      ],
+      "sample_answer": "Infrastructure as Code means defining infrastructure — servers, networks, databases, load balancers — in version-controlled configuration files that a tool applies automatically, rather than manually clicking through a cloud console or running one-off scripts by hand. This solves the 'configuration drift' problem, where manual changes made directly on a server or in a console diverge silently over time from any documentation, making environments inconsistent and hard to reliably reproduce, especially under pressure during an incident. It also brings the same practices used for application code to infrastructure — code review before a change is applied, version history, and the ability to roll back a bad change — and makes it possible to recreate an entire environment reliably from scratch if needed, rather than depending on institutional knowledge of manual setup steps. Tools like Terraform are declarative, meaning you describe the desired end state of your infrastructure, and the tool computes and applies whatever changes are needed to get from the current state to that desired state, rather than you scripting each individual imperative step yourself."
+    },
+    "follow_up_hint": "Ask them what a Terraform 'plan' does and why reviewing it before 'apply' matters.",
+    "concept": "Infrastructure as Code",
+    "sub_concept": "Declarative Management and Configuration Drift",
+    "expected_reasoning": "A strong candidate begins by contrasting manual provisioning workflows against a code-driven approach, highlighting how treating infrastructure like software changes the lifecycle. They reason through the operational friction of clicking through consoles, focusing on how manual changes introduce hidden discrepancies between staging and production environments. They then connect version control to infrastructure reproducibility, explaining how declarative configuration enables predictable state transitions and automated validation before deployment.",
+    "common_mistakes": [
+      "States that IaC is just writing shell scripts or automation scripts to install software without mentioning declarative state management",
+      "Focuses solely on initial setup speed while completely ignoring configuration drift and environment consistency over time",
+      "Fails to mention version control or code review as core benefits of the paradigm",
+      "Confuses imperative scripting with declarative desired-state configuration tools like Terraform",
+      "Gives a shallow definition like 'it means writing code for servers' without explaining the specific problems it solves"
+    ],
+    "progressive_hints": [
+      "Think about what happens to a server over months of troubleshooting when admins make quick manual changes directly in the cloud console.",
+      "Consider how application code is versioned, reviewed, and rolled back when something breaks, and ask yourself how infrastructure changes are traditionally handled.",
+      "Reflect on the difference between writing an imperative script of step-by-step commands versus declaring the final desired state of your environment for a tool to reconcile."
+    ],
+    "learning_objective": "Infrastructure as Code replaces error-prone manual provisioning with version-controlled, declarative configurations that eliminate drift and ensure reproducible environments."
+  },
+  {
+    "id": "iac-0002",
+    "question": "What is Terraform state, and why is managing it carefully important, especially with multiple team members?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "devops"
+    ],
+    "topics": [
+      "devops",
+      "infrastructure"
+    ],
+    "tech_keywords": [
+      "terraform"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Terraform state is a file tracking the mapping between resources declared in configuration and the actual real-world infrastructure objects Terraform created for them, along with their current attributes",
+        "Terraform uses this state to compute a diff (plan) between the desired configuration and what actually exists, deciding what to create/update/destroy",
+        "If two people run Terraform simultaneously against local, un-shared state files, they can corrupt each other's changes or cause conflicting/duplicate infrastructure — hence the need for remote, shared state (e.g. in an S3 bucket) with locking (e.g. via DynamoDB) to prevent concurrent modification",
+        "State files can contain sensitive data (resource attributes, sometimes secrets), so they need to be stored securely, not committed to a public/plain git repo"
+      ],
+      "sample_answer": "Terraform state is a file that tracks the mapping between the resources declared in your configuration and the actual real-world infrastructure objects Terraform has created for them, along with their current known attributes. Terraform relies on this state to compute a plan — the diff between what your configuration says should exist and what the state says already exists — deciding exactly what needs to be created, updated, or destroyed to reconcile the two. Managing state carefully matters a lot with multiple team members because if two people run Terraform using their own local, un-shared state files at the same time, they can easily corrupt each other's changes or end up creating duplicate or conflicting infrastructure without either person realizing it. The standard fix is storing state remotely in a shared backend, like an S3 bucket, combined with a locking mechanism, like a DynamoDB table, so only one person's Terraform run can modify the state at a time. It's also worth noting state files can contain sensitive data, including some secrets embedded in resource attributes, so they need to be stored securely and never committed in plain text to a public or shared git repository."
+    },
+    "follow_up_hint": "Ask them what would happen, concretely, if two engineers ran `terraform apply` at the exact same time against unlocked shared state.",
+    "concept": "Infrastructure As Code State",
+    "sub_concept": "State management, remote backends, and team collaboration",
+    "expected_reasoning": "A strong candidate begins by defining what Terraform state actually represents—a bridge of metadata between abstract code and real-world infrastructure objects. From there, they analyze why Terraform needs it: to maintain a dependency graph and compute diffs efficiently without hammering cloud APIs on every run. Next, they shift to the multi-user dimension, reasoning about the race conditions and corruption risks that occur when two people maintain separate local state files. Finally, they weigh the operational requirements of solving this—remote storage with state locking and encryption for sensitive attribute data.",
+    "common_mistakes": [
+      "States that the state file is just a backup of the configuration code without mentioning the real-world resource mapping.",
+      "Claims Terraform talks directly to the cloud API on every plan to check infrastructure, completely missing the role of the state cache.",
+      "Fails to mention state locking, only focusing on sharing the file in a central bucket.",
+      "Treats state files as safe to commit directly to git repositories alongside code.",
+      "Provides a shallow definition ('it tracks what was built') without explaining *why* management is critical for team collaboration."
+    ],
+    "progressive_hints": [
+      "Think about what information Terraform needs to know to figure out what changed between your local files and the cloud provider.",
+      "Consider what happens when two engineers run 'terraform apply' on the same infrastructure at the exact same time using independent local files.",
+      "What specific mechanisms do remote backends use to ensure only one person can modify the infrastructure mapping at any given millisecond?"
+    ],
+    "learning_objective": "Understand that Terraform state is the critical source of truth mapping code to real infrastructure, and that shared state with locking is mandatory for safe team collaboration."
+  }
 ]

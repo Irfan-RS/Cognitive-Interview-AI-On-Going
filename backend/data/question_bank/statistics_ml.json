@@ -1,8 +1,289 @@
 [
-  {"id":"stat-0001","question":"Explain the difference between Type I and Type II errors in hypothesis testing.","type":"conceptual","difficulty":2,"roles":["data_scientist","machine_learning_engineer"],"topics":["statistics"],"tech_keywords":["statistics","hypothesis-testing"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["Type I error: rejecting a true null hypothesis (false positive) — concluding an effect exists when it doesn't","Type II error: failing to reject a false null hypothesis (false negative) — missing a real effect","The significance level (alpha) controls the Type I error rate directly; statistical power (1 - beta) relates to the Type II error rate","There's a trade-off: lowering alpha (fewer false positives) generally increases beta (more false negatives) for a fixed sample size, unless sample size is increased"],"sample_answer":"A Type I error is a false positive — rejecting a true null hypothesis, meaning you conclude there's an effect or difference when there actually isn't one. A Type II error is a false negative — failing to reject a false null hypothesis, meaning you miss a real effect that does exist. The significance level, alpha, is the threshold you set for how much Type I error risk you're willing to accept, commonly 0.05. There's an inherent trade-off: making alpha stricter to reduce false positives typically increases the false negative rate for a given sample size, since you're demanding stronger evidence before declaring significance — the way to improve both simultaneously is usually to increase the sample size, which increases statistical power."},"follow_up_hint":"Ask which type of error would be worse in a medical diagnostic test versus a spam filter, and why the acceptable trade-off differs."},
-  {"id":"stat-0002","question":"What is the bias-variance trade-off in machine learning?","type":"conceptual","difficulty":3,"roles":["data_scientist","machine_learning_engineer"],"topics":["machine-learning"],"tech_keywords":["bias-variance"],"companies_common":["Google","Amazon","Meta"],"source_style":"faang-common","reference_solution":{"key_points":["Bias: error from overly simplistic assumptions in the model, causing it to underfit and miss real patterns in the data","Variance: error from the model being overly sensitive to the specific training data, causing it to overfit and not generalize to new data","Total expected error decomposes roughly into bias^2 + variance + irreducible noise — you can't minimize both without limit simultaneously with a fixed model/data","Increasing model complexity typically decreases bias but increases variance, and vice versa; regularization, more data, or simpler models shift this trade-off"],"sample_answer":"Bias is the error introduced by a model's assumptions being too simplistic to capture the real underlying pattern, causing it to underfit — a linear model trying to fit clearly non-linear data has high bias. Variance is the error from a model being too sensitive to the specific training data it saw, fitting noise rather than signal, causing it to overfit and perform much worse on new data — a very deep, unconstrained decision tree tends to have high variance. Total expected prediction error breaks down roughly into bias squared plus variance plus irreducible noise, so there's a genuine trade-off: increasing model complexity typically reduces bias but increases variance, and you have to find a sweet spot, often via regularization, more training data, or cross-validation to tune complexity."},"follow_up_hint":"Ask how they'd diagnose from a learning curve whether a model is suffering from high bias or high variance."},
-  {"id":"stat-0003","question":"What is a confusion matrix, and how do precision and recall differ?","type":"conceptual","difficulty":2,"roles":["data_scientist","machine_learning_engineer"],"topics":["machine-learning"],"tech_keywords":["precision","recall"],"companies_common":["Google","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["A confusion matrix tabulates predicted vs actual class labels: true positives, false positives, true negatives, false negatives","Precision = TP / (TP + FP): of all items predicted positive, what fraction actually are positive — matters when false positives are costly","Recall = TP / (TP + FN): of all items that are actually positive, what fraction did the model correctly find — matters when false negatives are costly","There's typically a trade-off between the two depending on the classification threshold; F1 score balances both into a single metric"],"sample_answer":"A confusion matrix breaks down predictions into true positives, false positives, true negatives, and false negatives compared against the actual labels. Precision is TP divided by (TP + FP) — of everything the model flagged as positive, what fraction was actually positive — which matters most when false positives are expensive, like flagging legitimate transactions as fraud and blocking real customers. Recall is TP divided by (TP + FN) — of everything that's actually positive, what fraction did the model catch — which matters most when missing a positive is costly, like failing to detect an actual case of cancer or fraud. These usually trade off against each other as you adjust the classification threshold, and the F1 score, the harmonic mean of precision and recall, is often used to balance both into one number."},"follow_up_hint":"Ask them to design an evaluation metric strategy for a highly imbalanced dataset, like fraud detection where positives are 0.1% of data."},
-  {"id":"stat-0004","question":"Explain what overfitting is and list three techniques to reduce it.","type":"conceptual","difficulty":2,"roles":["data_scientist","machine_learning_engineer"],"topics":["machine-learning"],"tech_keywords":["overfitting","regularization"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["Overfitting: model learns patterns specific to the training data (including noise) that don't generalize, showing high training accuracy but much lower validation/test accuracy","Regularization (L1/L2) penalizes large model weights, discouraging overly complex fits to training data","Cross-validation to properly estimate generalization performance and tune hyperparameters, rather than relying on training accuracy alone","Other valid techniques: gathering more training data, early stopping, dropout (for neural nets), reducing model complexity/feature count, data augmentation"],"sample_answer":"Overfitting is when a model learns patterns specific to the training set, including its noise and quirks, rather than the true underlying signal, so it performs very well on training data but noticeably worse on unseen validation or test data. Common ways to reduce it: regularization, like L1 or L2 penalties, discourages the model from assigning large weights to any single feature, favoring simpler fits; using cross-validation to properly evaluate performance on held-out folds rather than trusting training accuracy, and to tune hyperparameters against that more honest estimate; and simply getting more training data, since a model has a harder time memorizing noise when there's more genuine signal to learn from. For neural networks specifically, dropout and early stopping are also standard tools."},"follow_up_hint":"Ask them to explain how dropout specifically works during neural network training to reduce overfitting."},
-  {"id":"stat-0005","question":"What is the difference between supervised, unsupervised, and reinforcement learning?","type":"conceptual","difficulty":1,"roles":["data_scientist","machine_learning_engineer"],"topics":["machine-learning"],"tech_keywords":["supervised-learning","unsupervised-learning"],"companies_common":["Google","Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["Supervised learning: trains on labeled data (input-output pairs) to predict outputs for new inputs — e.g. classification, regression","Unsupervised learning: finds structure/patterns in unlabeled data with no target output — e.g. clustering, dimensionality reduction","Reinforcement learning: an agent learns by interacting with an environment, receiving rewards/penalties for actions, and learns a policy maximizing cumulative reward over time","Gives a concrete real-world example for each category"],"sample_answer":"Supervised learning trains a model on labeled data, meaning input-output pairs, so it learns to predict the correct output for new, unseen inputs — like predicting house prices from features, or classifying an email as spam or not. Unsupervised learning works with unlabeled data and tries to find inherent structure or patterns without being told the 'right answer', like clustering customers into segments based on behavior, or reducing dimensionality to visualize high-dimensional data. Reinforcement learning is different again: an agent takes actions in an environment and receives rewards or penalties as feedback, learning over many interactions a policy that maximizes its cumulative reward over time — like an agent learning to play a game, or a robot learning to walk."},"follow_up_hint":"Ask them to categorize a specific real scenario, like a recommendation system, and justify their categorization."},
-  {"id":"stat-0006","question":"What is p-value, and what is a common misconception about how to interpret it?","type":"conceptual","difficulty":3,"roles":["data_scientist"],"topics":["statistics"],"tech_keywords":["p-value"],"companies_common":["Google","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["p-value: the probability of observing data at least as extreme as what was observed, ASSUMING the null hypothesis is true","Common misconception: interpreting p-value as 'the probability the null hypothesis is true' — this is not what it measures at all","A small p-value indicates the observed data would be unlikely under the null hypothesis, giving evidence against it, but doesn't quantify the probability the alternative is true, or the size/importance of the effect","Statistical significance (small p-value) is not the same as practical/business significance — a tiny but real effect can be statistically significant with a huge sample size"],"sample_answer":"The p-value is the probability of observing data at least as extreme as what was actually observed, assuming the null hypothesis is true. A very common misconception is treating the p-value as 'the probability the null hypothesis is true' — it's not that at all; it's a statement about how surprising the observed data would be under the null, not a direct probability statement about the hypothesis itself. Also, a small p-value just means the result is unlikely to be due to random chance under the null — it says nothing about the actual size or practical importance of the effect. With a large enough sample size, even a tiny, practically meaningless effect can become 'statistically significant', so statistical significance and practical significance need to be evaluated separately."},"follow_up_hint":"Ask them to explain what a confidence interval adds that a p-value alone doesn't tell you."}
+  {
+    "id": "stat-0001",
+    "question": "Explain the difference between Type I and Type II errors in hypothesis testing.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "data_scientist",
+      "machine_learning_engineer"
+    ],
+    "topics": [
+      "statistics"
+    ],
+    "tech_keywords": [
+      "statistics",
+      "hypothesis-testing"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Type I error: rejecting a true null hypothesis (false positive) — concluding an effect exists when it doesn't",
+        "Type II error: failing to reject a false null hypothesis (false negative) — missing a real effect",
+        "The significance level (alpha) controls the Type I error rate directly; statistical power (1 - beta) relates to the Type II error rate",
+        "There's a trade-off: lowering alpha (fewer false positives) generally increases beta (more false negatives) for a fixed sample size, unless sample size is increased"
+      ],
+      "sample_answer": "A Type I error is a false positive — rejecting a true null hypothesis, meaning you conclude there's an effect or difference when there actually isn't one. A Type II error is a false negative — failing to reject a false null hypothesis, meaning you miss a real effect that does exist. The significance level, alpha, is the threshold you set for how much Type I error risk you're willing to accept, commonly 0.05. There's an inherent trade-off: making alpha stricter to reduce false positives typically increases the false negative rate for a given sample size, since you're demanding stronger evidence before declaring significance — the way to improve both simultaneously is usually to increase the sample size, which increases statistical power."
+    },
+    "follow_up_hint": "Ask which type of error would be worse in a medical diagnostic test versus a spam filter, and why the acceptable trade-off differs.",
+    "concept": "Hypothesis Testing",
+    "sub_concept": "Type I and Type II Errors and their Trade-offs",
+    "expected_reasoning": "A strong candidate begins by defining the null hypothesis as the baseline assumption of no effect or difference. They then systematically distinguish between the two error types by anchoring them to reality versus statistical decisions: Type I is a false alarm where the null is true, and Type II is a missed opportunity where the alternative is true. Next, they connect these errors to their respective probabilities, alpha and beta. Finally, they articulate the inherent trade-off between them, explaining how adjusting the decision threshold impacts both error rates unless sample size is scaled.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely defining alpha and beta without context.",
+      "Confuses Type I and Type II errors, mixing up false positives with false negatives.",
+      "Assumes lowering Type I error automatically reduces Type II error without changing sample size.",
+      "Fails to ground the definitions in the context of the null hypothesis being true or false.",
+      "Treats statistical power as unrelated to Type II error."
+    ],
+    "progressive_hints": [
+      "Start by establishing what the null hypothesis represents in a typical experiment.",
+      "Think about the two possible states of reality regarding the null hypothesis, and the two possible decisions a researcher can make.",
+      "Consider how the chosen significance threshold directly impacts one error type, and what happens to the opposite error rate when you try to make that threshold stricter."
+    ],
+    "learning_objective": "Understand the fundamental trade-off between false positives and false negatives in statistical decision-making and how significance levels govern them."
+  },
+  {
+    "id": "stat-0002",
+    "question": "What is the bias-variance trade-off in machine learning?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "data_scientist",
+      "machine_learning_engineer"
+    ],
+    "topics": [
+      "machine-learning"
+    ],
+    "tech_keywords": [
+      "bias-variance"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon",
+      "Meta"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Bias: error from overly simplistic assumptions in the model, causing it to underfit and miss real patterns in the data",
+        "Variance: error from the model being overly sensitive to the specific training data, causing it to overfit and not generalize to new data",
+        "Total expected error decomposes roughly into bias^2 + variance + irreducible noise — you can't minimize both without limit simultaneously with a fixed model/data",
+        "Increasing model complexity typically decreases bias but increases variance, and vice versa; regularization, more data, or simpler models shift this trade-off"
+      ],
+      "sample_answer": "Bias is the error introduced by a model's assumptions being too simplistic to capture the real underlying pattern, causing it to underfit — a linear model trying to fit clearly non-linear data has high bias. Variance is the error from a model being too sensitive to the specific training data it saw, fitting noise rather than signal, causing it to overfit and perform much worse on new data — a very deep, unconstrained decision tree tends to have high variance. Total expected prediction error breaks down roughly into bias squared plus variance plus irreducible noise, so there's a genuine trade-off: increasing model complexity typically reduces bias but increases variance, and you have to find a sweet spot, often via regularization, more training data, or cross-validation to tune complexity."
+    },
+    "follow_up_hint": "Ask how they'd diagnose from a learning curve whether a model is suffering from high bias or high variance.",
+    "concept": "Bias-Variance Trade-Off",
+    "sub_concept": "Model Complexity and Generalization Error",
+    "expected_reasoning": "A strong candidate begins by defining the two competing sources of error in predictive models and how they relate to model complexity. They explain that high bias stems from overly restrictive assumptions leading to underfitting, while high variance arises from excessive sensitivity to fluctuations in the training sample leading to overfitting. Next, they connect this to the mathematical decomposition of expected test error into bias squared, variance, and irreducible error. Finally, they discuss how tuning complexity, applying regularization, or varying dataset size forces a strategic compromise between the two extremes to achieve optimal generalization.",
+    "common_mistakes": [
+      "Stating the definitions of bias and variance without explaining how they interact or conflict.",
+      "Claiming that a more complex model is always better because it achieves lower training error.",
+      "Confusing bias with variance or swapping their definitions relative to underfitting and overfitting.",
+      "Ignoring the role of irreducible error in the overall error decomposition.",
+      "Stating the conclusion that 'you need to balance them' with no justification or mechanism for how it's done."
+    ],
+    "progressive_hints": [
+      "Think about what happens to a model's predictions when you make it extremely simple versus extremely complex.",
+      "Consider how a model's error on training data differs from its error on unseen data as you change its capacity, and what different types of mistakes it might make.",
+      "Look at how total prediction error breaks down mathematically into distinct components related to assumptions, sensitivity to data perturbations, and random noise."
+    ],
+    "learning_objective": "The candidate should understand that generalization error is governed by an inherent tension between model simplicity and flexibility, requiring a deliberate balance of bias and variance."
+  },
+  {
+    "id": "stat-0003",
+    "question": "What is a confusion matrix, and how do precision and recall differ?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "data_scientist",
+      "machine_learning_engineer"
+    ],
+    "topics": [
+      "machine-learning"
+    ],
+    "tech_keywords": [
+      "precision",
+      "recall"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A confusion matrix tabulates predicted vs actual class labels: true positives, false positives, true negatives, false negatives",
+        "Precision = TP / (TP + FP): of all items predicted positive, what fraction actually are positive — matters when false positives are costly",
+        "Recall = TP / (TP + FN): of all items that are actually positive, what fraction did the model correctly find — matters when false negatives are costly",
+        "There's typically a trade-off between the two depending on the classification threshold; F1 score balances both into a single metric"
+      ],
+      "sample_answer": "A confusion matrix breaks down predictions into true positives, false positives, true negatives, and false negatives compared against the actual labels. Precision is TP divided by (TP + FP) — of everything the model flagged as positive, what fraction was actually positive — which matters most when false positives are expensive, like flagging legitimate transactions as fraud and blocking real customers. Recall is TP divided by (TP + FN) — of everything that's actually positive, what fraction did the model catch — which matters most when missing a positive is costly, like failing to detect an actual case of cancer or fraud. These usually trade off against each other as you adjust the classification threshold, and the F1 score, the harmonic mean of precision and recall, is often used to balance both into one number."
+    },
+    "follow_up_hint": "Ask them to design an evaluation metric strategy for a highly imbalanced dataset, like fraud detection where positives are 0.1% of data.",
+    "concept": "Classification Metrics",
+    "sub_concept": "Confusion Matrix, Precision, and Recall",
+    "expected_reasoning": "A strong candidate begins by structuring the four foundational outcomes of binary classification into a matrix comparing actual versus predicted labels. From there, they systematically derive precision and recall by identifying their respective denominators—predicted positives versus actual positives, respectively. They then explain the operational trade-off between the two metrics by discussing how adjusting a decision threshold impacts false positives and false negatives differently based on the business context.",
+    "common_mistakes": [
+      "Reciting formulas from memory without explaining what the components actually represent practically",
+      "Confusing the denominators of precision (predicted positives) and recall (actual positives)",
+      "Stating definitions without explaining when or why one metric should be prioritized over the other",
+      "Failing to mention the decision threshold or the inherent trade-off between the two metrics",
+      "Treating accuracy as an adequate metric for imbalanced datasets without linking back to precision and recall"
+    ],
+    "progressive_hints": [
+      "What are the four possible outcomes when a model attempts to predict a binary label, and how might you organize them into a grid?",
+      "Look closely at the denominators for both metrics: one divides by the total number of predicted positives, while the other divides by the total number of actual positives. How does that change what each ratio measures?",
+      "If your model is flagging spam emails where a false positive ruins a user's day, which metric's denominator do you need to protect, and how do precision and recall behave inversely as you adjust your decision threshold?"
+    ],
+    "learning_objective": "The candidate should understand how to evaluate classification models beyond simple accuracy by tying metric selection directly to the real-world cost of false positives versus false negatives."
+  },
+  {
+    "id": "stat-0004",
+    "question": "Explain what overfitting is and list three techniques to reduce it.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "data_scientist",
+      "machine_learning_engineer"
+    ],
+    "topics": [
+      "machine-learning"
+    ],
+    "tech_keywords": [
+      "overfitting",
+      "regularization"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Overfitting: model learns patterns specific to the training data (including noise) that don't generalize, showing high training accuracy but much lower validation/test accuracy",
+        "Regularization (L1/L2) penalizes large model weights, discouraging overly complex fits to training data",
+        "Cross-validation to properly estimate generalization performance and tune hyperparameters, rather than relying on training accuracy alone",
+        "Other valid techniques: gathering more training data, early stopping, dropout (for neural nets), reducing model complexity/feature count, data augmentation"
+      ],
+      "sample_answer": "Overfitting is when a model learns patterns specific to the training set, including its noise and quirks, rather than the true underlying signal, so it performs very well on training data but noticeably worse on unseen validation or test data. Common ways to reduce it: regularization, like L1 or L2 penalties, discourages the model from assigning large weights to any single feature, favoring simpler fits; using cross-validation to properly evaluate performance on held-out folds rather than trusting training accuracy, and to tune hyperparameters against that more honest estimate; and simply getting more training data, since a model has a harder time memorizing noise when there's more genuine signal to learn from. For neural networks specifically, dropout and early stopping are also standard tools."
+    },
+    "follow_up_hint": "Ask them to explain how dropout specifically works during neural network training to reduce overfitting.",
+    "concept": "Overfitting",
+    "sub_concept": "Generalization versus memorization",
+    "expected_reasoning": "A strong candidate begins by defining overfitting through the contrast between training and validation performance, highlighting how high complexity leads a model to capture noise rather than true underlying signals. They then systematically connect this failure mode to its root cause: excessive parameter freedom relative to the amount of available data. From there, they evaluate various mitigation strategies, weighing their theoretical mechanisms—such as constraining weight magnitudes, introducing structural constraints, or expanding the data distribution—to prevent the model from memorizing specific training examples.",
+    "common_mistakes": [
+      "States that overfitting means the model is simply too slow or takes too long to train.",
+      "Confuses high training accuracy with a successful model without mentioning validation or test performance.",
+      "Lists techniques like 'use more data' or 'add regularization' without explaining how they address complexity or noise.",
+      "Claims overfitting only happens in neural networks rather than any parametric model.",
+      "Gives a circular definition such as 'overfitting is when the model fits the data too well.'"
+    ],
+    "progressive_hints": [
+      "Think about what happens when a model learns the specific quirks and noise of your training set instead of the general rule. How would that affect its performance on unseen data?",
+      "You've identified that the model memorizes the training data too closely. Look at your model's capacity and how it treats large coefficients or complex boundaries; what mechanisms can you apply to penalize or limit that complexity?",
+      "Consider combining a penalty term on weight magnitudes with a validation strategy that ensures you aren't tuning your model parameters directly on the test set."
+    ],
+    "learning_objective": "The candidate should understand that overfitting occurs when a model prioritizes memorizing training noise over learning generalizable patterns, and that mitigation requires balancing model complexity with robust evaluation strategies."
+  },
+  {
+    "id": "stat-0005",
+    "question": "What is the difference between supervised, unsupervised, and reinforcement learning?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "data_scientist",
+      "machine_learning_engineer"
+    ],
+    "topics": [
+      "machine-learning"
+    ],
+    "tech_keywords": [
+      "supervised-learning",
+      "unsupervised-learning"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Supervised learning: trains on labeled data (input-output pairs) to predict outputs for new inputs — e.g. classification, regression",
+        "Unsupervised learning: finds structure/patterns in unlabeled data with no target output — e.g. clustering, dimensionality reduction",
+        "Reinforcement learning: an agent learns by interacting with an environment, receiving rewards/penalties for actions, and learns a policy maximizing cumulative reward over time",
+        "Gives a concrete real-world example for each category"
+      ],
+      "sample_answer": "Supervised learning trains a model on labeled data, meaning input-output pairs, so it learns to predict the correct output for new, unseen inputs — like predicting house prices from features, or classifying an email as spam or not. Unsupervised learning works with unlabeled data and tries to find inherent structure or patterns without being told the 'right answer', like clustering customers into segments based on behavior, or reducing dimensionality to visualize high-dimensional data. Reinforcement learning is different again: an agent takes actions in an environment and receives rewards or penalties as feedback, learning over many interactions a policy that maximizes its cumulative reward over time — like an agent learning to play a game, or a robot learning to walk."
+    },
+    "follow_up_hint": "Ask them to categorize a specific real scenario, like a recommendation system, and justify their categorization.",
+    "concept": "Machine Learning Paradigms",
+    "sub_concept": "Distinguishing Supervised, Unsupervised, and Reinforcement Learning",
+    "expected_reasoning": "A strong candidate begins by identifying the primary axis of separation: the nature of the training data and the type of feedback the algorithm receives. They systematically contrast the presence of explicit target labels in supervised learning with the pattern-seeking nature of unlabeled data in unsupervised learning. Next, they introduce the sequential, decision-making framework of reinforcement learning where feedback arrives as delayed rewards rather than immediate ground-truth corrections. Finally, they anchor each paradigm by supplying a distinct, real-world application to demonstrate practical understanding.",
+    "common_mistakes": [
+      "States the conclusion with no justification by just listing definitions without contrasting them.",
+      "Confuses unsupervised clustering with classification by assuming grouping data implies predefined categories.",
+      "Leaves out reinforcement learning entirely or mischaracterizes it as a subset of supervised learning.",
+      "Fails to provide concrete real-world examples, keeping the explanation entirely abstract.",
+      "Misses the feedback mechanism nuance, such as forgetting that reinforcement learning relies on delayed rewards over time."
+    ],
+    "progressive_hints": [
+      "Consider what kind of information or guidance is available to the algorithm before it begins learning in each scenario.",
+      "Think about how the algorithm knows if its output is correct or incorrect—is there an answer key, a hidden pattern to discover, or a trial-and-error reward system?",
+      "Compare whether the model learns from static historical data with labels, static data without labels, or dynamic interaction with an environment where actions affect future states."
+    ],
+    "learning_objective": "The candidate should understand how to categorize machine learning problems based on data availability, feedback mechanisms, and the ultimate goal of the system."
+  },
+  {
+    "id": "stat-0006",
+    "question": "What is p-value, and what is a common misconception about how to interpret it?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "data_scientist"
+    ],
+    "topics": [
+      "statistics"
+    ],
+    "tech_keywords": [
+      "p-value"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "p-value: the probability of observing data at least as extreme as what was observed, ASSUMING the null hypothesis is true",
+        "Common misconception: interpreting p-value as 'the probability the null hypothesis is true' — this is not what it measures at all",
+        "A small p-value indicates the observed data would be unlikely under the null hypothesis, giving evidence against it, but doesn't quantify the probability the alternative is true, or the size/importance of the effect",
+        "Statistical significance (small p-value) is not the same as practical/business significance — a tiny but real effect can be statistically significant with a huge sample size"
+      ],
+      "sample_answer": "The p-value is the probability of observing data at least as extreme as what was actually observed, assuming the null hypothesis is true. A very common misconception is treating the p-value as 'the probability the null hypothesis is true' — it's not that at all; it's a statement about how surprising the observed data would be under the null, not a direct probability statement about the hypothesis itself. Also, a small p-value just means the result is unlikely to be due to random chance under the null — it says nothing about the actual size or practical importance of the effect. With a large enough sample size, even a tiny, practically meaningless effect can become 'statistically significant', so statistical significance and practical significance need to be evaluated separately."
+    },
+    "follow_up_hint": "Ask them to explain what a confidence interval adds that a p-value alone doesn't tell you.",
+    "concept": "Hypothesis Testing",
+    "sub_concept": "P-Value Interpretation And Misconceptions",
+    "expected_reasoning": "A strong candidate begins by clearly defining the baseline assumption of the null hypothesis before discussing conditional probability. They carefully articulate that the p-value measures data extremeness given the null, rather than the probability of the hypothesis itself. They contrast statistical significance with practical impact, noting how large sample sizes can distort real-world relevance. Finally, they tie these concepts together to explain how a small p-value provides evidence against the null without proving the alternative hypothesis.",
+    "common_mistakes": [
+      "States the p-value is the probability that the null hypothesis is true",
+      "Confuses the p-value with the probability of a Type I error (alpha) after looking at the data",
+      "Believes a low p-value means the alternative hypothesis has a high probability of being true",
+      "Equates a statistically significant result directly with a practically or business-wise significant effect",
+      "Gives a vague definition involving 'chance of random fluke' without tying it to the null hypothesis assumption"
+    ],
+    "progressive_hints": [
+      "What core assumption do we have to make about our world or model before we can even calculate a p-value?",
+      "Consider what the p-value conditions upon: are we calculating the probability of the hypothesis given the data, or the probability of the data given a specific hypothesis?",
+      "If you assume the null hypothesis is true, what specific characteristic of your observed data is the p-value actually measuring the probability of?"
+    ],
+    "learning_objective": "Understand that a p-value measures the conditional probability of extreme data under a true null hypothesis, and that statistical significance does not equate to practical importance or the probability of the hypothesis itself."
+  }
 ]

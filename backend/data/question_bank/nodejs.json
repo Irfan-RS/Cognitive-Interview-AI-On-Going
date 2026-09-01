@@ -1,7 +1,239 @@
 [
-  {"id":"node-0001","question":"Explain the Node.js event loop and how it enables non-blocking I/O with a single thread.","type":"conceptual","difficulty":3,"roles":["backend"],"topics":["nodejs","javascript"],"tech_keywords":["nodejs","event-loop"],"companies_common":["Amazon","Uber","Netflix"],"source_style":"faang-common","reference_solution":{"key_points":["Node.js runs JS on a single main thread, but delegates I/O operations (file, network, DNS) to the OS/libuv thread pool","The event loop continuously checks for completed async operations and their callbacks, executing them one at a time on the main thread","This lets a single thread handle many concurrent connections without blocking on slow I/O, unlike a thread-per-request model","Explains phases of the event loop briefly (timers, I/O callbacks, poll, check, close) and that CPU-bound synchronous code still blocks the loop since there's only one JS thread"],"sample_answer":"Node.js executes JavaScript on a single main thread, but I/O operations like file reads, network requests, or DNS lookups are delegated to the operating system or libuv's thread pool rather than blocking that main thread. The event loop continuously cycles through phases, checking whether any of those delegated operations have completed, and if so, running their callbacks on the main thread one at a time. This lets a single-threaded process handle thousands of concurrent connections efficiently, since it's not blocked waiting on any one slow I/O operation — but it also means CPU-bound synchronous code, like a heavy computation in a loop, still blocks the entire event loop since there's only one JS thread available to run it."},"follow_up_hint":"Ask how they'd handle a CPU-intensive task in Node without blocking the event loop (worker threads, offloading to another service)."},
-  {"id":"node-0002","question":"What is the difference between process.nextTick(), setImmediate(), and setTimeout(fn, 0) in Node.js?","type":"conceptual","difficulty":4,"roles":["backend"],"topics":["nodejs"],"tech_keywords":["nodejs","event-loop"],"companies_common":["Amazon","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["process.nextTick() queues a callback to run immediately after the current operation completes, before the event loop continues to any phase — highest priority","setTimeout(fn, 0) schedules the callback for the timers phase of the event loop, after at least the specified delay (effectively 'as soon as possible' but after I/O in most cases)","setImmediate() schedules a callback to run in the 'check' phase, after I/O callbacks in the current loop iteration","Warns process.nextTick() overuse can starve the event loop, since queued nextTick callbacks are all drained before moving on, which can delay I/O indefinitely if nextTick recursively re-queues itself"],"sample_answer":"process.nextTick() queues a callback to run immediately after the currently executing operation finishes, before the event loop proceeds to any other phase at all — it has the highest priority. setTimeout(fn, 0) schedules the callback for the timers phase, so it runs after at least the given delay once the event loop reaches that phase. setImmediate() schedules the callback for the 'check' phase, which runs after I/O callbacks in the current loop iteration — so inside an I/O callback, setImmediate typically fires before a setTimeout(fn, 0) scheduled at the same point. A caution with process.nextTick is that all queued nextTick callbacks are fully drained before the loop proceeds further, so recursively calling nextTick inside itself can starve the event loop and block I/O indefinitely."},"follow_up_hint":"Ask what would happen if process.nextTick were called recursively without a base case."},
-  {"id":"node-0003","question":"How do you handle an unhandled promise rejection in a Node.js application, and why does it matter in production?","type":"practical_implementation","difficulty":2,"roles":["backend"],"topics":["nodejs","javascript"],"tech_keywords":["nodejs","promises"],"companies_common":["Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["An unhandled promise rejection occurs when a rejected promise has no .catch()/try-catch handling it","Listen for process.on('unhandledRejection', handler) to log/alert on these globally as a safety net","In newer Node versions, unhandled rejections can crash the process by default — relying on this as the only handling strategy is risky in production","Best practice: handle rejections at the source (try/catch around await, .catch on promise chains) rather than relying solely on the global handler, which should be a last-resort logging/alerting mechanism"],"sample_answer":"An unhandled rejection happens when a promise rejects and nothing — no .catch() or surrounding try/catch on an await — handles that rejection. You can attach a global process.on('unhandledRejection', handler) as a safety net to log and alert when this happens, since in current Node versions an unhandled rejection can actually crash the process. But that global handler should be a last resort for catching bugs, not the primary error-handling strategy — the real fix is handling rejections at the source, with try/catch around every await and .catch on promise chains, so failures are dealt with explicitly and don't silently become 'unhandled' in the first place."},"follow_up_hint":"Ask what the difference is between an unhandledRejection and an uncaughtException, and how each should be handled."},
-  {"id":"node-0004","question":"Explain the difference between CommonJS (require) and ES Modules (import/export) in Node.js.","type":"conceptual","difficulty":2,"roles":["backend"],"topics":["nodejs","javascript"],"tech_keywords":["nodejs","modules"],"companies_common":["Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["CommonJS (require/module.exports) loads modules synchronously and resolves them at runtime; it's Node's original module system","ES Modules (import/export) are statically analyzable — imports/exports are resolved at parse time, which enables tree-shaking/dead-code elimination by bundlers","ESM supports top-level await; CommonJS does not","Interop between the two has caveats (e.g. importing a CommonJS module from ESM, or vice versa) that can trip up dependency resolution"],"sample_answer":"CommonJS, using require() and module.exports, is Node's original module system, resolving and loading modules synchronously at runtime. ES Modules, using import/export syntax, are statically analyzable — the imports and exports are determined at parse time before the code even runs, which is what allows bundlers to do tree-shaking and eliminate unused code. ESM also supports top-level await, which CommonJS doesn't. In practice there are some interop caveats when mixing the two — like a CommonJS module that doesn't have a clean default export being imported into an ESM file — that can occasionally cause confusing bugs in a mixed codebase."},"follow_up_hint":"Ask how they'd migrate an existing CommonJS Node project to ES Modules incrementally."},
-  {"id":"node-0005","question":"What is middleware in an Express.js application, and how does the request-response cycle flow through it?","type":"conceptual","difficulty":2,"roles":["backend"],"topics":["nodejs"],"tech_keywords":["nodejs","express"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["Middleware functions receive (req, res, next) and execute in the order they're registered, each able to modify req/res or short-circuit the chain by sending a response","Calling next() passes control to the next middleware in the chain; not calling it (without sending a response) leaves the request hanging","Common uses: authentication, logging, body parsing, error handling — cross-cutting concerns applied to many/all routes","Error-handling middleware has a special 4-argument signature (err, req, res, next) and is typically registered last"],"sample_answer":"Middleware in Express are functions with the signature (req, res, next) that run in the order they're registered for a matching request. Each middleware can inspect or modify the request/response, and must either call next() to pass control to the next middleware in the chain, or end the response itself — if it does neither, the request just hangs. This pattern is used for cross-cutting concerns like authentication checks, request logging, parsing the request body, or centralized error handling, without duplicating that logic in every route handler. Error-handling middleware is a special case with a 4-argument signature (err, req, res, next), and is registered last so Express routes any error passed via next(err) to it."},"follow_up_hint":"Ask how error-handling middleware differs in signature and where it needs to be placed in the middleware stack."}
+  {
+    "id": "node-0001",
+    "question": "Explain the Node.js event loop and how it enables non-blocking I/O with a single thread.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "nodejs",
+      "javascript"
+    ],
+    "tech_keywords": [
+      "nodejs",
+      "event-loop"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber",
+      "Netflix"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Node.js runs JS on a single main thread, but delegates I/O operations (file, network, DNS) to the OS/libuv thread pool",
+        "The event loop continuously checks for completed async operations and their callbacks, executing them one at a time on the main thread",
+        "This lets a single thread handle many concurrent connections without blocking on slow I/O, unlike a thread-per-request model",
+        "Explains phases of the event loop briefly (timers, I/O callbacks, poll, check, close) and that CPU-bound synchronous code still blocks the loop since there's only one JS thread"
+      ],
+      "sample_answer": "Node.js executes JavaScript on a single main thread, but I/O operations like file reads, network requests, or DNS lookups are delegated to the operating system or libuv's thread pool rather than blocking that main thread. The event loop continuously cycles through phases, checking whether any of those delegated operations have completed, and if so, running their callbacks on the main thread one at a time. This lets a single-threaded process handle thousands of concurrent connections efficiently, since it's not blocked waiting on any one slow I/O operation — but it also means CPU-bound synchronous code, like a heavy computation in a loop, still blocks the entire event loop since there's only one JS thread available to run it."
+    },
+    "follow_up_hint": "Ask how they'd handle a CPU-intensive task in Node without blocking the event loop (worker threads, offloading to another service).",
+    "concept": "Event Loop",
+    "sub_concept": "Non-blocking I/O and Concurrency in Single-Threaded Runtimes",
+    "expected_reasoning": "A strong candidate starts by clarifying the apparent paradox of how a single-threaded runtime handles concurrent requests without locking up. They derive the division of labor between the main JavaScript execution thread and the underlying system resources or worker thread pool managed by libuv. They weigh the architectural differences against traditional thread-per-request models, explaining how asynchronous callbacks prevent the main thread from idling on slow I/O. Finally, they reason about limitations, noting that CPU-intensive synchronous tasks will stall the event loop because execution must return to the single main thread.",
+    "common_mistakes": [
+      "States that Node.js is completely multi-threaded without distinguishing the single JS execution thread from the underlying libuv thread pool.",
+      "Claims that the event loop runs heavy file system or crypto operations directly on the main thread.",
+      "Answers shallowly by just listing event loop phases (timers, poll, check) without explaining how they actually enable non-blocking I/O.",
+      "Confuses asynchronous I/O with multi-threading, assuming Node spawns a new thread for every incoming HTTP request.",
+      "Ignores the blocking nature of CPU-bound synchronous code on the single JS thread."
+    ],
+    "progressive_hints": [
+      "What part of Node.js is actually single-threaded, and where do long-running tasks like file or network I/O actually go when they are initiated?",
+      "You know the main thread isn't waiting around for slow disk or network reads, but something has to handle them. Think about who waits for those operations to finish and how the result gets back to your JavaScript code.",
+      "If libuv handles the heavy lifting of I/O in the background, what mechanism continuously checks if those background tasks are done and queues their callbacks to run on the main thread?"
+    ],
+    "learning_objective": "Understand how Node.js delegates blocking I/O to libuv and the operating system, using an event loop to execute callbacks sequentially on a single thread and achieve high concurrency."
+  },
+  {
+    "id": "node-0002",
+    "question": "What is the difference between process.nextTick(), setImmediate(), and setTimeout(fn, 0) in Node.js?",
+    "type": "conceptual",
+    "difficulty": 4,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "nodejs"
+    ],
+    "tech_keywords": [
+      "nodejs",
+      "event-loop"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "process.nextTick() queues a callback to run immediately after the current operation completes, before the event loop continues to any phase — highest priority",
+        "setTimeout(fn, 0) schedules the callback for the timers phase of the event loop, after at least the specified delay (effectively 'as soon as possible' but after I/O in most cases)",
+        "setImmediate() schedules a callback to run in the 'check' phase, after I/O callbacks in the current loop iteration",
+        "Warns process.nextTick() overuse can starve the event loop, since queued nextTick callbacks are all drained before moving on, which can delay I/O indefinitely if nextTick recursively re-queues itself"
+      ],
+      "sample_answer": "process.nextTick() queues a callback to run immediately after the currently executing operation finishes, before the event loop proceeds to any other phase at all — it has the highest priority. setTimeout(fn, 0) schedules the callback for the timers phase, so it runs after at least the given delay once the event loop reaches that phase. setImmediate() schedules the callback for the 'check' phase, which runs after I/O callbacks in the current loop iteration — so inside an I/O callback, setImmediate typically fires before a setTimeout(fn, 0) scheduled at the same point. A caution with process.nextTick is that all queued nextTick callbacks are fully drained before the loop proceeds further, so recursively calling nextTick inside itself can starve the event loop and block I/O indefinitely."
+    },
+    "follow_up_hint": "Ask what would happen if process.nextTick were called recursively without a base case.",
+    "concept": "Nodejs Event Loop",
+    "sub_concept": "Asynchronous scheduling and execution order",
+    "expected_reasoning": "A strong candidate begins by framing the Node.js event loop as a multi-phase state machine rather than a simple asynchronous queue. They systematically analyze how different scheduling APIs inject callbacks into distinct phases or execution checkpoints outside the standard loop rotation. Next, they contrast the immediate microtask queue execution of nextTick with the macro-task phases of timers and check. Finally, they weigh the performance and stability implications of these choices, specifically addressing starvation risks and event loop blocking.",
+    "common_mistakes": [
+      "States that setTimeout(fn, 0) and setImmediate() are functionally identical because both execute 'as soon as possible'",
+      "Assumes setImmediate() runs before setTimeout(fn, 0) regardless of the execution context",
+      "Fails to mention the microtask queue or treats process.nextTick() as just another macrotask",
+      "Ignores the risk of event loop starvation caused by recursive nextTick calls",
+      "Provides memorized definitions without explaining where in the event loop architecture these functions interact"
+    ],
+    "progressive_hints": [
+      "Where in the lifecycle of a single event loop iteration or between phases do you think these callbacks are given a chance to run?",
+      "Think about how the microtask queue differs from the macro-task phases of the event loop. Which one gets drained before the loop even moves to its first phase?",
+      "Remember that process.nextTick sits outside the standard event loop phases entirely, while setTimeout and setImmediate target specific phases like timers and check."
+    ],
+    "learning_objective": "Understand how Node.js prioritizes asynchronous execution between the microtask queue and the various phases of the event loop."
+  },
+  {
+    "id": "node-0003",
+    "question": "How do you handle an unhandled promise rejection in a Node.js application, and why does it matter in production?",
+    "type": "practical_implementation",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "nodejs",
+      "javascript"
+    ],
+    "tech_keywords": [
+      "nodejs",
+      "promises"
+    ],
+    "companies_common": [
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "An unhandled promise rejection occurs when a rejected promise has no .catch()/try-catch handling it",
+        "Listen for process.on('unhandledRejection', handler) to log/alert on these globally as a safety net",
+        "In newer Node versions, unhandled rejections can crash the process by default — relying on this as the only handling strategy is risky in production",
+        "Best practice: handle rejections at the source (try/catch around await, .catch on promise chains) rather than relying solely on the global handler, which should be a last-resort logging/alerting mechanism"
+      ],
+      "sample_answer": "An unhandled rejection happens when a promise rejects and nothing — no .catch() or surrounding try/catch on an await — handles that rejection. You can attach a global process.on('unhandledRejection', handler) as a safety net to log and alert when this happens, since in current Node versions an unhandled rejection can actually crash the process. But that global handler should be a last resort for catching bugs, not the primary error-handling strategy — the real fix is handling rejections at the source, with try/catch around every await and .catch on promise chains, so failures are dealt with explicitly and don't silently become 'unhandled' in the first place."
+    },
+    "follow_up_hint": "Ask what the difference is between an unhandledRejection and an uncaughtException, and how each should be handled.",
+    "concept": "Error Handling",
+    "sub_concept": "Unhandled Promise Rejections in Node.js",
+    "expected_reasoning": "A strong candidate first identifies what an unhandled promise rejection is and why it differs from synchronous exceptions in how JavaScript engines handle them. They then weigh the risks of letting them go unnoticed versus crashing the production server abruptly, considering default behaviors in modern Node versions. Finally, they articulate a defense-in-depth strategy: handling errors locally where they occur, paired with a global process-level safety net strictly for logging, graceful shutdown, and alerting.",
+    "common_mistakes": [
+      "States that unhandled rejections are identical to uncaught exceptions without explaining the differences.",
+      "Relies entirely on try/catch blocks without mentioning asynchronous promise chains.",
+      "Claims that Node.js safely ignores unhandled rejections in all versions.",
+      "Suggests using the global unhandledRejection event as the primary error handling strategy instead of local catches.",
+      "Fails to mention production concerns such as process crashes, state corruption, and proper logging/shutdown."
+    ],
+    "progressive_hints": [
+      "What happens in your application when an asynchronous operation fails and no error handler is attached to the returned promise?",
+      "Think about what event you can listen to at the process level to catch these stray rejections, and how newer Node versions treat them by default.",
+      "If you use a global process listener as a safety net, what should your application actually do inside that listener before shutting down gracefully in production?"
+    ],
+    "learning_objective": "Candidates should understand how to properly catch promise rejections at their source while implementing a robust global process-level safety net for production observability and graceful shutdowns."
+  },
+  {
+    "id": "node-0004",
+    "question": "Explain the difference between CommonJS (require) and ES Modules (import/export) in Node.js.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "nodejs",
+      "javascript"
+    ],
+    "tech_keywords": [
+      "nodejs",
+      "modules"
+    ],
+    "companies_common": [
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "CommonJS (require/module.exports) loads modules synchronously and resolves them at runtime; it's Node's original module system",
+        "ES Modules (import/export) are statically analyzable — imports/exports are resolved at parse time, which enables tree-shaking/dead-code elimination by bundlers",
+        "ESM supports top-level await; CommonJS does not",
+        "Interop between the two has caveats (e.g. importing a CommonJS module from ESM, or vice versa) that can trip up dependency resolution"
+      ],
+      "sample_answer": "CommonJS, using require() and module.exports, is Node's original module system, resolving and loading modules synchronously at runtime. ES Modules, using import/export syntax, are statically analyzable — the imports and exports are determined at parse time before the code even runs, which is what allows bundlers to do tree-shaking and eliminate unused code. ESM also supports top-level await, which CommonJS doesn't. In practice there are some interop caveats when mixing the two — like a CommonJS module that doesn't have a clean default export being imported into an ESM file — that can occasionally cause confusing bugs in a mixed codebase."
+    },
+    "follow_up_hint": "Ask how they'd migrate an existing CommonJS Node project to ES Modules incrementally.",
+    "concept": "JavaScript Module Systems",
+    "sub_concept": "CommonJS vs ES Modules",
+    "expected_reasoning": "A strong candidate begins by establishing the chronological and architectural divergence between Node's original runtime module system and the official language standard. They examine how loading mechanisms differ, specifically contrasting runtime synchronous evaluation with static parse-time analysis. From there, they evaluate secondary implications such as asynchronous capabilities like top-level await and performance optimisations like tree-shaking. Finally, they address the practical friction points of interop when mixing both systems in modern applications.",
+    "common_mistakes": [
+      "States that they are just syntax differences with no underlying execution or loading model changes",
+      "Claims ES Modules are loaded synchronously just like CommonJS",
+      "Fails to mention static analysis or tree-shaking entirely",
+      "Confuses module interop rules or claims they can be mixed freely without caveats",
+      "States the conclusion with no justification regarding why Node originally used CommonJS"
+    ],
+    "progressive_hints": [
+      "Consider when and how each system decides which files to load and evaluate.",
+      "Think about what information about your dependencies is available before the code actually executes versus while it is running.",
+      "Reflect on how knowing the dependency graph at parse time allows bundlers to drop unused code, and how that contrasts with runtime variable paths in require()."
+    ],
+    "learning_objective": "Understand the fundamental differences in execution timing, static analysis, and interoperability between CommonJS and ES Modules."
+  },
+  {
+    "id": "node-0005",
+    "question": "What is middleware in an Express.js application, and how does the request-response cycle flow through it?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "nodejs"
+    ],
+    "tech_keywords": [
+      "nodejs",
+      "express"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Middleware functions receive (req, res, next) and execute in the order they're registered, each able to modify req/res or short-circuit the chain by sending a response",
+        "Calling next() passes control to the next middleware in the chain; not calling it (without sending a response) leaves the request hanging",
+        "Common uses: authentication, logging, body parsing, error handling — cross-cutting concerns applied to many/all routes",
+        "Error-handling middleware has a special 4-argument signature (err, req, res, next) and is typically registered last"
+      ],
+      "sample_answer": "Middleware in Express are functions with the signature (req, res, next) that run in the order they're registered for a matching request. Each middleware can inspect or modify the request/response, and must either call next() to pass control to the next middleware in the chain, or end the response itself — if it does neither, the request just hangs. This pattern is used for cross-cutting concerns like authentication checks, request logging, parsing the request body, or centralized error handling, without duplicating that logic in every route handler. Error-handling middleware is a special case with a 4-argument signature (err, req, res, next), and is registered last so Express routes any error passed via next(err) to it."
+    },
+    "follow_up_hint": "Ask how error-handling middleware differs in signature and where it needs to be placed in the middleware stack.",
+    "concept": "Express Middleware",
+    "sub_concept": "Request-Response Lifecycle",
+    "expected_reasoning": "A strong candidate begins by defining middleware structurally as functions with access to the request object, response object, and the next middleware function in the application's request-response cycle. They then trace the sequential execution flow, explaining how order of registration matters and how control is handed off via the `next()` function versus terminated by sending a response. They proceed to categorize real-world use cases like logging, authentication, and parsing, noting how middleware abstracts cross-cutting concerns away from route handlers. Finally, they distinguish standard middleware from error-handling middleware by detailing the significance of the four-argument signature and its placement at the end of the stack.",
+    "common_mistakes": [
+      "States that middleware is just a fancy word for a route handler without explaining the chain or execution order.",
+      "Forgets to mention the `next()` function entirely or fails to explain what happens if it is omitted.",
+      "Confounds standard middleware with error-handling middleware by ignoring the four-argument `(err, req, res, next)` signature.",
+      "Provides a list of common uses like body-parser or authentication without explaining how they fit into the architectural flow.",
+      "Believes middleware runs asynchronously in parallel rather than sequentially in the order registered."
+    ],
+    "progressive_hints": [
+      "Think about what happens to an HTTP request the moment it hits an Express application before it reaches your final route handler.",
+      "Consider how multiple functions coordinate to handle a single request and what mechanism determines which function runs next or stops the flow completely.",
+      "Focus on the exact signature of middleware functions—specifically what three parameters they take, and what special four-parameter variation exists for catching failures."
+    ],
+    "learning_objective": "Understand how Express middleware functions compose a sequential pipeline that processes requests, manages the request-response lifecycle, and handles cross-cutting concerns."
+  }
 ]

@@ -1,6 +1,190 @@
 [
-  {"id":"idx-0001","question":"How does a database index speed up query performance, and what's the trade-off of adding one?","type":"trade_off_questions","difficulty":2,"roles":["backend"],"topics":["dbms","sql"],"tech_keywords":["database-index"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["Without an index, the database must scan every row (full table scan) to find matching rows for a query","An index (typically a B-tree) maintains a sorted structure mapping column values to row locations, letting the database find matches in O(log n) instead of O(n)","Trade-off: every index adds overhead to writes (INSERT/UPDATE/DELETE must also update the index), and consumes additional storage","Indexes should be added based on actual query patterns (columns frequently used in WHERE/JOIN/ORDER BY), not indiscriminately on every column"],"sample_answer":"Without an index, the database has to scan every row in the table to find the ones matching a query's condition — a full table scan, which is O(n). An index, usually implemented as a B-tree, maintains a sorted structure mapping column values to their row locations, so the database can find matching rows in roughly O(log n) time instead. The trade-off is that every index has to be updated whenever a row is inserted, updated, or deleted, so more indexes mean slower writes, plus each index consumes additional disk space. So indexes should be added deliberately based on actual query patterns — columns frequently used in WHERE clauses, JOIN conditions, or ORDER BY — rather than indexing every column just in case."},"follow_up_hint":"Ask them how they'd identify which columns actually need an index in a real slow-query scenario (EXPLAIN plan)."},
-  {"id":"idx-0002","question":"What is a composite index, and does column order matter when creating one?","type":"conceptual","difficulty":3,"roles":["backend"],"topics":["dbms","sql"],"tech_keywords":["composite-index"],"companies_common":["Amazon","Google"],"source_style":"faang-common","reference_solution":{"key_points":["A composite (multi-column) index is built on two or more columns together, stored sorted by the first column, then the second within each first-column value, and so on","Column order matters a lot: the index can efficiently satisfy queries filtering on a left-to-right prefix of the indexed columns, but not on the trailing columns alone","Example: an index on (last_name, first_name) can efficiently serve queries filtering on last_name alone, or on both, but NOT efficiently serve a query filtering only on first_name","General guidance: put the column with highest selectivity / most frequently filtered alone first, or match the order queries actually filter in"],"sample_answer":"A composite index spans multiple columns, and internally it's sorted by the first column, then by the second column within each value of the first, and so on — like a phone book sorted by last name, then first name within each last name. Column order matters significantly: the index can efficiently serve a query filtering on the leftmost prefix of the indexed columns — like filtering on just last_name, or on last_name and first_name together — but it can't efficiently serve a query filtering only on first_name, since that's not a usable prefix of the index. When designing a composite index, I'd order columns based on the actual query patterns — typically putting the column that's filtered on its own most often, or that has the highest selectivity, first."},"follow_up_hint":"Ask them to design the right composite index for a table frequently queried by 'WHERE status = ? AND created_at > ?'."},
-  {"id":"idx-0003","question":"Explain the difference between a clustered and a non-clustered index.","type":"conceptual","difficulty":3,"roles":["backend"],"topics":["dbms"],"tech_keywords":["clustered-index"],"companies_common":["Amazon","Microsoft"],"source_style":"faang-common","reference_solution":{"key_points":["A clustered index determines the physical storage order of the table's rows on disk — the table data itself is stored sorted by the clustered index key","A table can have only one clustered index (since data can only be physically sorted one way), often the primary key by default","A non-clustered index is a separate structure with pointers back to the actual row location (or the clustered index key), and a table can have many of them","Lookups via a non-clustered index that need columns not in the index require an extra 'lookup' step to fetch the full row (unless it's a 'covering' index that includes all needed columns)"],"sample_answer":"A clustered index actually determines the physical order in which rows are stored on disk — the table's data IS the clustered index, sorted by its key. Because rows can only be physically ordered one way, a table can have only one clustered index, commonly the primary key. A non-clustered index is a separate structure that stores the indexed column's values sorted, along with a pointer back to where the actual row lives (often the clustered index key), and a table can have many non-clustered indexes. Because a non-clustered index doesn't contain the full row, looking up columns not included in that index requires an extra step to fetch the actual row — unless the index is a 'covering' index that includes every column the query needs, avoiding that extra lookup entirely."},"follow_up_hint":"Ask what a 'covering index' is and how it avoids the extra row lookup."},
-  {"id":"idx-0004","question":"You have a query that's running slowly despite an index existing on the filtered column. What are possible reasons the database might not be using that index?","type":"scenario_based","difficulty":4,"roles":["backend"],"topics":["dbms","sql"],"tech_keywords":["query-optimization"],"companies_common":["Amazon","Google"],"source_style":"faang-common","reference_solution":{"key_points":["Applying a function or expression to the indexed column in the WHERE clause (e.g. WHERE LOWER(email) = ?) prevents the optimizer from using a plain index on 'email'","Low selectivity: if the column has few distinct values (e.g. a boolean 'is_active'), the optimizer may correctly decide a full scan is cheaper than using the index","Implicit type mismatch/casting between the column and the compared value can prevent index usage","Outdated table statistics can cause the query planner to misjudge costs and pick a suboptimal plan","Mentions using EXPLAIN/EXPLAIN ANALYZE to actually see the chosen query plan rather than guessing"],"sample_answer":"A few common reasons: applying a function to the column in the WHERE clause, like WHERE LOWER(email) = 'x', prevents the database from using a plain index on email unless there's a functional index specifically on LOWER(email). If the column has low selectivity — few distinct values, like a boolean flag — the optimizer might correctly determine a full table scan is actually cheaper than jumping through the index for a large fraction of the table anyway. An implicit type mismatch, like comparing a string column against a number, can also disable index usage since the database has to cast values first. Outdated table statistics can cause the query planner to misjudge the cost and pick a worse plan. The right first step is always to run EXPLAIN or EXPLAIN ANALYZE on the actual query to see the real execution plan being chosen, rather than guessing."},"follow_up_hint":"Ask them what running EXPLAIN ANALYZE would show them, and what specific line in the output would confirm the index isn't being used."}
+  {
+    "id": "idx-0001",
+    "question": "How does a database index speed up query performance, and what's the trade-off of adding one?",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "dbms",
+      "sql"
+    ],
+    "tech_keywords": [
+      "database-index"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Without an index, the database must scan every row (full table scan) to find matching rows for a query",
+        "An index (typically a B-tree) maintains a sorted structure mapping column values to row locations, letting the database find matches in O(log n) instead of O(n)",
+        "Trade-off: every index adds overhead to writes (INSERT/UPDATE/DELETE must also update the index), and consumes additional storage",
+        "Indexes should be added based on actual query patterns (columns frequently used in WHERE/JOIN/ORDER BY), not indiscriminately on every column"
+      ],
+      "sample_answer": "Without an index, the database has to scan every row in the table to find the ones matching a query's condition — a full table scan, which is O(n). An index, usually implemented as a B-tree, maintains a sorted structure mapping column values to their row locations, so the database can find matching rows in roughly O(log n) time instead. The trade-off is that every index has to be updated whenever a row is inserted, updated, or deleted, so more indexes mean slower writes, plus each index consumes additional disk space. So indexes should be added deliberately based on actual query patterns — columns frequently used in WHERE clauses, JOIN conditions, or ORDER BY — rather than indexing every column just in case."
+    },
+    "follow_up_hint": "Ask them how they'd identify which columns actually need an index in a real slow-query scenario (EXPLAIN plan).",
+    "concept": "Database Indexing",
+    "sub_concept": "B-Tree Mechanics and Write Trade-Offs",
+    "expected_reasoning": "A strong candidate begins by contrasting the behavior of a full table scan against a structured search. They derive how a sorted hierarchical data structure like a B-tree transforms an O(n) sequential scan into an O(log n) traversal. From there, they pivot to analyze the lifecycle of a write operation, recognizing that maintaining that sorted invariant requires extra work during inserts, updates, and deletes. Finally, they synthesize these dynamics to weigh read acceleration against write overhead and storage consumption.",
+    "common_mistakes": [
+      "States that an index makes all queries faster without mentioning the write performance penalty.",
+      "Claims indexes are stored as hash tables without distinguishing B-tree use cases like range scans.",
+      "Suggests indexing every column in a table to maximize query speed across the board.",
+      "Confuses database indexes with application-level caching layers.",
+      "Provides a vague statement that 'indexes organize data' without explaining the underlying search complexity or data structure."
+    ],
+    "progressive_hints": [
+      "Consider what the database engine physically has to do when reading a table from disk without any auxiliary data structures.",
+      "Think about how a dictionary or phone book lets you find an entry quickly, and what structural invariant makes that possible.",
+      "If the database can find a row in logarithmic time using a sorted tree structure, what happens to that structure every time a new row is inserted or an existing row is modified?"
+    ],
+    "learning_objective": "Understand how B-tree indexes trade storage space and write throughput for logarithmic read performance optimization."
+  },
+  {
+    "id": "idx-0002",
+    "question": "What is a composite index, and does column order matter when creating one?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "dbms",
+      "sql"
+    ],
+    "tech_keywords": [
+      "composite-index"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "A composite (multi-column) index is built on two or more columns together, stored sorted by the first column, then the second within each first-column value, and so on",
+        "Column order matters a lot: the index can efficiently satisfy queries filtering on a left-to-right prefix of the indexed columns, but not on the trailing columns alone",
+        "Example: an index on (last_name, first_name) can efficiently serve queries filtering on last_name alone, or on both, but NOT efficiently serve a query filtering only on first_name",
+        "General guidance: put the column with highest selectivity / most frequently filtered alone first, or match the order queries actually filter in"
+      ],
+      "sample_answer": "A composite index spans multiple columns, and internally it's sorted by the first column, then by the second column within each value of the first, and so on — like a phone book sorted by last name, then first name within each last name. Column order matters significantly: the index can efficiently serve a query filtering on the leftmost prefix of the indexed columns — like filtering on just last_name, or on last_name and first_name together — but it can't efficiently serve a query filtering only on first_name, since that's not a usable prefix of the index. When designing a composite index, I'd order columns based on the actual query patterns — typically putting the column that's filtered on its own most often, or that has the highest selectivity, first."
+    },
+    "follow_up_hint": "Ask them to design the right composite index for a table frequently queried by 'WHERE status = ? AND created_at > ?'.",
+    "concept": "Database Indexing",
+    "sub_concept": "Composite Index Column Order",
+    "expected_reasoning": "A strong candidate begins by defining a composite index as a single B-tree structure built over multiple columns. They then analyze how the physical storage of data dictates query performance, deducing that rows are sorted primarily by the first column and subsequently by secondary columns. From this sorted structure, they derive the 'leftmost prefix principle,' recognizing why a query must filter by the leading columns to utilize the index efficiently. Finally, they weigh trade-offs for column ordering based on query patterns, selectivity, and equality versus range conditions.",
+    "common_mistakes": [
+      "States that column order does not matter because the database will automatically reorder or figure out how to use the index for any combination of columns.",
+      "Claims that a composite index on (A, B) acts like two separate single-column indexes that can be queried independently with equal efficiency.",
+      "Believes a query filtering only on the second column (B) will still use the composite index effectively via a full index scan that is faster than a table scan.",
+      "Does not explain the underlying data structure (like a B-tree) or how sorting creates the prefix dependency.",
+      "States the correct conclusion regarding column order with no justification of how the tree is physically traversed."
+    ],
+    "progressive_hints": [
+      "Think about how the database physically stores and sorts the rows inside the index structure when there is more than one column.",
+      "Consider what happens when a query searches for a value in the second column without specifying anything about the first column. How does the tree traversal behave?",
+      "If the index maintains a strict hierarchical sorting order starting with the first column, which subsets of columns can be efficiently jumped to directly from the root of the B-tree?"
+    ],
+    "learning_objective": "Understand how composite index data structures are sorted hierarchically and why column order strictly dictates which query filters can leverage the index."
+  },
+  {
+    "id": "idx-0003",
+    "question": "Explain the difference between a clustered and a non-clustered index.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "dbms"
+    ],
+    "tech_keywords": [
+      "clustered-index"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "A clustered index determines the physical storage order of the table's rows on disk — the table data itself is stored sorted by the clustered index key",
+        "A table can have only one clustered index (since data can only be physically sorted one way), often the primary key by default",
+        "A non-clustered index is a separate structure with pointers back to the actual row location (or the clustered index key), and a table can have many of them",
+        "Lookups via a non-clustered index that need columns not in the index require an extra 'lookup' step to fetch the full row (unless it's a 'covering' index that includes all needed columns)"
+      ],
+      "sample_answer": "A clustered index actually determines the physical order in which rows are stored on disk — the table's data IS the clustered index, sorted by its key. Because rows can only be physically ordered one way, a table can have only one clustered index, commonly the primary key. A non-clustered index is a separate structure that stores the indexed column's values sorted, along with a pointer back to where the actual row lives (often the clustered index key), and a table can have many non-clustered indexes. Because a non-clustered index doesn't contain the full row, looking up columns not included in that index requires an extra step to fetch the actual row — unless the index is a 'covering' index that includes every column the query needs, avoiding that extra lookup entirely."
+    },
+    "follow_up_hint": "Ask what a 'covering index' is and how it avoids the extra row lookup.",
+    "concept": "Database Indexing",
+    "sub_concept": "Clustered vs Non-Clustered Indexes",
+    "expected_reasoning": "A strong candidate begins by addressing how data is physically arranged on disk versus how logical access paths are built. They deduce that because physical rows can only be ordered in one sequence, a table is restricted to a single clustered index, which inherently defines the storage order of the data. From there, they explain that non-clustered indexes act as separate lookup structures containing pointers back to the actual data rows. Finally, they weigh the performance trade-offs, noting the extra I/O overhead of non-clustered lookups unless columns are fully covered.",
+    "common_mistakes": [
+      "States that a table can have multiple clustered indexes because they assume 'clustered' just means 'important'.",
+      "Claims that a non-clustered index stores a duplicate copy of the entire table data.",
+      "Ignores the physical storage implications entirely and treats both index types as abstract lookup trees.",
+      "Fails to mention the extra lookup step required when a non-clustered index is not covering.",
+      "Confuses the primary key constraint with the clustered index definition."
+    ],
+    "progressive_hints": [
+      "Think about what happens to the physical placement of the actual table rows on disk when an index is created.",
+      "Consider why a table is structurally limited to having only one of these index types, while it can accommodate many of the other.",
+      "Focus on how a query finds the rest of the columns when it uses a non-clustered index that doesn't contain all the requested data."
+    ],
+    "learning_objective": "Understand how indexes dictate physical data organization versus logical reference paths, and how this architectural difference impacts read performance and storage."
+  },
+  {
+    "id": "idx-0004",
+    "question": "You have a query that's running slowly despite an index existing on the filtered column. What are possible reasons the database might not be using that index?",
+    "type": "scenario_based",
+    "difficulty": 4,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "dbms",
+      "sql"
+    ],
+    "tech_keywords": [
+      "query-optimization"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Applying a function or expression to the indexed column in the WHERE clause (e.g. WHERE LOWER(email) = ?) prevents the optimizer from using a plain index on 'email'",
+        "Low selectivity: if the column has few distinct values (e.g. a boolean 'is_active'), the optimizer may correctly decide a full scan is cheaper than using the index",
+        "Implicit type mismatch/casting between the column and the compared value can prevent index usage",
+        "Outdated table statistics can cause the query planner to misjudge costs and pick a suboptimal plan",
+        "Mentions using EXPLAIN/EXPLAIN ANALYZE to actually see the chosen query plan rather than guessing"
+      ],
+      "sample_answer": "A few common reasons: applying a function to the column in the WHERE clause, like WHERE LOWER(email) = 'x', prevents the database from using a plain index on email unless there's a functional index specifically on LOWER(email). If the column has low selectivity — few distinct values, like a boolean flag — the optimizer might correctly determine a full table scan is actually cheaper than jumping through the index for a large fraction of the table anyway. An implicit type mismatch, like comparing a string column against a number, can also disable index usage since the database has to cast values first. Outdated table statistics can cause the query planner to misjudge the cost and pick a worse plan. The right first step is always to run EXPLAIN or EXPLAIN ANALYZE on the actual query to see the real execution plan being chosen, rather than guessing."
+    },
+    "follow_up_hint": "Ask them what running EXPLAIN ANALYZE would show them, and what specific line in the output would confirm the index isn't being used.",
+    "concept": "Database Indexing",
+    "sub_concept": "Query Optimizer Plan Selection",
+    "expected_reasoning": "A strong candidate begins by establishing a systematic troubleshooting methodology, immediately suggesting the use of an execution plan analyzer like EXPLAIN to verify what the database is actually doing. They then systematically evaluate how physical data characteristics, such as low cardinality or stale statistics, can mathematically sway the cost-based optimizer toward a full table scan. Next, they examine query-level anti-patterns, analyzing how syntax choices like column transformations or implicit type conversions obscure the raw index keys from the search mechanism. Finally, they synthesize these factors to demonstrate a holistic understanding of why an index's presence does not guarantee its utility.",
+    "common_mistakes": [
+      "Stating that the index is simply broken or corrupted without investigating query semantics or data distribution",
+      "Guessing reasons blindly without suggesting the use of EXPLAIN or EXPLAIN ANALYZE",
+      "Claiming that an index is always faster than a sequential scan regardless of selectivity",
+      "Failing to mention how SQL syntax modifications like functions on columns affect index lookup feasibility",
+      "Overlooking implicit type casting between the query parameter and the underlying column definition"
+    ],
+    "progressive_hints": [
+      "Before guessing why the database rejected the index, what tool should you run first to see what the query planner is actually doing?",
+      "Think about how the cost-based optimizer decides between a table scan and an index lookup. What properties of the data or the query syntax might make a full scan mathematically cheaper in its eyes?",
+      "Consider what happens to an index structure if you wrap the column in a function, or if the data type of your search parameter doesn't precisely match the column's definition."
+    ],
+    "learning_objective": "The candidate should understand that the query optimizer makes cost-based decisions affected by data distribution, table statistics, and how query syntax interacts with column storage."
+  }
 ]

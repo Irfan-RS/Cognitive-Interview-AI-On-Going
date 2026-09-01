@@ -4,10 +4,28 @@
     "question": "Explain the difference between authentication and authorization, and walk through how a typical JWT-based authentication flow works.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["backend", "fullstack"],
-    "topics": ["authentication", "authorization", "security"],
-    "tech_keywords": ["authentication", "authorization", "jwt", "security", "oauth"],
-    "companies_common": ["Amazon", "Microsoft", "Meta", "Stripe"],
+    "roles": [
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "authentication",
+      "authorization",
+      "security"
+    ],
+    "tech_keywords": [
+      "authentication",
+      "authorization",
+      "jwt",
+      "security",
+      "oauth"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Meta",
+      "Stripe"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -19,17 +37,47 @@
       ],
       "sample_answer": "Authentication confirms who a user is — typically via a login with credentials — while authorization determines what that authenticated user is permitted to do, like accessing a specific resource. In JWT-based auth, the server validates the login credentials once, then issues a signed token encoding claims (user ID, roles, expiry). The client includes this token in the Authorization header on subsequent requests, and the server verifies its signature to confirm authenticity without needing a database lookup per request, making it easy to scale horizontally. The trade-off is that a JWT is hard to revoke before it naturally expires, since there's no server-side session being checked — real systems often use short expiries plus a refresh-token flow, or maintain a revocation list, to mitigate this."
     },
-    "follow_up_hint": "Ask them how they'd implement token revocation (e.g. after a user changes their password) given JWTs are normally stateless."
+    "follow_up_hint": "Ask them how they'd implement token revocation (e.g. after a user changes their password) given JWTs are normally stateless.",
+    "concept": "Authentication And Authorization",
+    "sub_concept": "Stateless Token-Based Security Flows",
+    "expected_reasoning": "A strong candidate begins by cleanly separating identity verification from permission management before tracing a request lifecycle. They walk through the login exchange where credentials are exchanged for a signed credential artifact, noting how signature verification avoids database lookups on every request. Finally, they critically evaluate the architectural trade-offs introduced by statelesness, specifically addressing the inherent difficulty of early revocation.",
+    "common_mistakes": [
+      "Confusing authentication with authorization, treating them as interchangeable terms",
+      "Stating that JWTs are encrypted by default when they are typically only signed and readable by anyone who inspects them",
+      "Claiming that a server checks a database session store on every request when using JWTs, missing the stateless advantage",
+      "Ignoring security risks around token storage, such as exposing tokens to XSS via localStorage",
+      "Failing to mention how server-side revocation is handled or compromised when using stateless tokens"
+    ],
+    "progressive_hints": [
+      "Before diving into tokens, consider the fundamental difference between proving who you are versus what permissions you hold in a system.",
+      "Think about what happens after a user successfully logs in: how does the client prove its identity on subsequent requests without sending a password every time, and how does the server validate that proof without querying a database?",
+      "Consider the architectural advantage of eliminating database session lookups, and what downside that introduces if you suddenly need to revoke a user's access immediately."
+    ],
+    "learning_objective": "The candidate should understand how authentication and authorization complement each other in web architecture, and how stateless token-based workflows trade revocation simplicity for horizontal scalability."
   },
   {
     "id": "backend-0002",
     "question": "Explain the difference between session-based authentication and token-based authentication, and their trade-offs for a horizontally scaled backend.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["backend", "fullstack"],
-    "topics": ["authentication", "sessions"],
-    "tech_keywords": ["authentication", "sessions", "jwt"],
-    "companies_common": ["Amazon", "Microsoft", "Uber"],
+    "roles": [
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "authentication",
+      "sessions"
+    ],
+    "tech_keywords": [
+      "authentication",
+      "sessions",
+      "jwt"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -41,17 +89,46 @@
       ],
       "sample_answer": "Session-based auth stores session data server-side, keyed by a session ID that the client holds in a cookie — every request requires a lookup against that shared store to confirm the session is valid. Token-based auth, like JWT, embeds the user's identity and claims directly in a signed token the client holds, so any server can verify it independently just by checking the signature, with no shared state needed. In a horizontally scaled backend, sessions require either a shared session store (like Redis) accessible to every instance, or sticky sessions routing a user consistently to one server — both add complexity. Tokens scale more naturally since verification needs no shared state, but they're harder to revoke instantly since there's no server-side record to simply delete."
     },
-    "follow_up_hint": "Ask how they'd design a hybrid approach that gets stateless scaling but still allows instant revocation when needed."
+    "follow_up_hint": "Ask how they'd design a hybrid approach that gets stateless scaling but still allows instant revocation when needed.",
+    "concept": "Authentication Architecture",
+    "sub_concept": "Stateful Sessions versus Stateless Tokens",
+    "expected_reasoning": "A strong candidate begins by defining where state lives in each model: server-side storage versus self-contained payloads. They then analyze how this fundamental difference impacts a horizontally scaled backend environment where requests may hit different server instances. They systematically evaluate the operational trade-offs, contrasting the scalability and independent verification of tokens against the immediate revokability and central control of server-side sessions. Finally, they weigh these architectural properties against typical application requirements to determine which approach fits specific use cases.",
+    "common_mistakes": [
+      "Stating that tokens are automatically more secure than sessions without analyzing signature verification or storage vulnerabilities like XSS.",
+      "Confusing JWTs with cookies, assuming JWTs cannot be stored in cookies or that session IDs cannot be sent via headers.",
+      "Ignoring the horizontal scaling implications, failing to mention shared stores like Redis or sticky sessions for stateful auth.",
+      "Overlooking the revocation problem inherent in stateless tokens, claiming they can be instantly invalidated without extra infrastructure.",
+      "Giving a superficial comparison based only on size or format rather than state management and trust boundaries."
+    ],
+    "progressive_hints": [
+      "Think about where the information verifying who the user is actually stored in each approach when a request hits the server.",
+      "Consider what happens when your application scales to multiple servers behind a load balancer and a user's second request hits a completely different instance than their first.",
+      "Evaluate how each architecture handles immediate user revocation, particularly when a server has no record of the user session locally."
+    ],
+    "learning_objective": "The candidate should understand how state management dictates scalability and revocation trade-offs between session-based and token-based authentication architectures."
   },
   {
     "id": "backend-0003",
     "question": "What is idempotency in the context of an API, and why does it matter for a payment or order-creation endpoint specifically?",
     "type": "scenario",
     "difficulty": 2,
-    "roles": ["backend", "fullstack"],
-    "topics": ["api-design", "idempotency"],
-    "tech_keywords": ["rest-api", "idempotency"],
-    "companies_common": ["Stripe", "Amazon", "Uber"],
+    "roles": [
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "api-design",
+      "idempotency"
+    ],
+    "tech_keywords": [
+      "rest-api",
+      "idempotency"
+    ],
+    "companies_common": [
+      "Stripe",
+      "Amazon",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -63,17 +140,46 @@
       ],
       "sample_answer": "An idempotent operation has the same effect whether it's performed once or many times with the same input — GET, PUT, and DELETE are conventionally idempotent, but POST is not, since calling it twice typically creates two resources. This matters a lot for payments or order creation because a client retrying after a timeout (not knowing if the first request actually succeeded) could accidentally trigger a duplicate charge. The standard solution is an idempotency key: the client generates a unique key per logical operation and sends it with the request; the server records which keys it's already processed and, on seeing a repeat, returns the original result instead of executing the operation again — requiring the server to persist recent keys and their outcomes for some reasonable window."
     },
-    "follow_up_hint": "Ask them to design the database schema and logic for storing and checking idempotency keys correctly under concurrent duplicate requests."
+    "follow_up_hint": "Ask them to design the database schema and logic for storing and checking idempotency keys correctly under concurrent duplicate requests.",
+    "concept": "Idempotency",
+    "sub_concept": "API Design for Retriable Transactions",
+    "expected_reasoning": "A strong candidate begins by defining idempotency theoretically in terms of repeated execution producing identical state changes. They then analyze HTTP method conventions, noting that standard POST requests are non-idempotent by default. Next, they ground this in a failure scenario, recognizing that network drops and client retries can accidentally trigger duplicate mutations. Finally, they derive the architectural countermeasure: a unique client-generated key tracked server-side to deduplicate requests safely.",
+    "common_mistakes": [
+      "States that GET and POST are the only HTTP methods that matter without mentioning PUT or DELETE.",
+      "Claims that idempotency means the API returns the exact same response body, ignoring the state-change requirement.",
+      "Suggests handling duplicate payments purely on the frontend by disabling buttons.",
+      "Proposes using transaction IDs from the payment gateway without explaining how the API layer tracks them.",
+      "Forgets to mention the need for server-side persistence and expiration of idempotency keys."
+    ],
+    "progressive_hints": [
+      "Think about what happens to your client's request if the network connection drops right after the server processes a payment, but before the response reaches the client.",
+      "If the client retries that same request because they never received an acknowledgment, how does the server distinguish between a genuine new order and a retry?",
+      "What unique token could the client generate and send along with the request, and how would the server use a persistent cache to ensure that token is only ever processed once?"
+    ],
+    "learning_objective": "Understand how to guarantee exactly-once execution semantics over unreliable networks using client-supplied idempotency keys."
   },
   {
     "id": "backend-0004",
     "question": "Explain the difference between REST and GraphQL, and a concrete scenario where GraphQL's approach solves a real problem REST has.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["backend", "fullstack"],
-    "topics": ["api-design", "graphql"],
-    "tech_keywords": ["rest-api", "graphql"],
-    "companies_common": ["Meta", "Amazon", "Netflix"],
+    "roles": [
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "api-design",
+      "graphql"
+    ],
+    "tech_keywords": [
+      "rest-api",
+      "graphql"
+    ],
+    "companies_common": [
+      "Meta",
+      "Amazon",
+      "Netflix"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -85,17 +191,47 @@
       ],
       "sample_answer": "REST exposes fixed-shape resources at separate URLs, and the client receives whatever fields that endpoint is designed to return — often too much (over-fetching) or requiring several round trips to assemble related data from different endpoints (under-fetching). GraphQL exposes one endpoint where the client specifies exactly the fields and nested relationships it needs in the query itself. A concrete case: a mobile app screen needing a user's name plus their last 3 orders and each order's item count — with REST this might mean three separate calls or a bespoke combined endpoint; with GraphQL it's one query shaped exactly to that need. The trade-off is GraphQL servers are more complex to implement correctly (resolvers can introduce N+1 query problems if not batched) and standard HTTP caching is harder since requests aren't naturally keyed by URL anymore."
     },
-    "follow_up_hint": "Ask how they'd solve the N+1 query problem that naive GraphQL resolvers commonly introduce (e.g. using DataLoader-style batching)."
+    "follow_up_hint": "Ask how they'd solve the N+1 query problem that naive GraphQL resolvers commonly introduce (e.g. using DataLoader-style batching).",
+    "concept": "API Architectural Styles",
+    "sub_concept": "REST vs GraphQL Trade-offs",
+    "expected_reasoning": "The candidate begins by contrasting the core philosophy of REST (resource-oriented with fixed server-defined responses across multiple endpoints) against GraphQL (schema-oriented with client-defined queries over a single endpoint). They trace the client-side pain points of REST—specifically payload bloat and latency penalty from sequential network requests. They derive a real-world UI scenario where a single view requires data from multiple entities, contrasting how REST handles this versus GraphQL. Finally, they demonstrate balanced architectural reasoning by weighing GraphQL's payload efficiency against its server-side downsides, such as resolver complexity and broken HTTP-level caching.",
+    "common_mistakes": [
+      "Claiming GraphQL is universally superior or faster than REST without mentioning trade-offs like caching or N+1 query risks.",
+      "Giving a vague definition of over-fetching/under-fetching without grounding it in a multi-resource client UI scenario.",
+      "Mistaking GraphQL for a database query language or assuming it replaces backend databases directly.",
+      "Ignoring HTTP-level caching differences, failing to note that REST leverages standard HTTP verbs/headers while GraphQL typically POSTs to a single endpoint.",
+      "Suggesting REST cannot solve under-fetching, forgetting that bespoke custom endpoints or query parameters (e.g., `?include=orders`) exist but add server maintenance debt."
+    ],
+    "progressive_hints": [
+      "Think about what happens on a low-bandwidth mobile app when a single UI screen needs data from three different backend entities.",
+      "Consider how a traditional REST API forces you to choose between making multiple sequential HTTP calls or creating a hyper-specific backend endpoint just for one view.",
+      "Focus on how REST returns fixed data shapes—causing over-fetching and under-fetching—and contrast that with how a GraphQL client declares the exact nested fields it needs in one payload."
+    ],
+    "learning_objective": "Understand the architectural trade-offs between fixed-resource REST APIs and declarative GraphQL schemas, specifically regarding network payload optimization, client flexibility, and server operational complexity."
   },
   {
     "id": "backend-0005",
     "question": "Explain how you'd design pagination for an API returning a large list of results, comparing offset-based and cursor-based pagination.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["backend", "fullstack"],
-    "topics": ["api-design", "pagination"],
-    "tech_keywords": ["rest-api", "pagination", "sql"],
-    "companies_common": ["Amazon", "Meta", "Twitter"],
+    "roles": [
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "api-design",
+      "pagination"
+    ],
+    "tech_keywords": [
+      "rest-api",
+      "pagination",
+      "sql"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta",
+      "Twitter"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -107,17 +243,49 @@
       ],
       "sample_answer": "Offset-based pagination (using LIMIT and OFFSET) is simple to implement and lets a client jump directly to page N, but performance degrades for deep pages since the database still has to scan and discard all the skipped rows before returning the requested page — and if rows are inserted or deleted between requests, users can see duplicate or skipped items as the underlying offsets shift. Cursor-based pagination instead uses a pointer, typically the last item's sort key or ID, to fetch the next batch starting right after it — this avoids the scan cost and stays stable even with concurrent writes, at the cost of not supporting arbitrary page jumps, only forward/backward movement from a known position. Cursor-based pagination is the better fit for large, actively-changing datasets or infinite-scroll feeds; offset-based fits smaller, relatively static lists where jumping to a specific page matters."
     },
-    "follow_up_hint": "Ask them to design the exact cursor encoding for a feed sorted by (timestamp, id) to handle ties in timestamp correctly."
+    "follow_up_hint": "Ask them to design the exact cursor encoding for a feed sorted by (timestamp, id) to handle ties in timestamp correctly.",
+    "concept": "API Pagination",
+    "sub_concept": "Offset vs Cursor Trade-offs",
+    "expected_reasoning": "The candidate should start by clarifying the mechanics of both offset-based and cursor-based pagination from both an API design and database execution perspective. They should derive the performance implications of large offsets by analyzing how database engines execute LIMIT/OFFSET queries versus range scans on indexed keys. Next, they should evaluate data consistency issues that arise when underlying data shifts due to concurrent writes. Finally, they should weigh the UX requirements (such as random page jumping versus infinite scrolling) against technical constraints to recommend the right strategy.",
+    "common_mistakes": [
+      "Explains API URL parameter formats without explaining how the database processes the underlying query",
+      "Fails to mention that database engines must scan and discard skipped rows in offset pagination, assuming OFFSET 1000 is O(1)",
+      "Claims cursor-based pagination is strictly superior without acknowledging that it cannot easily jump to an arbitrary page number",
+      "Omits the impact of concurrent insertions or deletions on offset pagination, such as duplicate or missed items across pages",
+      "Suggests cursor pagination using non-unique or unindexed columns without addressing sort stability and index requirements"
+    ],
+    "progressive_hints": [
+      "Think about what happens at the database layer when a client requests page 1 versus page 1,000, and what happens if new rows are inserted while a user is paging.",
+      "Compare how a database engine executes `LIMIT 20 OFFSET 10000` versus a query that filters using a `WHERE` clause on an indexed column like `WHERE id > cursor`.",
+      "Focus on how passing a pointer to the last retrieved record avoids scanning previously read rows in the database and prevents item shifting during concurrent writes."
+    ],
+    "learning_objective": "Understand the database execution, performance scaling, and data consistency trade-offs between offset-based and cursor-based pagination."
   },
   {
     "id": "backend-0006",
     "question": "Explain what a message queue is and how it enables asynchronous processing. Compare it briefly to synchronous request/response.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["backend", "fullstack"],
-    "topics": ["message-queue", "distributed-systems"],
-    "tech_keywords": ["message-queue", "rabbitmq", "kafka", "distributed-systems"],
-    "companies_common": ["Amazon", "Uber", "Netflix", "LinkedIn"],
+    "roles": [
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "message-queue",
+      "distributed-systems"
+    ],
+    "tech_keywords": [
+      "message-queue",
+      "rabbitmq",
+      "kafka",
+      "distributed-systems"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber",
+      "Netflix",
+      "LinkedIn"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -129,17 +297,47 @@
       ],
       "sample_answer": "A message queue sits between producers and consumers, letting a producer enqueue a piece of work and move on immediately, while one or more consumers process messages independently, at their own pace. This enables asynchronous processing — for example, a signup endpoint can enqueue a 'send welcome email' message and respond to the user right away, instead of making them wait on the email provider's round trip. It also absorbs traffic spikes, since work queues up rather than overwhelming a downstream service synchronously, and improves resilience: if the email service is briefly down, messages just wait in the queue instead of the whole signup request failing. Compared to a direct synchronous call, the trade-off is added complexity — you need to handle eventual consistency and failure/retry logic for the async path."
     },
-    "follow_up_hint": "Ask them how they'd handle a message that repeatedly fails processing (e.g. a dead-letter queue) without blocking the rest of the queue."
+    "follow_up_hint": "Ask them how they'd handle a message that repeatedly fails processing (e.g. a dead-letter queue) without blocking the rest of the queue.",
+    "concept": "Message Queue",
+    "sub_concept": "Decoupling and Asynchronous Processing",
+    "expected_reasoning": "A strong candidate starts by contrasting direct synchronous communication (where a caller blocks waiting for execution to finish) with queue-based communication (where a producer places work into an intermediary buffer and immediately continues). They then analyze the systemic benefits of this buffer: temporal decoupling, load smoothing during traffic spikes, and fault tolerance when consumers fail. Finally, they ground these abstract benefits in a concrete real-world scenario to distinguish between immediate user-facing latency and background processing execution.",
+    "common_mistakes": [
+      "Confusing in-memory async code execution (like async/await or thread pools) with an architectural message queue service",
+      "Claiming that message queues make overall task processing faster, rather than reducing perceived user latency",
+      "Defining what a message queue is without explicitly contrasting it with synchronous request/response patterns",
+      "Failing to mention how message queues handle traffic spikes or consumer downtime (focusing only on latency benefits)"
+    ],
+    "progressive_hints": [
+      "Think about what happens to a user's web request if a step like sending an email takes several seconds to complete synchronously.",
+      "Consider placing a buffer between the web server and the email service. How does this change when the web server can respond to the user?",
+      "If the producer writes a job to an intermediary buffer and immediately returns a success response, how does that buffer protect against downstream crashes or traffic spikes?"
+    ],
+    "learning_objective": "Understand how message queues decouple components to enable non-blocking execution, buffer traffic spikes, and improve fault tolerance compared to synchronous request/response architectures."
   },
   {
     "id": "backend-0007",
     "question": "Explain the microservices architecture pattern and its main trade-offs compared to a monolith.",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["backend"],
-    "topics": ["microservices", "architecture"],
-    "tech_keywords": ["microservices", "distributed-systems", "docker", "kubernetes"],
-    "companies_common": ["Amazon", "Netflix", "Uber", "Meta"],
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "microservices",
+      "architecture"
+    ],
+    "tech_keywords": [
+      "microservices",
+      "distributed-systems",
+      "docker",
+      "kubernetes"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Netflix",
+      "Uber",
+      "Meta"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -151,17 +349,44 @@
       ],
       "sample_answer": "Microservices break an application into independently deployable services, often each owning its own database, communicating over the network (HTTP/gRPC/messaging) rather than in-process function calls. This allows scaling and deploying each service independently, gives teams technology flexibility, and keeps individual codebases smaller and more focused — but it introduces real operational complexity: service discovery, network failures and retries, distributed tracing for debugging across services, and API version compatibility between services deployed at different times. Cross-service transactions also become much harder since you can't rely on a single database transaction anymore. A monolith avoids all that complexity initially — simpler development and deployment — but can't scale or deploy pieces independently, and large monolith codebases can become harder to maintain as a single team's ownership. Most teams start monolithic and split into microservices deliberately once specific scaling or organizational pain justifies it."
     },
-    "follow_up_hint": "Ask them how they'd handle a transaction spanning two microservices' data (e.g. via the Saga pattern) since distributed ACID transactions aren't practical."
+    "follow_up_hint": "Ask them how they'd handle a transaction spanning two microservices' data (e.g. via the Saga pattern) since distributed ACID transactions aren't practical.",
+    "concept": "Microservices",
+    "sub_concept": "Trade-offs",
+    "expected_reasoning": "A strong candidate first clarifies the key benefits of microservices, like independent deployment and data store management. They then detail the significant operational complexities, such as service discovery and versioning. Finally, they compare these to the simpler monolith architecture, highlighting the trade-offs in terms of complexity and deployment flexibility.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as directly stating the benefits or costs without explanation.",
+      "Fails to mention any benefits of the monolith architecture.",
+      "Confuses microservices with monolith architecture, not understanding the differences in architecture and deployment models."
+    ],
+    "progressive_hints": [
+      "What are the primary challenges in managing a monolithic application that microservices architecture aims to address?",
+      "How does the microservices approach affect the complexity of managing and deploying services independently?",
+      "Can you elaborate on the specific challenges of service discovery and versioning in a microservices environment?"
+    ],
+    "learning_objective": "Understand the key trade-offs and challenges of transitioning from a monolithic to a microservices architecture."
   },
   {
     "id": "backend-0008",
     "question": "What is the Saga pattern for managing distributed transactions across microservices, and how does it differ from a traditional two-phase commit?",
     "type": "theory",
     "difficulty": 4,
-    "roles": ["backend"],
-    "topics": ["microservices", "distributed-transactions"],
-    "tech_keywords": ["microservices", "distributed-systems", "saga-pattern"],
-    "companies_common": ["Amazon", "Uber", "Netflix"],
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "microservices",
+      "distributed-transactions"
+    ],
+    "tech_keywords": [
+      "microservices",
+      "distributed-systems",
+      "saga-pattern"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber",
+      "Netflix"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -173,17 +398,42 @@
       ],
       "sample_answer": "A Saga splits a distributed transaction into a series of local transactions, one per service, chained by events — each step's success triggers the next. If a later step fails, instead of a true rollback, the Saga executes compensating transactions to undo the effects of the steps that already succeeded, e.g. issuing a refund if inventory reservation fails after payment succeeded. This differs fundamentally from two-phase commit, which tries to get true atomicity by having a coordinator ask every participant to 'prepare' and hold locks until all vote to commit — that approach doesn't scale well in distributed systems since it blocks resources across services for the whole duration and is fragile to partial failures. Sagas can be coordinated via choreography, where each service just reacts to events from others with no central coordinator, or orchestration, where a central coordinator explicitly directs each step — orchestration is easier to reason about and debug, choreography is more decoupled but harder to trace."
     },
-    "follow_up_hint": "Ask them to design the compensating transaction for a specific step, like un-reserving inventory, and explain what happens if the compensation itself fails."
+    "follow_up_hint": "Ask them to design the compensating transaction for a specific step, like un-reserving inventory, and explain what happens if the compensation itself fails.",
+    "concept": "Saga Pattern",
+    "sub_concept": "Microservices Coordination",
+    "expected_reasoning": "A strong candidate first clarifies the key difference between the Saga pattern and traditional two-phase commit (2PC). They then elaborate on how the Saga pattern breaks a distributed transaction into a sequence of local transactions in different services, each with its own success and failure steps. They explain the compensating transactions used for failure recovery and contrast this with 2PC's atomic commit approach. They also discuss the coordination styles (choreography vs. orchestration) and provide a concrete example of an order-checkout saga.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as directly stating the difference between Saga and 2PC without explaining why one is better or how it works.",
+      "Fails to explain the compensating transactions or the failure recovery mechanism.",
+      "Does not discuss the coordination styles (choreography vs. orchestration)."
+    ],
+    "progressive_hints": [
+      "What is the main issue with the 2PC approach that makes it unsuitable for microservices?",
+      "How does the Saga pattern address the issue of failure recovery in a microservices architecture?",
+      "Can you provide a concrete example of a Saga pattern implementation, such as an order-checkout saga?"
+    ],
+    "learning_objective": "Understand how the Saga pattern manages distributed transactions in microservices and its benefits over traditional two-phase commit."
   },
   {
     "id": "backend-0009",
     "question": "Explain the differences between horizontal and vertical scaling, and why horizontal scaling is generally preferred for modern web backends.",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["backend"],
-    "topics": ["scalability"],
-    "tech_keywords": ["scalability", "distributed-systems"],
-    "companies_common": ["Amazon", "Google", "Infosys"],
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "scalability"
+    ],
+    "tech_keywords": [
+      "scalability",
+      "distributed-systems"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Infosys"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -195,17 +445,47 @@
       ],
       "sample_answer": "Vertical scaling means upgrading a single machine's resources — more CPU, more RAM — which is simple but has a hard physical/cost ceiling, and that one machine remains a single point of failure. Horizontal scaling means running the application across multiple machines/instances and distributing traffic across them via a load balancer, which can scale far beyond what any single machine could handle and improves fault tolerance, since one instance going down doesn't take the whole system with it. Modern web backends generally favor horizontal scaling for these reasons, but it does require designing the application accordingly — request handling should typically be stateless, or any session state needs to be externalized to a shared store, so any instance can handle any request."
     },
-    "follow_up_hint": "Ask what specifically needs to change in an application's design to make it 'horizontally scalable' if it currently keeps session state in local server memory."
+    "follow_up_hint": "Ask what specifically needs to change in an application's design to make it 'horizontally scalable' if it currently keeps session state in local server memory.",
+    "concept": "Scalability",
+    "sub_concept": "Horizontal vs. Vertical Scaling",
+    "expected_reasoning": "A strong candidate first clarifies the differences between vertical and horizontal scaling. They then derive the key points: vertical scaling adds more resources to a single machine, while horizontal scaling distributes load across multiple machines. They weigh the pros and cons, noting horizontal scaling's ability to grow beyond a single machine's limits and improve fault tolerance compared to vertical scaling.",
+    "common_mistakes": [
+      "States the conclusion without justification, such as directly stating horizontal scaling is preferred without explaining why.",
+      "Confuses the terms, such as mixing up vertical and horizontal scaling.",
+      "Doesn't mention the single point of failure in vertical scaling.",
+      "Fails to explain the need for stateless request handling or externalized/shared session state for horizontal scaling.",
+      "Doesn't discuss the concept of fault tolerance in the context of horizontal scaling.",
+      "Doesn't mention the hard ceiling of vertical scaling and the potential for horizontal scaling to grow beyond that limit."
+    ],
+    "progressive_hints": [
+      "What are the key differences between vertical and horizontal scaling?",
+      "Why is horizontal scaling preferred for modern web backends, especially in terms of fault tolerance and growth potential?",
+      "What are the specific benefits of horizontal scaling, such as its ability to grow beyond a single machine's limits and improve fault tolerance?"
+    ],
+    "learning_objective": "Understand the differences and advantages of horizontal and vertical scaling, particularly in the context of modern web backends."
   },
   {
     "id": "backend-0010",
     "question": "What is a circuit breaker pattern, and how does it help prevent cascading failures in a distributed system?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["backend"],
-    "topics": ["resilience", "microservices"],
-    "tech_keywords": ["microservices", "distributed-systems", "resilience"],
-    "companies_common": ["Amazon", "Netflix", "Uber"],
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "resilience",
+      "microservices"
+    ],
+    "tech_keywords": [
+      "microservices",
+      "distributed-systems",
+      "resilience"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Netflix",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -217,17 +497,48 @@
       ],
       "sample_answer": "A circuit breaker wraps calls to a downstream dependency and tracks failures; once failures cross a threshold, it 'trips open' and immediately fails subsequent calls without even attempting them, rather than letting each one time out slowly. This protects the calling service from tying up its own threads/connections waiting on a dependency that's already known to be unhealthy, and protects the struggling dependency from being hammered with continued traffic while it's trying to recover. After a cooldown, the breaker enters a 'half-open' state, letting a small number of test requests through — if they succeed, it closes back to normal; if they fail, it stays open longer. This pattern is one of the key defenses against cascading failures, where a slow or failing service causes upstream callers to pile up requests and become overloaded themselves."
     },
-    "follow_up_hint": "Ask them how a circuit breaker interacts with retries and timeouts — what order should these resilience patterns be applied in?"
+    "follow_up_hint": "Ask them how a circuit breaker interacts with retries and timeouts — what order should these resilience patterns be applied in?",
+    "concept": "Resilience",
+    "sub_concept": "Circuit Breaker Pattern",
+    "expected_reasoning": "A strong candidate first clarifies what a circuit breaker pattern is—monitoring calls to a downstream dependency and tripping open after a threshold of failures. They then derive how this protects the calling service from wasted resources and the downstream service from overwhelming retries. Finally, they weigh the benefits of moving to a half-open state after a cooldown period to allow limited test calls.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as directly stating the benefits of the circuit breaker pattern without explaining its mechanism or benefits.",
+      "Confuses the circuit breaker pattern with a load balancer, not understanding its purpose in preventing cascading failures.",
+      "Fails to mention the cooldown period and half-open state, missing a key aspect of the pattern."
+    ],
+    "progressive_hints": [
+      "What is the primary function of a circuit breaker pattern in a distributed system?",
+      "How does the circuit breaker pattern prevent wasted resources and how does it protect the downstream service?",
+      "What happens after the circuit breaker trips open, and why is this important for preventing cascading failures?"
+    ],
+    "learning_objective": "Understand the circuit breaker pattern and its role in preventing cascading failures in microservices architectures."
   },
   {
     "id": "backend-0011",
     "question": "Explain how you'd design and secure a REST API's authentication for a mobile app, including handling access tokens and refresh tokens.",
     "type": "scenario",
     "difficulty": 3,
-    "roles": ["backend", "fullstack"],
-    "topics": ["authentication", "security", "api-design"],
-    "tech_keywords": ["jwt", "oauth", "authentication", "security", "rest-api"],
-    "companies_common": ["Amazon", "Stripe", "Uber"],
+    "roles": [
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "authentication",
+      "security",
+      "api-design"
+    ],
+    "tech_keywords": [
+      "jwt",
+      "oauth",
+      "authentication",
+      "security",
+      "rest-api"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Stripe",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -239,17 +550,47 @@
       ],
       "sample_answer": "The client gets a short-lived access token (e.g. 15 minutes) after login, sent with every API request, which limits how long a leaked token remains useful. Alongside it, a longer-lived refresh token is issued and stored more securely on the device, used only to silently request a new access token once the current one expires, so the user doesn't have to log in again frequently. To limit damage from a stolen refresh token, I'd implement refresh token rotation — each use of a refresh token issues a new one and invalidates the old, so if a stolen token is used after the legitimate client has already rotated it, that reuse can be detected and all tokens for that session revoked. All of this assumes HTTPS everywhere and secure token storage on the client as baseline requirements, independent of the token scheme itself."
     },
-    "follow_up_hint": "Ask them how refresh token rotation actually detects that a token was stolen and reused, and what the server should do when it detects that."
+    "follow_up_hint": "Ask them how refresh token rotation actually detects that a token was stolen and reused, and what the server should do when it detects that.",
+    "concept": "Token-Based Authentication",
+    "sub_concept": "Access and Refresh Token Lifecycle Management",
+    "expected_reasoning": "A strong candidate begins by identifying the fundamental tension between security (minimizing the window of compromise) and user experience (avoiding frequent logins). They establish transport security (HTTPS) and secure native storage as baseline prerequisites. Next, they derive a dual-token architecture, separating authorization of individual API calls (short-lived access token) from credential renewal (long-lived refresh token). Finally, they address compromise scenarios by proposing threat-mitigation patterns like refresh token rotation and client-side storage isolation.",
+    "common_mistakes": [
+      "Recommending web-only security patterns (like httpOnly cookies) without translating them to native mobile equivalents (iOS Keychain / Android Keystore).",
+      "Using a single long-lived token to keep users logged in, ignoring the risk of token theft.",
+      "Sending the refresh token with every API request alongside the access token.",
+      "Failing to account for stolen refresh tokens by omitting token rotation or revocation logic.",
+      "Storing tokens in unsafe mobile storage options like plain standard UserDefaults or SharedPreferences."
+    ],
+    "progressive_hints": [
+      "Consider the trade-off between security (limiting the impact of a stolen token) and user experience (not making users log in every few minutes). How can you satisfy both?",
+      "Think about using two distinct tokens with different lifetimes and responsibilities, along with OS-level secure storage mechanisms on mobile.",
+      "If an access token expires quickly, how does the mobile app get a new one silently, and how do you prevent an attacker from reusing a stolen renewal token?"
+    ],
+    "learning_objective": "Understand how to balance security and usability in mobile API authentication by implementing short-lived access tokens alongside securely stored, rotated refresh tokens."
   },
   {
     "id": "backend-0012",
     "question": "What is SQL injection, and how do prepared statements/parameterized queries prevent it?",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["backend", "fullstack"],
-    "topics": ["security", "sql-injection"],
-    "tech_keywords": ["sql", "security", "sql-injection"],
-    "companies_common": ["Amazon", "Microsoft", "Infosys"],
+    "roles": [
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "security",
+      "sql-injection"
+    ],
+    "tech_keywords": [
+      "sql",
+      "security",
+      "sql-injection"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Infosys"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -261,17 +602,42 @@
       ],
       "sample_answer": "SQL injection happens when user input is concatenated directly into a SQL query string, letting an attacker craft input that changes the query's actual meaning — a classic example is a login query built as `\"SELECT * FROM users WHERE username = '\" + input + \"'\"`, where an attacker submitting `' OR '1'='1` turns the WHERE clause into something always true, bypassing authentication entirely. Prepared statements fix this by sending the query structure (with placeholders) and the actual data values to the database separately — the database never re-parses the data as part of the SQL syntax, so no matter what characters the input contains, it's always treated purely as a data value, never as executable SQL. This should be the default way any query with user input is written, with least-privilege database accounts and input validation as additional defense-in-depth layers."
     },
-    "follow_up_hint": "Ask them to identify the SQL injection vulnerability in a given code snippet and rewrite it using a parameterized query."
+    "follow_up_hint": "Ask them to identify the SQL injection vulnerability in a given code snippet and rewrite it using a parameterized query.",
+    "concept": "SQL Injection",
+    "sub_concept": "Prepared Statements",
+    "expected_reasoning": "A strong candidate first clarifies what SQL injection is, then explains how prepared statements prevent it by separating SQL logic from data, ensuring user input is treated as data, not executable SQL.",
+    "common_mistakes": [
+      "States the conclusion with no justification, e.g., 'Prepared statements prevent SQL injection by treating user input as data.'"
+    ],
+    "progressive_hints": [
+      "What is the primary vulnerability in a SQL query built via string concatenation?",
+      "How does prepared statements/parameterized queries prevent SQL injection by treating user input as data?",
+      "If user input is always sent separately to the database, what prevents SQL injection?"
+    ],
+    "learning_objective": "Understand how prepared statements/parameterized queries prevent SQL injection by treating user input as data, not executable SQL."
   },
   {
     "id": "backend-0013",
     "question": "Explain what an API Gateway is and what responsibilities it typically takes on in a microservices architecture.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["backend"],
-    "topics": ["microservices", "api-design"],
-    "tech_keywords": ["api-gateway", "microservices", "distributed-systems"],
-    "companies_common": ["Amazon", "Netflix", "Uber"],
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "microservices",
+      "api-design"
+    ],
+    "tech_keywords": [
+      "api-gateway",
+      "microservices",
+      "distributed-systems"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Netflix",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -283,17 +649,46 @@
       ],
       "sample_answer": "An API Gateway is the single entry point clients talk to, sitting in front of a microservices backend and routing each request to the appropriate internal service. It commonly centralizes cross-cutting concerns that would otherwise need to be duplicated in every service: authentication, rate limiting, request logging, and TLS termination. It can also aggregate calls to multiple internal services into one response for the client, reducing round trips, and it decouples clients from the internal service topology — services can be split, merged, or moved without clients needing to know. The trade-off is that the gateway itself becomes critical infrastructure: if it goes down or becomes a bottleneck, it can affect the entire system, so it needs to be built for high availability itself."
     },
-    "follow_up_hint": "Ask how they'd prevent the API Gateway itself from becoming a single point of failure or a performance bottleneck."
+    "follow_up_hint": "Ask how they'd prevent the API Gateway itself from becoming a single point of failure or a performance bottleneck.",
+    "concept": "API Gateway",
+    "sub_concept": "Microservices Architecture",
+    "expected_reasoning": "A strong candidate first clarifies that an API Gateway acts as a single entry point for external clients, routing them to the correct backend microservices. They then explain the gateway's central role in handling cross-cutting concerns such as authentication, rate limiting, request/response logging, and TLS termination. They also discuss how it can aggregate backend calls into a single response, reducing client round trips. Finally, they acknowledge the trade-off that makes the gateway a critical, potentially bottlenecking piece of infrastructure in microservices architecture.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply stating that the API Gateway routes requests to backend services without explaining the benefits or responsibilities.",
+      "Fails to mention the gateway's role in handling cross-cutting concerns like authentication and rate limiting.",
+      "Does not discuss the Backend-for-Frontend pattern or the simplification it provides for clients.",
+      "Does not acknowledge the potential bottlenecking of the gateway as a critical piece of infrastructure in microservices architecture."
+    ],
+    "progressive_hints": [
+      "What is the primary function of an API Gateway in microservices architecture?",
+      "What are the cross-cutting concerns that an API Gateway typically handles in microservices architecture?",
+      "How does an API Gateway reduce client round trips and simplify client interactions in microservices architecture?"
+    ],
+    "learning_objective": "Understand the role and responsibilities of an API Gateway in microservices architecture."
   },
   {
     "id": "backend-0014",
     "question": "Explain what CSRF (Cross-Site Request Forgery) is, and how a CSRF token or SameSite cookies prevent it.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["backend", "fullstack"],
-    "topics": ["security", "csrf"],
-    "tech_keywords": ["security", "csrf", "cookies"],
-    "companies_common": ["Amazon", "Microsoft", "Meta"],
+    "roles": [
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "security",
+      "csrf"
+    ],
+    "tech_keywords": [
+      "security",
+      "csrf",
+      "cookies"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Meta"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -305,17 +700,44 @@
       ],
       "sample_answer": "CSRF exploits the fact that browsers automatically attach a site's cookies to any request to that site, even one triggered from a completely different, malicious page — so if a user is logged into their bank and visits a malicious page that auto-submits a form to the bank's transfer endpoint, the browser happily attaches the user's real session cookie, and the bank's server can't tell the request wasn't intentional. A CSRF token defends against this by embedding a unique, unpredictable value in the legitimate site's own forms, which the server checks matches on submission — an attacker forging a request from another site has no way to know or include that token. Alternatively, setting cookies with SameSite=Strict or Lax tells the browser not to send that cookie on cross-site requests at all, blocking the attack without needing an explicit token mechanism."
     },
-    "follow_up_hint": "Ask why an API using a bearer token stored in JavaScript memory (not a cookie) is naturally immune to classic CSRF."
+    "follow_up_hint": "Ask why an API using a bearer token stored in JavaScript memory (not a cookie) is naturally immune to classic CSRF.",
+    "concept": "CSRF",
+    "sub_concept": "CSRF prevention",
+    "expected_reasoning": "A strong candidate first explains how CSRF tricks a logged-in user's browser into making an unwanted request to a site they're authenticated with, exploiting the browser's automatic cookie attachment. They then describe how a CSRF token or SameSite cookies prevent this by embedding a unique token in legitimate requests or preventing cookies from being sent on cross-site requests.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as directly stating that CSRF tokens prevent CSRF attacks without explaining how they do so.",
+      "Confuses CSRF prevention with XSS prevention, mentioning CSRF tokens or SameSite cookies in the context of preventing XSS attacks.",
+      "Fails to explain why cookies are automatically attached, or incorrectly states that cookies are not automatically attached to cross-site requests."
+    ],
+    "progressive_hints": [
+      "What is the main way a CSRF attack exploits the browser's behavior?",
+      "How do CSRF tokens or SameSite cookies prevent this exploitation?",
+      "Why do cookies need to be sent on cross-site requests for the attack to succeed?"
+    ],
+    "learning_objective": "Understand how CSRF tokens and SameSite cookies prevent CSRF attacks by either embedding a unique token in legitimate requests or preventing cookies from being sent on cross-site requests."
   },
   {
     "id": "backend-0015",
     "question": "Explain database connection pooling: what problem does it solve, and what happens if the pool size is set too small or too large?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["backend"],
-    "topics": ["performance", "dbms"],
-    "tech_keywords": ["dbms", "connection-pooling", "performance"],
-    "companies_common": ["Amazon", "Microsoft", "Uber"],
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "performance",
+      "dbms"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "connection-pooling",
+      "performance"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -327,6 +749,18 @@
       ],
       "sample_answer": "Opening a fresh database connection for every request is expensive — a TCP handshake, authentication, and resource setup on the database side — so connection pooling keeps a set of already-established connections ready to be reused: a request borrows one, uses it, and returns it to the pool rather than closing it. If the pool is too small, requests under load end up queuing for a free connection, adding latency or causing timeouts even though the application itself could handle more work. If it's too large, you can overwhelm the database — each open connection consumes real memory and resources on the database server, and too many concurrent connections can actually degrade overall database performance for every client. The right pool size depends on tuning against the database's actual capacity and the application's real concurrency needs, not just picking the largest number available."
     },
-    "follow_up_hint": "Ask them how they'd determine the right pool size for a specific database and expected traffic pattern in practice."
+    "follow_up_hint": "Ask them how they'd determine the right pool size for a specific database and expected traffic pattern in practice.",
+    "concept": "Connection Pooling",
+    "sub_concept": "Database Connection Management",
+    "expected_reasoning": "A strong candidate first clarifies the inefficiency of opening a new database connection for each request. They then explain how a connection pool works by maintaining a set of already-open connections for reuse. They further detail the issues of a pool that is either too small (causing queueing and latency) or too large (overloading the database).",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as by directly stating the benefits of connection pooling without explaining how it works or why it's necessary"
+    ],
+    "progressive_hints": [
+      "What is the main issue with opening a new database connection for each request?",
+      "Why might a request wait in a queue if the connection pool is too small?",
+      "How does a pool that is too large affect the database's performance and resource usage?"
+    ],
+    "learning_objective": "Understand the problem connection pooling solves and the consequences of setting the pool size improperly."
   }
 ]

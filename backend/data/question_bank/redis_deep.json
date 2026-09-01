@@ -1,4 +1,95 @@
 [
-  {"id":"redis-0001","question":"Why is Redis so fast, and what are the trade-offs of it being primarily an in-memory data store?","type":"trade_off_questions","difficulty":2,"roles":["backend"],"topics":["caching","redis"],"tech_keywords":["redis"],"companies_common":["Amazon","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["Redis stores data primarily in RAM, avoiding disk I/O for reads/writes, which is orders of magnitude faster than disk-based access","Single-threaded execution model for command processing (per core) avoids locking overhead for most operations, and its data structures are optimized for O(1)/O(log n) operations","Trade-off: data is volatile by default if the machine restarts, unless persistence (RDB snapshots and/or AOF logging) is configured, and even then, RDB/AOF add some overhead and don't have the same durability guarantees as a disk-first database","Trade-off: total dataset size is limited by available RAM, which is more expensive per GB than disk, making Redis less suited as a primary store for very large datasets compared to specialized use as a cache or fast auxiliary store"],"sample_answer":"Redis is fast primarily because it stores data in RAM rather than on disk, and RAM access is orders of magnitude faster than disk I/O for both reads and writes. It also uses a largely single-threaded execution model for command processing, which avoids the locking overhead that a multi-threaded system would need to coordinate concurrent access, and its data structures are specifically designed for efficient O(1) or O(log n) operations. The trade-off is that data is volatile by default — if the Redis process or machine restarts without persistence configured, everything in memory is lost — so for anything that needs to survive a restart, you'd configure RDB snapshotting, AOF (append-only file) logging, or both, though even with those enabled, Redis's durability guarantees are still generally weaker than a disk-first database designed around durability first. The other trade-off is that your total dataset size is limited by available RAM, which is significantly more expensive per gigabyte than disk, which is exactly why Redis is typically used as a cache or fast auxiliary data store rather than as the primary system of record for very large datasets."},"follow_up_hint":"Ask them to explain the difference between RDB snapshotting and AOF persistence, and the durability trade-off between them."},
-  {"id":"redis-0002","question":"Name a few Redis data structures beyond simple key-value strings, and describe a use case for each.","type":"conceptual","difficulty":2,"roles":["backend"],"topics":["redis"],"tech_keywords":["redis"],"companies_common":["Amazon","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["Lists: ordered collections, useful for a simple queue or a recent-activity feed (push to one end, pop/read from the other)","Sets: unordered unique collections, useful for tracking unique visitors/tags, and support fast set operations (union, intersection) — e.g. finding mutual friends","Sorted Sets (ZSET): elements ordered by an associated score, useful for leaderboards or rate-limiting windows, supporting fast range queries by rank or score","Hashes: field-value pairs under one key, useful for representing an object (like a user profile) compactly, avoiding the overhead of many separate top-level keys for related fields"],"sample_answer":"Beyond simple string keys, Redis Lists are ordered collections, useful for something like a simple task queue or a recent-activity feed, where you push new items onto one end and pop or read from the other. Sets are unordered collections of unique values, useful for tracking things like unique visitor IDs or a set of tags, and they support fast operations like intersection or union — for example, finding mutual followers between two users. Sorted Sets, or ZSETs, keep elements ordered by an associated numeric score, which is great for building a leaderboard, since you get fast range queries by rank or score, or for implementing rate-limiting windows based on timestamps as scores. Hashes store field-value pairs grouped under a single key, which is a natural fit for representing something like a user profile object compactly under one Redis key, rather than needing many separate top-level keys for each individual field."},"follow_up_hint":"Ask them to design a real-time leaderboard using a Redis sorted set, including how they'd get a player's current rank."}
+  {
+    "id": "redis-0001",
+    "question": "Why is Redis so fast, and what are the trade-offs of it being primarily an in-memory data store?",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "caching",
+      "redis"
+    ],
+    "tech_keywords": [
+      "redis"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Redis stores data primarily in RAM, avoiding disk I/O for reads/writes, which is orders of magnitude faster than disk-based access",
+        "Single-threaded execution model for command processing (per core) avoids locking overhead for most operations, and its data structures are optimized for O(1)/O(log n) operations",
+        "Trade-off: data is volatile by default if the machine restarts, unless persistence (RDB snapshots and/or AOF logging) is configured, and even then, RDB/AOF add some overhead and don't have the same durability guarantees as a disk-first database",
+        "Trade-off: total dataset size is limited by available RAM, which is more expensive per GB than disk, making Redis less suited as a primary store for very large datasets compared to specialized use as a cache or fast auxiliary store"
+      ],
+      "sample_answer": "Redis is fast primarily because it stores data in RAM rather than on disk, and RAM access is orders of magnitude faster than disk I/O for both reads and writes. It also uses a largely single-threaded execution model for command processing, which avoids the locking overhead that a multi-threaded system would need to coordinate concurrent access, and its data structures are specifically designed for efficient O(1) or O(log n) operations. The trade-off is that data is volatile by default — if the Redis process or machine restarts without persistence configured, everything in memory is lost — so for anything that needs to survive a restart, you'd configure RDB snapshotting, AOF (append-only file) logging, or both, though even with those enabled, Redis's durability guarantees are still generally weaker than a disk-first database designed around durability first. The other trade-off is that your total dataset size is limited by available RAM, which is significantly more expensive per gigabyte than disk, which is exactly why Redis is typically used as a cache or fast auxiliary data store rather than as the primary system of record for very large datasets."
+    },
+    "follow_up_hint": "Ask them to explain the difference between RDB snapshotting and AOF persistence, and the durability trade-off between them.",
+    "concept": "In Memory Data Stores",
+    "sub_concept": "Performance Characteristics and Persistence Trade-offs",
+    "expected_reasoning": "A strong candidate begins by contrasting the physics of memory access versus disk access to explain the core speed advantage. They then examine how the execution model—specifically the single-threaded event loop—eliminates concurrency overhead while relying on highly optimized data structures. From there, they pivot to the inherent costs, weighing the financial limits of RAM capacity against disk storage. Finally, they analyze the durability risks, explaining how persistence mechanisms mitigate data loss at the expense of CPU and I/O overhead.",
+    "common_mistakes": [
+      "States that Redis is fast simply because it is written in C without mentioning memory architecture or I/O.",
+      "Claims Redis is multi-threaded for command processing and misunderstands how it achieves concurrency safety.",
+      "Ignores persistence mechanisms entirely, assuming data is always lost on restart.",
+      "Fails to mention cost constraints, suggesting RAM can scale infinitely like cloud disk storage.",
+      "Confuses caching strategies with the underlying storage engine architecture."
+    ],
+    "progressive_hints": [
+      "Consider the physical hardware difference between reading from RAM versus reading from an SSD or HDD.",
+      "Think about what happens to CPU cycles when multiple threads try to modify shared data structures concurrently, and how Redis avoids this.",
+      "If your dataset grows larger than your physical RAM, or if the power abruptly cuts out, what fundamental limitations and risks emerge?"
+    ],
+    "learning_objective": "Understand why shifting data storage from disk to RAM yields massive performance gains and the exact trade-offs in durability, cost, and capacity that accompany it."
+  },
+  {
+    "id": "redis-0002",
+    "question": "Name a few Redis data structures beyond simple key-value strings, and describe a use case for each.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "redis"
+    ],
+    "tech_keywords": [
+      "redis"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Lists: ordered collections, useful for a simple queue or a recent-activity feed (push to one end, pop/read from the other)",
+        "Sets: unordered unique collections, useful for tracking unique visitors/tags, and support fast set operations (union, intersection) — e.g. finding mutual friends",
+        "Sorted Sets (ZSET): elements ordered by an associated score, useful for leaderboards or rate-limiting windows, supporting fast range queries by rank or score",
+        "Hashes: field-value pairs under one key, useful for representing an object (like a user profile) compactly, avoiding the overhead of many separate top-level keys for related fields"
+      ],
+      "sample_answer": "Beyond simple string keys, Redis Lists are ordered collections, useful for something like a simple task queue or a recent-activity feed, where you push new items onto one end and pop or read from the other. Sets are unordered collections of unique values, useful for tracking things like unique visitor IDs or a set of tags, and they support fast operations like intersection or union — for example, finding mutual followers between two users. Sorted Sets, or ZSETs, keep elements ordered by an associated numeric score, which is great for building a leaderboard, since you get fast range queries by rank or score, or for implementing rate-limiting windows based on timestamps as scores. Hashes store field-value pairs grouped under a single key, which is a natural fit for representing something like a user profile object compactly under one Redis key, rather than needing many separate top-level keys for each individual field."
+    },
+    "follow_up_hint": "Ask them to design a real-time leaderboard using a Redis sorted set, including how they'd get a player's current rank.",
+    "concept": "Redis Data Structures",
+    "sub_concept": "Advanced data types and their architectural application use cases",
+    "expected_reasoning": "A strong candidate begins by acknowledging that Redis is more than a basic key-value cache, highlighting its support for rich, in-memory data types optimized for specific computational patterns. They then systematically select a few distinct structures—such as Lists, Sets, Sorted Sets, and Hashes—and for each structure, they articulate not just what it is, but the exact operational advantage it provides over a plain string. They ground each data structure in a concrete, real-world engineering problem where standard string manipulation would be inefficient or complex to implement at the application layer. Finally, they weigh the memory and performance trade-offs of leveraging these native primitives against delegating the logic to a relational database or application memory.",
+    "common_mistakes": [
+      "Listing basic string operations or only mentioning 'key-value' without naming any actual advanced structures.",
+      "Naming structures like Lists or Sets but providing vague or incorrect use cases, such as using a Set for a queue.",
+      "Confusing Sorted Sets with standard Hash structures or failing to explain why the score attribute matters.",
+      "Describing use cases that require heavy relational queries which Redis is not designed to handle well, showing a lack of architectural awareness.",
+      "Stating conclusions or lists with no justification for why a specific data structure fits that particular problem."
+    ],
+    "progressive_hints": [
+      "Think beyond simple strings and consider what data structures you would reach for if you needed to store collections, unique items, or ordered data inside Redis.",
+      "Consider scenarios where you need to maintain order, uniqueness, or object-like field-value mappings without serializing entire JSON blobs into a single string.",
+      "Think about how maintaining scores for leaderboards or grouping fields under a single user ID changes how efficiently you can query or update data compared to parsing raw string keys."
+    ],
+    "learning_objective": "Understand how to leverage Redis's specialized data structures to solve specific engineering problems efficiently in memory."
+  }
 ]

@@ -1,12 +1,467 @@
 [
-  {"id":"ts-0001","question":"What are the benefits of TypeScript over plain JavaScript, and what are its limitations?","type":"trade_off_questions","difficulty":1,"roles":["frontend","fullstack"],"topics":["typescript","javascript"],"tech_keywords":["typescript","javascript"],"companies_common":["Microsoft","Amazon","Meta"],"source_style":"common-interview","reference_solution":{"key_points":["Static typing catches type errors at compile time rather than at runtime","Better IDE support: autocomplete, refactoring, inline documentation via types","Types serve as living documentation of function signatures and data shapes","Limitation: TypeScript's types are erased at runtime — a value can still be 'wrong' if it comes from an untyped external source (API response, JSON.parse)","Limitation: adds a build/compile step and some learning curve for complex generic types"],"sample_answer":"TypeScript adds static typing on top of JavaScript, catching many type errors at compile time instead of discovering them at runtime, and enabling much better IDE support like accurate autocomplete and safe refactoring. Types also act as documentation for what a function expects and returns. The main limitation is that types are erased entirely at compile time — they don't exist at runtime, so a value coming from an untyped source like a raw API response or JSON.parse can still violate its declared type if not validated. It also adds a compilation step and some complexity for advanced generic types."},"follow_up_hint":"Ask how they'd validate that an API response actually matches its TypeScript type at runtime."},
-  {"id":"ts-0002","question":"Explain the difference between `interface` and `type` in TypeScript.","type":"conceptual","difficulty":2,"roles":["frontend","fullstack"],"topics":["typescript"],"tech_keywords":["typescript"],"companies_common":["Microsoft","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["Both can describe the shape of an object, and are largely interchangeable for that use case","interface can be 're-opened' and extended later (declaration merging); type cannot","type can represent unions, intersections, and mapped types directly; interface is limited to object shapes (extended via 'extends')","Common convention: use interface for public object/class shapes meant to be extended, type for unions/utility compositions"],"sample_answer":"Both interface and type can describe an object's shape and are largely interchangeable for that. A key difference is that interfaces support declaration merging — you can declare the same interface name twice and TypeScript merges them — while type aliases can't be redeclared. type is also more flexible for things interfaces can't express directly, like union types (`type A = 'x' | 'y'`) or mapped/conditional types. A common convention is to use interface for object shapes meant to be extended, and type for unions and other type compositions."},"follow_up_hint":"Ask them to write a discriminated union type and explain why it's useful."},
-  {"id":"ts-0003","question":"What is a generic in TypeScript, and write a generic function that returns the first element of an array.","type":"coding","difficulty":2,"roles":["frontend","fullstack"],"topics":["typescript"],"tech_keywords":["typescript","generics"],"companies_common":["Microsoft","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["A generic lets a function/type be written once and work correctly across multiple concrete types, preserving type information","Without generics, you'd either lose type safety (using 'any') or duplicate the function per type","Writes a correct generic function, e.g. `function first<T>(arr: T[]): T | undefined { return arr[0]; }`","Explains the caller doesn't need to specify T explicitly — TypeScript infers it from the argument"],"sample_answer":"A generic parameterizes a function or type over an unspecified type, letting one implementation work correctly for many concrete types while preserving full type safety — the alternative would be using 'any' (losing safety) or duplicating the function per type. Example: `function first<T>(arr: T[]): T | undefined { return arr[0]; }` — calling `first([1,2,3])` infers T as number, so the return type is correctly `number | undefined`, without the caller needing to specify T explicitly."},"follow_up_hint":"Ask them to add a generic constraint so the function only accepts arrays of objects with an 'id' property."},
-  {"id":"ts-0004","question":"Explain what `unknown` is and why it's safer than `any`.","type":"conceptual","difficulty":2,"roles":["frontend","fullstack"],"topics":["typescript"],"tech_keywords":["typescript"],"companies_common":["Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["'any' opts a value out of type checking entirely — you can do anything with it, and TypeScript won't complain even if it's wrong","'unknown' also accepts any value, but you can't perform operations on it until you've narrowed its type via a check (typeof, instanceof, etc.)","This makes 'unknown' the safer choice for genuinely unknown data (like a parsed JSON value or API response), forcing explicit validation before use","Gives a concrete example showing 'any' allowing an unsafe operation that 'unknown' would catch at compile time"],"sample_answer":"'any' completely opts a value out of type checking — you can call any method or access any property on it, and TypeScript won't flag it even if it's wrong at runtime. 'unknown' also accepts any value, but TypeScript won't let you actually do anything with it until you've narrowed its type with a check like typeof or instanceof — so `const x: unknown = getData(); x.toUpperCase()` is a compile error, forcing you to first verify `typeof x === 'string'`. This makes unknown the much safer choice for genuinely unpredictable data like a parsed API response."},"follow_up_hint":"Ask them to write a type guard function that narrows an unknown value to a specific interface."},
-  {"id":"ts-0005","question":"What is a discriminated union in TypeScript, and why is it useful for modeling state?","type":"conceptual","difficulty":3,"roles":["frontend"],"topics":["typescript"],"tech_keywords":["typescript"],"companies_common":["Microsoft","Meta"],"source_style":"common-interview","reference_solution":{"key_points":["A discriminated union is a union of object types sharing a common literal 'tag' field distinguishing which variant it is","TypeScript can narrow the type automatically based on checking that tag field in a switch/if","Useful for modeling state like {status:'loading'} | {status:'success', data} | {status:'error', error} so each branch's fields are only accessible when relevant","Prevents impossible states, e.g. having both data and error present simultaneously, which a flat interface with optional fields would allow"],"sample_answer":"A discriminated union is a union of object types that share a common literal field — like 'status' — used as a tag to distinguish which variant you're dealing with. TypeScript automatically narrows the type when you check that tag, e.g. inside `if (state.status === 'success')`, TypeScript knows `state.data` exists in that branch. This is great for modeling async state as `{status:'loading'} | {status:'success', data: T} | {status:'error', error: string}`, since it makes impossible states — like having both data and an error present — unrepresentable, unlike a flat interface with several optional fields that could all be set or unset independently."},"follow_up_hint":"Ask them to model a traffic light's state as a discriminated union with a valid transition function."},
-  {"id":"ts-0006","question":"Explain the difference between `readonly` and `const` in TypeScript.","type":"conceptual","difficulty":1,"roles":["frontend"],"topics":["typescript"],"tech_keywords":["typescript"],"companies_common":["Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["const prevents reassigning a variable binding, but doesn't make an object's properties immutable","readonly (on an interface/type property, or a class field) prevents that specific property from being reassigned after initialization","An object declared with const can still have its properties mutated unless those properties are also marked readonly","Gives a concrete example distinguishing the two"],"sample_answer":"const prevents reassigning the variable itself to a different value, but if that value is an object, its properties can still be mutated — `const obj = {x:1}; obj.x = 2;` is legal. readonly, applied to a property in an interface or a class field, specifically prevents that property from being reassigned after the object is constructed, regardless of whether the object reference itself is const or not. So readonly protects specific properties from mutation, while const only protects the variable binding."},"follow_up_hint":"Ask what 'as const' does and how it differs from marking individual properties readonly."},
-  {"id":"ts-0007","question":"What is type narrowing, and how does TypeScript narrow types inside an if statement checking `typeof`?","type":"conceptual","difficulty":2,"roles":["frontend"],"topics":["typescript"],"tech_keywords":["typescript"],"companies_common":["Microsoft","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["Type narrowing is TypeScript refining a broader type to a more specific one within a conditional branch, based on a runtime check","typeof checks narrow a union like `string | number` to just 'string' inside an `if (typeof x === 'string')` block","Other narrowing mechanisms: instanceof, 'in' operator, discriminated union tag checks, custom type guard functions","Explains this lets you safely call type-specific methods (like .toUpperCase() on a narrowed string) without a cast"],"sample_answer":"Type narrowing is TypeScript refining a broader/union type to a more specific one within a particular code branch, based on a runtime check it can statically understand. For example, given `x: string | number`, inside `if (typeof x === 'string') { x.toUpperCase(); }`, TypeScript narrows x to just 'string' in that branch, so calling a string-only method is safe without needing a manual type cast. Other narrowing mechanisms include instanceof checks, the 'in' operator for checking property existence, and custom user-defined type guard functions."},"follow_up_hint":"Ask them to write a custom type guard function using the 'x is Type' return syntax."},
-  {"id":"ts-0008","question":"Explain what TypeScript's structural typing means, compared to nominal typing in languages like Java.","type":"conceptual","difficulty":3,"roles":["frontend"],"topics":["typescript"],"tech_keywords":["typescript"],"companies_common":["Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["Structural typing: two types are compatible if they have the same shape/members, regardless of their declared name or explicit relationship","Nominal typing: two types are compatible only if explicitly declared to be related (e.g. implementing the same interface by name)","Explains TypeScript is structurally typed: a class or object satisfies an interface just by having the right shape, without explicitly declaring 'implements'","Gives a concrete example showing two unrelated interfaces with the same shape being interchangeable in TypeScript"],"sample_answer":"TypeScript uses structural typing: a value is considered compatible with a type if it has the right shape — the right properties and methods — regardless of how it was declared or whether it explicitly claims to implement that type. Nominal typing, used in languages like Java, requires an explicit declared relationship, like `implements SomeInterface` by name, even if the shapes match. So in TypeScript, `interface Point {x:number,y:number}` and `interface Vector {x:number,y:number}` are fully interchangeable anywhere either is expected, purely because they have the same shape, with no explicit relationship declared between them."},"follow_up_hint":"Ask them to give an example where structural typing could cause an unintended bug (e.g. accidentally passing a compatible-shaped but semantically different object)."},
-  {"id":"ts-0009","question":"What are utility types like Partial, Pick, and Omit used for in TypeScript?","type":"conceptual","difficulty":2,"roles":["frontend"],"topics":["typescript"],"tech_keywords":["typescript"],"companies_common":["Microsoft","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["Partial<T> makes all properties of T optional — useful for update/patch functions accepting a subset of fields","Pick<T, K> constructs a new type with only the specified keys from T","Omit<T, K> constructs a new type excluding the specified keys from T","These derive new types from an existing one instead of manually duplicating and maintaining a near-identical interface"],"sample_answer":"These are built-in generic types that transform an existing type without redeclaring it. Partial<T> makes every property of T optional, which is handy for an update function that accepts only the fields being changed. Pick<T, 'a' | 'b'> builds a new type containing only those specified keys from T. Omit<T, 'a'> builds a new type with every key from T except the ones listed. All three let you derive a related type from a single source of truth instead of manually maintaining a near-duplicate interface that could drift out of sync."},"follow_up_hint":"Ask them to define an UpdateUser type from a full User interface using Partial and Omit together."},
-  {"id":"ts-0010","question":"Explain what 'never' means as a TypeScript type, and give an example of where it's used.","type":"conceptual","difficulty":3,"roles":["frontend"],"topics":["typescript"],"tech_keywords":["typescript"],"companies_common":["Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["'never' represents a value that can never actually occur — a function that always throws or never returns has return type 'never'","Used by the compiler to verify exhaustiveness — assigning a value to a 'never'-typed variable in a switch's default case fails to compile if a case was missed","Distinguishes 'never' (no possible value) from 'void' (a function returns, but with no meaningful value) and 'undefined'","Gives a concrete exhaustiveness-checking example"],"sample_answer":"'never' represents a type with no possible values at all — a function that always throws an error, or loops forever, has a return type of 'never', since it genuinely never produces a value. A common practical use is exhaustiveness checking in a switch over a union type: in the default case, assigning the (supposedly impossible) remaining value to a variable typed 'never' causes a compile error if you later add a new variant to the union but forget to handle it in the switch, catching the omission at compile time rather than at runtime. This differs from 'void', which means a function returns, just with no meaningful value."},"follow_up_hint":"Ask them to write the exhaustiveness-check pattern for a 3-variant discriminated union."}
+  {
+    "id": "ts-0001",
+    "question": "What are the benefits of TypeScript over plain JavaScript, and what are its limitations?",
+    "type": "trade_off_questions",
+    "difficulty": 1,
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "typescript",
+      "javascript"
+    ],
+    "tech_keywords": [
+      "typescript",
+      "javascript"
+    ],
+    "companies_common": [
+      "Microsoft",
+      "Amazon",
+      "Meta"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Static typing catches type errors at compile time rather than at runtime",
+        "Better IDE support: autocomplete, refactoring, inline documentation via types",
+        "Types serve as living documentation of function signatures and data shapes",
+        "Limitation: TypeScript's types are erased at runtime — a value can still be 'wrong' if it comes from an untyped external source (API response, JSON.parse)",
+        "Limitation: adds a build/compile step and some learning curve for complex generic types"
+      ],
+      "sample_answer": "TypeScript adds static typing on top of JavaScript, catching many type errors at compile time instead of discovering them at runtime, and enabling much better IDE support like accurate autocomplete and safe refactoring. Types also act as documentation for what a function expects and returns. The main limitation is that types are erased entirely at compile time — they don't exist at runtime, so a value coming from an untyped source like a raw API response or JSON.parse can still violate its declared type if not validated. It also adds a compilation step and some complexity for advanced generic types."
+    },
+    "follow_up_hint": "Ask how they'd validate that an API response actually matches its TypeScript type at runtime.",
+    "concept": "Static Type Systems",
+    "sub_concept": "Benefits and Trade-offs of Progressive Typing in Dynamic Languages",
+    "expected_reasoning": "A strong candidate begins by separating the developer experience improvements from the runtime reality of the language. They evaluate how shifting error detection from runtime to compile time impacts team velocity and code maintainability. Next, they weigh the tooling advantages like refactoring against the operational costs of maintaining a compilation step. Finally, they acknowledge the boundary where compile-time safety ends and runtime data ingestion begins.",
+    "common_mistakes": [
+      "States that TypeScript prevents all bugs and guarantees complete runtime safety",
+      "Claims TypeScript runs directly in browsers without compilation",
+      "Focuses solely on syntax features without discussing team scale or maintenance trade-offs",
+      "Ignores the risks of untyped external boundaries like API responses or JSON parsing",
+      "Provides a shallow list of features without explaining why those features matter"
+    ],
+    "progressive_hints": [
+      "Think about what happens to your code between writing it and running it in a browser.",
+      "Consider the difference between what your IDE knows during development and what JavaScript actually executes at runtime.",
+      "Reflect on how TypeScript handles data entering your application from external APIs where the runtime shape is unknown."
+    ],
+    "learning_objective": "The candidate should understand that TypeScript is a compile-time developer tool that enhances maintainability and tooling at the cost of a build step, rather than a silver bullet for total runtime safety."
+  },
+  {
+    "id": "ts-0002",
+    "question": "Explain the difference between `interface` and `type` in TypeScript.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "typescript"
+    ],
+    "tech_keywords": [
+      "typescript"
+    ],
+    "companies_common": [
+      "Microsoft",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Both can describe the shape of an object, and are largely interchangeable for that use case",
+        "interface can be 're-opened' and extended later (declaration merging); type cannot",
+        "type can represent unions, intersections, and mapped types directly; interface is limited to object shapes (extended via 'extends')",
+        "Common convention: use interface for public object/class shapes meant to be extended, type for unions/utility compositions"
+      ],
+      "sample_answer": "Both interface and type can describe an object's shape and are largely interchangeable for that. A key difference is that interfaces support declaration merging — you can declare the same interface name twice and TypeScript merges them — while type aliases can't be redeclared. type is also more flexible for things interfaces can't express directly, like union types (`type A = 'x' | 'y'`) or mapped/conditional types. A common convention is to use interface for object shapes meant to be extended, and type for unions and other type compositions."
+    },
+    "follow_up_hint": "Ask them to write a discriminated union type and explain why it's useful.",
+    "concept": "TypeScript Type System",
+    "sub_concept": "Interface vs Type Alias Structural Capabilities",
+    "expected_reasoning": "A strong candidate begins by acknowledging that both constructs appear functionally similar for defining basic object shapes. They then systematically investigate advanced capabilities by testing type combination mechanisms, noting that type aliases handle unions and intersections directly while interfaces require extension syntax. Next, they examine how the compiler treats them regarding declaration merging, recognizing that interfaces permit automatic extension while types generate duplicate identifier errors. Finally, they synthesize these technical differences into practical architectural guidelines regarding extensibility and public contracts.",
+    "common_mistakes": [
+      "States that interface is for objects and type is only for primitives, missing that both define object shapes.",
+      "Claims there is a significant performance difference between them during compilation.",
+      "Fails to mention declaration merging as a defining distinguishing feature of interfaces.",
+      "States that type aliases can be extended using the extends keyword in the same way interfaces are.",
+      "Gives a purely superficial answer without providing a heuristic for when to choose one over the other."
+    ],
+    "progressive_hints": [
+      "Consider what happens if you define two separate blocks with the exact same name using each construct.",
+      "Think about how you would represent a value that can be either one of two completely different string literals, and which construct permits this directly.",
+      "Focus on declaration merging and the ability to express complex union or intersection compositions without resorting to interface extension."
+    ],
+    "learning_objective": "Understand the precise syntactic and architectural distinctions between interfaces and type aliases to make informed design choices in TypeScript."
+  },
+  {
+    "id": "ts-0003",
+    "question": "What is a generic in TypeScript, and write a generic function that returns the first element of an array.",
+    "type": "coding",
+    "difficulty": 2,
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "typescript"
+    ],
+    "tech_keywords": [
+      "typescript",
+      "generics"
+    ],
+    "companies_common": [
+      "Microsoft",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A generic lets a function/type be written once and work correctly across multiple concrete types, preserving type information",
+        "Without generics, you'd either lose type safety (using 'any') or duplicate the function per type",
+        "Writes a correct generic function, e.g. `function first<T>(arr: T[]): T | undefined { return arr[0]; }`",
+        "Explains the caller doesn't need to specify T explicitly — TypeScript infers it from the argument"
+      ],
+      "sample_answer": "A generic parameterizes a function or type over an unspecified type, letting one implementation work correctly for many concrete types while preserving full type safety — the alternative would be using 'any' (losing safety) or duplicating the function per type. Example: `function first<T>(arr: T[]): T | undefined { return arr[0]; }` — calling `first([1,2,3])` infers T as number, so the return type is correctly `number | undefined`, without the caller needing to specify T explicitly."
+    },
+    "follow_up_hint": "Ask them to add a generic constraint so the function only accepts arrays of objects with an 'id' property.",
+    "concept": "TypeScript Generics",
+    "sub_concept": "Type Parameterization and Inference",
+    "expected_reasoning": "A strong candidate begins by identifying the core limitation of using primitive types or 'any' for functions that operate on various data types, recognizing that 'any' sacrifices type safety by losing the connection between input and output types. They then derive the need for a placeholder type variable—conventionally named 'T'—that acts as a contract linking the type of the incoming array elements to the return type of the function. Next, they weigh how the type parameter is declared syntactically using angle brackets and integrated into the function signature. Finally, they explain how TypeScript's type inference engine automatically captures the concrete type at the call site, eliminating the need for manual type arguments while preserving strict type checking.",
+    "common_mistakes": [
+      "Using the 'any' type for both input and output, which compiles successfully but completely loses type safety for the caller.",
+      "Hardcoding the function to a specific type like 'string[]' or 'number[]', making it completely un-reusable.",
+      "Stating the answer with no justification or failing to explain why generics are preferred over 'any'.",
+      "Forgetting to handle the edge case of an empty array, leading to unsafe assumptions that index zero always exists.",
+      "Attempting to write the generic syntax in the wrong position relative to the function name and parameters."
+    ],
+    "progressive_hints": [
+      "Think about how you would write this function so it works for numbers, but then also needs to work for strings without copying the logic.",
+      "You need a way to tell TypeScript that whatever type goes into the array is the exact same type that comes out. How do you parameterize a function in TypeScript?",
+      "Where in the function syntax do you declare a type parameter like '<T>', and how do you apply it to the parameter and return type annotations?"
+    ],
+    "learning_objective": "The candidate should understand how generics enable type-safe, reusable code by parametrizing types while preserving compile-time type inference."
+  },
+  {
+    "id": "ts-0004",
+    "question": "Explain what `unknown` is and why it's safer than `any`.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "typescript"
+    ],
+    "tech_keywords": [
+      "typescript"
+    ],
+    "companies_common": [
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "'any' opts a value out of type checking entirely — you can do anything with it, and TypeScript won't complain even if it's wrong",
+        "'unknown' also accepts any value, but you can't perform operations on it until you've narrowed its type via a check (typeof, instanceof, etc.)",
+        "This makes 'unknown' the safer choice for genuinely unknown data (like a parsed JSON value or API response), forcing explicit validation before use",
+        "Gives a concrete example showing 'any' allowing an unsafe operation that 'unknown' would catch at compile time"
+      ],
+      "sample_answer": "'any' completely opts a value out of type checking — you can call any method or access any property on it, and TypeScript won't flag it even if it's wrong at runtime. 'unknown' also accepts any value, but TypeScript won't let you actually do anything with it until you've narrowed its type with a check like typeof or instanceof — so `const x: unknown = getData(); x.toUpperCase()` is a compile error, forcing you to first verify `typeof x === 'string'`. This makes unknown the much safer choice for genuinely unpredictable data like a parsed API response."
+    },
+    "follow_up_hint": "Ask them to write a type guard function that narrows an unknown value to a specific interface.",
+    "concept": "TypeScript Type System",
+    "sub_concept": "Top Types and Type Safety",
+    "expected_reasoning": "A strong candidate begins by defining the top type concept where both `any` and `unknown` can accept any value. They then contrast how `any` acts as an escape hatch that disables type checking for all subsequent operations. Next, they explain how `unknown` enforces type safety by prohibiting operations until narrowing occurs. Finally, they illustrate this with a practical scenario like API response parsing, showing how `unknown` prevents runtime errors through compile-time checks.",
+    "common_mistakes": [
+      "States that unknown and any are identical because they both accept any type.",
+      "Claims unknown disables type checking just like any does.",
+      "Provides a definition without explaining why unknown is safer.",
+      "Fails to mention type narrowing or guards as the mechanism to use unknown values.",
+      "Gives an answer lacking any concrete example or comparison."
+    ],
+    "progressive_hints": [
+      "Consider what happens to TypeScript's type checker once a variable is assigned the 'any' type.",
+      "Think about what restrictions TypeScript places on operations you can perform on a variable whose type is completely unconstrained.",
+      "If a variable can hold literally any value, how does forcing a typeof or instanceof check before using it prevent runtime crashes?"
+    ],
+    "learning_objective": "Understand how TypeScript's 'unknown' type provides a safe alternative to 'any' by enforcing type narrowing before allowing operations on unvalidated data."
+  },
+  {
+    "id": "ts-0005",
+    "question": "What is a discriminated union in TypeScript, and why is it useful for modeling state?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "typescript"
+    ],
+    "tech_keywords": [
+      "typescript"
+    ],
+    "companies_common": [
+      "Microsoft",
+      "Meta"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A discriminated union is a union of object types sharing a common literal 'tag' field distinguishing which variant it is",
+        "TypeScript can narrow the type automatically based on checking that tag field in a switch/if",
+        "Useful for modeling state like {status:'loading'} | {status:'success', data} | {status:'error', error} so each branch's fields are only accessible when relevant",
+        "Prevents impossible states, e.g. having both data and error present simultaneously, which a flat interface with optional fields would allow"
+      ],
+      "sample_answer": "A discriminated union is a union of object types that share a common literal field — like 'status' — used as a tag to distinguish which variant you're dealing with. TypeScript automatically narrows the type when you check that tag, e.g. inside `if (state.status === 'success')`, TypeScript knows `state.data` exists in that branch. This is great for modeling async state as `{status:'loading'} | {status:'success', data: T} | {status:'error', error: string}`, since it makes impossible states — like having both data and an error present — unrepresentable, unlike a flat interface with several optional fields that could all be set or unset independently."
+    },
+    "follow_up_hint": "Ask them to model a traffic light's state as a discriminated union with a valid transition function.",
+    "concept": "TypeScript Discriminated Unions",
+    "sub_concept": "Type Narrowing and State Modeling",
+    "expected_reasoning": "A strong candidate begins by defining the structural anatomy of a discriminated union, highlighting the shared literal property that acts as a discriminator. They then explain TypeScript's control flow analysis and type narrowing mechanics when checking that discriminator within conditional blocks. Next, they contrast this pattern with flat objects containing optional fields, showing how the union approach eliminates impossible or contradictory states. Finally, they articulate how this guarantees safety and improves developer ergonomics by restricting data access to relevant states.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as just saying 'it makes state management easier' without explaining type narrowing or property safety.",
+      "Confuses discriminated unions with general union types, failing to mention the requirement for a common literal tag field.",
+      "Claims that optional properties on a single flat interface achieve the same safety guarantees as a discriminated union.",
+      "Does not mention control flow analysis or how TypeScript automatically narrows types inside if/switch statements.",
+      "Fails to provide a concrete example of modeling state (like loading, success, and error) to illustrate why it prevents impossible states."
+    ],
+    "progressive_hints": [
+      "Consider how you would represent an asynchronous request state where 'success' has data, but 'error' has an error message, without letting them both exist at once.",
+      "Think about how adding a shared literal property to each variant object allows TypeScript's control flow analyzer to distinguish between them in a switch statement.",
+      "If you check a specific literal tag property in an if statement, how does TypeScript treat the rest of that object's properties inside that block?"
+    ],
+    "learning_objective": "Understand how discriminated unions leverage literal types and control flow analysis to make invalid states unrepresentable in TypeScript."
+  },
+  {
+    "id": "ts-0006",
+    "question": "Explain the difference between `readonly` and `const` in TypeScript.",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "typescript"
+    ],
+    "tech_keywords": [
+      "typescript"
+    ],
+    "companies_common": [
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "const prevents reassigning a variable binding, but doesn't make an object's properties immutable",
+        "readonly (on an interface/type property, or a class field) prevents that specific property from being reassigned after initialization",
+        "An object declared with const can still have its properties mutated unless those properties are also marked readonly",
+        "Gives a concrete example distinguishing the two"
+      ],
+      "sample_answer": "const prevents reassigning the variable itself to a different value, but if that value is an object, its properties can still be mutated — `const obj = {x:1}; obj.x = 2;` is legal. readonly, applied to a property in an interface or a class field, specifically prevents that property from being reassigned after the object is constructed, regardless of whether the object reference itself is const or not. So readonly protects specific properties from mutation, while const only protects the variable binding."
+    },
+    "follow_up_hint": "Ask what 'as const' does and how it differs from marking individual properties readonly.",
+    "concept": "Immutability In TypeScript",
+    "sub_concept": "Variable binding versus property mutability in compile-time checks",
+    "expected_reasoning": "A strong candidate begins by separating runtime JavaScript bindings from TypeScript's compile-time type system. They analyze 'const' as a declaration modifier that freezes the variable reference, and then evaluate 'readonly' as a type-level modifier that restricts property assignment. They derive the distinction by testing what happens when attempting to mutate nested properties of both a 'const'-declared object and a 'readonly'-propertied structure. Finally, they synthesize these insights to explain how 'const assertions' bridge the gap by deep-freezing object shapes.",
+    "common_mistakes": [
+      "States that const makes an object completely immutable without providing justification or testing nested properties",
+      "Confuses runtime JavaScript behavior with TypeScript compile-time type checking",
+      "Believes readonly can be used as a variable declaration keyword in place of const or let",
+      "Fails to give a concrete code example demonstrating mutation vs reassignment",
+      "Assumes readonly applies deeply by default rather than only to the immediate property level"
+    ],
+    "progressive_hints": [
+      "Think about where each keyword is applied in code: does const modify a variable declaration, or a property type?",
+      "Consider what happens to the internal properties of an object if you declare the variable with const versus marking a property as readonly.",
+      "Remember that const only locks the variable binding to prevent reassignment, while readonly targets specific object properties at the type level."
+    ],
+    "learning_objective": "Understand that 'const' protects variable references from reassignment while 'readonly' protects object properties from mutation at the type level."
+  },
+  {
+    "id": "ts-0007",
+    "question": "What is type narrowing, and how does TypeScript narrow types inside an if statement checking `typeof`?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "typescript"
+    ],
+    "tech_keywords": [
+      "typescript"
+    ],
+    "companies_common": [
+      "Microsoft",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Type narrowing is TypeScript refining a broader type to a more specific one within a conditional branch, based on a runtime check",
+        "typeof checks narrow a union like `string | number` to just 'string' inside an `if (typeof x === 'string')` block",
+        "Other narrowing mechanisms: instanceof, 'in' operator, discriminated union tag checks, custom type guard functions",
+        "Explains this lets you safely call type-specific methods (like .toUpperCase() on a narrowed string) without a cast"
+      ],
+      "sample_answer": "Type narrowing is TypeScript refining a broader/union type to a more specific one within a particular code branch, based on a runtime check it can statically understand. For example, given `x: string | number`, inside `if (typeof x === 'string') { x.toUpperCase(); }`, TypeScript narrows x to just 'string' in that branch, so calling a string-only method is safe without needing a manual type cast. Other narrowing mechanisms include instanceof checks, the 'in' operator for checking property existence, and custom user-defined type guard functions."
+    },
+    "follow_up_hint": "Ask them to write a custom type guard function using the 'x is Type' return syntax.",
+    "concept": "Type Narrowing",
+    "sub_concept": "Runtime Checks and Control Flow Analysis",
+    "expected_reasoning": "A strong candidate begins by defining the core challenge of static analysis working with dynamic runtime values. They trace how TypeScript's control flow analyzer inspects conditional blocks to refine union types into more specific subsets. They explain that runtime operators like `typeof` act as proof to the type checker, allowing safe access to type-specific properties inside the guarded branch without requiring manual type assertions. Finally, they contrast this with other control flow mechanisms to demonstrate a comprehensive understanding of the type system's design.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as 'it makes types more specific' without explaining control flow analysis",
+      "Confuses compile-time type checking with runtime JavaScript execution behavior",
+      "Believes type narrowing alters the actual runtime value rather than just the static type signature",
+      "Only mentions `typeof` and fails to acknowledge other mechanisms like `instanceof` or discriminated unions",
+      "Claims TypeScript removes the need for runtime checks entirely instead of bridging runtime checks with static types"
+    ],
+    "progressive_hints": [
+      "Consider what happens to a variable's static type when your code runs a check to see what kind of data it actually holds at runtime.",
+      "Think about how the TypeScript compiler reads conditional statements like `if` blocks to track what a variable's type must be inside that specific branch.",
+      "If you have a variable typed as `string | number` and you check `typeof x === 'string'`, what information does the compiler use to let you call string methods inside that block?"
+    ],
+    "learning_objective": "Candidates should understand how TypeScript bridges runtime JavaScript checks with static type safety through control flow analysis and narrowing."
+  },
+  {
+    "id": "ts-0008",
+    "question": "Explain what TypeScript's structural typing means, compared to nominal typing in languages like Java.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "typescript"
+    ],
+    "tech_keywords": [
+      "typescript"
+    ],
+    "companies_common": [
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Structural typing: two types are compatible if they have the same shape/members, regardless of their declared name or explicit relationship",
+        "Nominal typing: two types are compatible only if explicitly declared to be related (e.g. implementing the same interface by name)",
+        "Explains TypeScript is structurally typed: a class or object satisfies an interface just by having the right shape, without explicitly declaring 'implements'",
+        "Gives a concrete example showing two unrelated interfaces with the same shape being interchangeable in TypeScript"
+      ],
+      "sample_answer": "TypeScript uses structural typing: a value is considered compatible with a type if it has the right shape — the right properties and methods — regardless of how it was declared or whether it explicitly claims to implement that type. Nominal typing, used in languages like Java, requires an explicit declared relationship, like `implements SomeInterface` by name, even if the shapes match. So in TypeScript, `interface Point {x:number,y:number}` and `interface Vector {x:number,y:number}` are fully interchangeable anywhere either is expected, purely because they have the same shape, with no explicit relationship declared between them."
+    },
+    "follow_up_hint": "Ask them to give an example where structural typing could cause an unintended bug (e.g. accidentally passing a compatible-shaped but semantically different object).",
+    "concept": "Type Systems",
+    "sub_concept": "Structural vs Nominal Typing",
+    "expected_reasoning": "A strong candidate begins by defining the core philosophy of how types are evaluated in different language paradigms. They contrast Java's strict reliance on explicit declarations and names with TypeScript's focus on the shape of data. They then construct a clear, minimal code example demonstrating how TypeScript allows duck typing at compile time. Finally, they discuss the practical implications of this design choice on flexibility versus strict type safety.",
+    "common_mistakes": [
+      "States that TypeScript uses nominal typing because it has classes and interfaces.",
+      "Confuses structural typing with dynamic typing or duck typing without mentioning that TypeScript checks types at compile time.",
+      "Fails to provide a concrete code example illustrating the difference between the two systems.",
+      "Claims Java is structurally typed because of interfaces.",
+      "States the conclusion with no justification or explanation of how the compiler validates compatibility."
+    ],
+    "progressive_hints": [
+      "Consider how the compiler decides whether a given object can be passed into a function expecting a specific interface in TypeScript versus Java.",
+      "Think about what happens in TypeScript if you pass an object literal that matches an interface's shape without explicitly stating it implements that interface.",
+      "Focus on the distinction between an explicit declaration (like 'implements Name') versus an implicit property match (having the same members)."
+    ],
+    "learning_objective": "The candidate should walk away understanding how TypeScript's structural type system evaluates type compatibility based on shape rather than explicit declarations."
+  },
+  {
+    "id": "ts-0009",
+    "question": "What are utility types like Partial, Pick, and Omit used for in TypeScript?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "typescript"
+    ],
+    "tech_keywords": [
+      "typescript"
+    ],
+    "companies_common": [
+      "Microsoft",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Partial<T> makes all properties of T optional — useful for update/patch functions accepting a subset of fields",
+        "Pick<T, K> constructs a new type with only the specified keys from T",
+        "Omit<T, K> constructs a new type excluding the specified keys from T",
+        "These derive new types from an existing one instead of manually duplicating and maintaining a near-identical interface"
+      ],
+      "sample_answer": "These are built-in generic types that transform an existing type without redeclaring it. Partial<T> makes every property of T optional, which is handy for an update function that accepts only the fields being changed. Pick<T, 'a' | 'b'> builds a new type containing only those specified keys from T. Omit<T, 'a'> builds a new type with every key from T except the ones listed. All three let you derive a related type from a single source of truth instead of manually maintaining a near-duplicate interface that could drift out of sync."
+    },
+    "follow_up_hint": "Ask them to define an UpdateUser type from a full User interface using Partial and Omit together.",
+    "concept": "TypeScript Utility Types",
+    "sub_concept": "Type Transformation and DRY Interfaces",
+    "expected_reasoning": "A strong candidate begins by identifying the core maintenance problem in static typing: repeating or duplicating nearly identical interfaces for different operations like creation versus updates. They then explore how mapped and conditional types operate under the hood to transform existing shapes dynamically. They explain how specific built-ins like Partial, Pick, and Omit solve distinct structural modification use cases rather than just listing their names. Finally, they weigh the benefits of these utilities against writing manual duplicate types, emphasizing how they keep code DRY and type-safe when data shapes evolve.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely listing the names of the utility types without explaining their mechanical purpose",
+      "Confuses Partial with Required or mixes up the parameters of Pick and Omit",
+      "Thinks utility types modify runtime behavior or generate JavaScript code instead of existing purely at the type level",
+      "Fails to provide a concrete use case, such as explaining why an update function needs a type with optional properties",
+      "Believes types must always be manually duplicated when a subset of fields is needed"
+    ],
+    "progressive_hints": [
+      "Think about what happens to your interfaces when you need a version of a user object where every property is optional for a patch request.",
+      "Look at how you can derive new shapes from an existing type without rewriting the original definition.",
+      "Consider the built-in type helpers that explicitly let you select specific keys, remove keys, or make all fields optional in a single step."
+    ],
+    "learning_objective": "Understand how to leverage built-in TypeScript utility types to derive new shapes from existing interfaces, eliminating redundant code and keeping types DRY."
+  },
+  {
+    "id": "ts-0010",
+    "question": "Explain what 'never' means as a TypeScript type, and give an example of where it's used.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "frontend"
+    ],
+    "topics": [
+      "typescript"
+    ],
+    "tech_keywords": [
+      "typescript"
+    ],
+    "companies_common": [
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "'never' represents a value that can never actually occur — a function that always throws or never returns has return type 'never'",
+        "Used by the compiler to verify exhaustiveness — assigning a value to a 'never'-typed variable in a switch's default case fails to compile if a case was missed",
+        "Distinguishes 'never' (no possible value) from 'void' (a function returns, but with no meaningful value) and 'undefined'",
+        "Gives a concrete exhaustiveness-checking example"
+      ],
+      "sample_answer": "'never' represents a type with no possible values at all — a function that always throws an error, or loops forever, has a return type of 'never', since it genuinely never produces a value. A common practical use is exhaustiveness checking in a switch over a union type: in the default case, assigning the (supposedly impossible) remaining value to a variable typed 'never' causes a compile error if you later add a new variant to the union but forget to handle it in the switch, catching the omission at compile time rather than at runtime. This differs from 'void', which means a function returns, just with no meaningful value."
+    },
+    "follow_up_hint": "Ask them to write the exhaustiveness-check pattern for a 3-variant discriminated union.",
+    "concept": "TypeScript Type System",
+    "sub_concept": "Bottom Type and Exhaustiveness Checking",
+    "expected_reasoning": "A strong candidate will first distinguish 'never' from 'void' or 'undefined' by focusing on the concept of reachability. They should explain that 'never' signifies a state where code execution cannot proceed, such as an infinite loop or an error throw. Finally, they should connect this to the compiler's ability to perform static analysis, specifically how 'never' acts as a sentinel value to ensure all possible branches in a union type have been handled.",
+    "common_mistakes": [
+      "Confusing 'never' with 'void' or 'undefined'",
+      "Stating it is just for errors without mentioning exhaustiveness checking",
+      "Claiming 'never' is a type that can hold any value (confusing it with 'any' or 'unknown')",
+      "Failing to explain the concept of the 'bottom type' in type theory",
+      "Providing an example that doesn't actually demonstrate a compile-time error"
+    ],
+    "progressive_hints": [
+      "Consider the difference between a function that finishes execution without returning a value and a function that prevents execution from ever reaching the end.",
+      "Think about how the TypeScript compiler can prove that a specific branch of code is logically unreachable based on the types provided.",
+      "If you have a switch statement covering all members of a union, what type would you assign to a variable in the 'default' case to force a compiler error if a new member is added to the union later?"
+    ],
+    "learning_objective": "Understand that 'never' represents the bottom type, used to signal unreachable code and enforce exhaustive type checking in conditional logic."
+  }
 ]

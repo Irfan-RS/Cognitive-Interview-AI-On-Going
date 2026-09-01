@@ -1,7 +1,246 @@
 [
-  {"id":"sql-0001","question":"Explain the difference between INNER JOIN, LEFT JOIN, and FULL OUTER JOIN.","type":"conceptual","difficulty":1,"roles":["backend","data_scientist"],"topics":["sql","dbms"],"tech_keywords":["sql","join"],"companies_common":["Amazon","Infosys","TCS"],"source_style":"common-interview","reference_solution":{"key_points":["INNER JOIN: returns only rows with matching values in both tables","LEFT JOIN: returns all rows from the left table, plus matched rows from the right table; unmatched right-side columns are NULL","FULL OUTER JOIN: returns all rows from both tables, with NULLs where there's no match on either side","Gives a concrete example scenario (e.g. customers and orders) to ground the explanation"],"sample_answer":"An INNER JOIN returns only the rows where there's a matching value in both tables being joined — so if a customer has no orders, they simply won't appear in the result. A LEFT JOIN returns every row from the left table regardless of whether there's a match, filling in NULLs for the right table's columns when there's no match — so every customer appears, with NULL order details for customers with no orders. A FULL OUTER JOIN returns every row from both tables, matching where possible and filling NULLs on whichever side has no match — so it includes customers with no orders AND orders that somehow reference a nonexistent customer, if that were possible."},"follow_up_hint":"Ask them to write a query finding all customers who have never placed an order, using a LEFT JOIN and a NULL check."},
-  {"id":"sql-0002","question":"Write a SQL query to find the second-highest salary from an Employees table.","type":"coding","difficulty":2,"roles":["backend","data_scientist"],"topics":["sql"],"tech_keywords":["sql"],"companies_common":["Amazon","TCS","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["A correct approach: `SELECT MAX(salary) FROM Employees WHERE salary < (SELECT MAX(salary) FROM Employees)`","Alternative using DISTINCT + OFFSET/LIMIT: `SELECT DISTINCT salary FROM Employees ORDER BY salary DESC LIMIT 1 OFFSET 1`","Alternative using DENSE_RANK() window function for generalizing to the Nth highest salary","Should account for ties (multiple employees sharing the highest salary) — using DISTINCT or MAX-based approaches correctly, versus naive OFFSET without DISTINCT which can be wrong with duplicate top salaries"],"sample_answer":"One correct approach: `SELECT MAX(salary) FROM Employees WHERE salary < (SELECT MAX(salary) FROM Employees)` — this finds the highest salary that's still less than the overall max, which correctly handles ties for first place. Alternatively, `SELECT DISTINCT salary FROM Employees ORDER BY salary DESC LIMIT 1 OFFSET 1` works too, using DISTINCT specifically to avoid counting a duplicate top salary as both first and second. For a more general 'Nth highest' solution, I'd use a window function like DENSE_RANK() over salary DESC, then filter WHERE rank = N, which handles ties consistently and generalizes cleanly to any N."},"follow_up_hint":"Ask them to generalize their query to find the Nth highest salary using DENSE_RANK()."},
-  {"id":"sql-0003","question":"What is the difference between WHERE and HAVING in SQL?","type":"conceptual","difficulty":1,"roles":["backend","data_scientist"],"topics":["sql"],"tech_keywords":["sql"],"companies_common":["Infosys","TCS","Amazon"],"source_style":"common-interview","reference_solution":{"key_points":["WHERE filters individual rows BEFORE grouping/aggregation happens","HAVING filters groups AFTER GROUP BY aggregation has been computed, and can reference aggregate functions like COUNT/SUM","You can't use an aggregate function in WHERE (e.g. WHERE COUNT(*) > 5 is invalid) — that's exactly what HAVING is for","Gives a concrete example distinguishing the two, e.g. filtering rows before grouping vs filtering resulting groups by an aggregate condition"],"sample_answer":"WHERE filters individual rows before any grouping or aggregation happens, so it can't reference an aggregate function like COUNT or SUM directly. HAVING filters after GROUP BY has produced its aggregated groups, and is specifically meant to filter based on aggregate conditions, like keeping only groups where COUNT(*) > 5. For example, 'SELECT department, COUNT(*) FROM employees WHERE hire_date > 2020-01-01 GROUP BY department HAVING COUNT(*) > 10' first filters out employees hired before 2020 with WHERE, then groups the remaining ones by department, then HAVING keeps only departments with more than 10 such employees."},"follow_up_hint":"Ask them what happens if you try to use an aggregate function like COUNT(*) inside a WHERE clause."},
-  {"id":"sql-0004","question":"Explain the difference between a SQL window function and a GROUP BY aggregate.","type":"conceptual","difficulty":3,"roles":["backend","data_scientist"],"topics":["sql"],"tech_keywords":["sql","window-functions"],"companies_common":["Amazon","Google"],"source_style":"faang-common","reference_solution":{"key_points":["GROUP BY collapses multiple rows into one row per group, losing the individual row-level detail","A window function (using OVER()) computes an aggregate or ranking value per row while still returning every individual row, 'looking across' a defined window/partition of related rows","Useful for tasks like ranking rows within a group, computing a running total, or comparing each row to its group's aggregate — without collapsing the result set","Example: ROW_NUMBER(), RANK(), SUM() OVER (PARTITION BY ... ORDER BY ...)"],"sample_answer":"GROUP BY collapses multiple rows into a single summary row per group, so you lose access to the individual row-level data — you only get the aggregated result per group. A window function, using the OVER() clause, computes an aggregate or ranking value for each individual row based on a defined 'window' of related rows — like all rows sharing the same department — while still returning every original row rather than collapsing them. This is useful for things GROUP BY can't easily do, like ranking each employee's salary within their department using RANK() OVER (PARTITION BY department ORDER BY salary DESC), or computing a running total with SUM() OVER (ORDER BY date), where you need the per-row detail retained alongside the aggregate context."},"follow_up_hint":"Ask them to write a query ranking employees by salary within each department using a window function."},
-  {"id":"sql-0005","question":"What is a SQL transaction, and explain the ACID properties.","type":"conceptual","difficulty":2,"roles":["backend"],"topics":["sql","dbms"],"tech_keywords":["sql","acid","transaction"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["A transaction groups multiple operations into a single logical unit that either fully succeeds (commits) or fully fails (rolls back)","Atomicity: all operations in the transaction succeed together, or none of them take effect at all","Consistency: a transaction moves the database from one valid state to another, respecting all constraints/rules","Isolation: concurrently running transactions don't see each other's uncommitted intermediate changes (to the degree defined by the isolation level)","Durability: once committed, changes persist even through a crash immediately after"],"sample_answer":"A transaction groups multiple database operations into a single logical unit of work that either all succeed together or all fail together, so the database never ends up in a half-updated state. ACID describes the guarantees: Atomicity means all the operations in the transaction commit together or none do — there's no partial application. Consistency means a transaction always moves the database from one valid state to another, respecting all its constraints and rules. Isolation means concurrently executing transactions don't see each other's uncommitted intermediate changes, to a degree that depends on the configured isolation level. Durability means once a transaction commits, its changes are permanently saved and will survive even a crash that happens immediately afterward."},"follow_up_hint":"Ask them to explain what a 'dirty read' is and which isolation level prevents it."}
+  {
+    "id": "sql-0001",
+    "question": "Explain the difference between INNER JOIN, LEFT JOIN, and FULL OUTER JOIN.",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "backend",
+      "data_scientist"
+    ],
+    "topics": [
+      "sql",
+      "dbms"
+    ],
+    "tech_keywords": [
+      "sql",
+      "join"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys",
+      "TCS"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "INNER JOIN: returns only rows with matching values in both tables",
+        "LEFT JOIN: returns all rows from the left table, plus matched rows from the right table; unmatched right-side columns are NULL",
+        "FULL OUTER JOIN: returns all rows from both tables, with NULLs where there's no match on either side",
+        "Gives a concrete example scenario (e.g. customers and orders) to ground the explanation"
+      ],
+      "sample_answer": "An INNER JOIN returns only the rows where there's a matching value in both tables being joined — so if a customer has no orders, they simply won't appear in the result. A LEFT JOIN returns every row from the left table regardless of whether there's a match, filling in NULLs for the right table's columns when there's no match — so every customer appears, with NULL order details for customers with no orders. A FULL OUTER JOIN returns every row from both tables, matching where possible and filling NULLs on whichever side has no match — so it includes customers with no orders AND orders that somehow reference a nonexistent customer, if that were possible."
+    },
+    "follow_up_hint": "Ask them to write a query finding all customers who have never placed an order, using a LEFT JOIN and a NULL check.",
+    "concept": "SQL Joins",
+    "sub_concept": "Relational Set Operations",
+    "expected_reasoning": "A strong candidate begins by framing relational joins as set operations on two tables. They logically progress from the most restrictive operation to the most inclusive one, defining what happens to the base rows when matches do or do not exist. To clarify the differences, they ground their definitions in a concrete, intuitive data model like customers and orders. Finally, they explicitly address how unmatched records are handled by mentioning the introduction of NULL values.",
+    "common_mistakes": [
+      "States definitions without providing a concrete example scenario",
+      "Confuses LEFT JOIN with RIGHT JOIN",
+      "Fails to explain what happens to unmatched rows (e.g., omitting mention of NULL values)",
+      "Treats FULL OUTER JOIN as a simple union without explaining the combination condition",
+      "Only focuses on syntax rather than the underlying set theory and result shapes"
+    ],
+    "progressive_hints": [
+      "Consider how you would visualize two overlapping sets of data and what parts of that overlap you might want to retrieve.",
+      "Think about what happens to rows in one table when there is no corresponding matching record in the other table.",
+      "If you need to guarantee that every single record from both tables appears in the output regardless of whether a match exists, which join type handles both directions simultaneously?"
+    ],
+    "learning_objective": "Understand how different SQL join types dictate the inclusion and treatment of matching and non-matching rows from relational tables."
+  },
+  {
+    "id": "sql-0002",
+    "question": "Write a SQL query to find the second-highest salary from an Employees table.",
+    "type": "coding",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "data_scientist"
+    ],
+    "topics": [
+      "sql"
+    ],
+    "tech_keywords": [
+      "sql"
+    ],
+    "companies_common": [
+      "Amazon",
+      "TCS",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A correct approach: `SELECT MAX(salary) FROM Employees WHERE salary < (SELECT MAX(salary) FROM Employees)`",
+        "Alternative using DISTINCT + OFFSET/LIMIT: `SELECT DISTINCT salary FROM Employees ORDER BY salary DESC LIMIT 1 OFFSET 1`",
+        "Alternative using DENSE_RANK() window function for generalizing to the Nth highest salary",
+        "Should account for ties (multiple employees sharing the highest salary) — using DISTINCT or MAX-based approaches correctly, versus naive OFFSET without DISTINCT which can be wrong with duplicate top salaries"
+      ],
+      "sample_answer": "One correct approach: `SELECT MAX(salary) FROM Employees WHERE salary < (SELECT MAX(salary) FROM Employees)` — this finds the highest salary that's still less than the overall max, which correctly handles ties for first place. Alternatively, `SELECT DISTINCT salary FROM Employees ORDER BY salary DESC LIMIT 1 OFFSET 1` works too, using DISTINCT specifically to avoid counting a duplicate top salary as both first and second. For a more general 'Nth highest' solution, I'd use a window function like DENSE_RANK() over salary DESC, then filter WHERE rank = N, which handles ties consistently and generalizes cleanly to any N."
+    },
+    "follow_up_hint": "Ask them to generalize their query to find the Nth highest salary using DENSE_RANK().",
+    "concept": "SQL Aggregation",
+    "sub_concept": "Handling ranking and ties in result sets",
+    "expected_reasoning": "A strong candidate begins by defining what 'second highest' means, considering whether duplicate maximum salaries exist in the table. They weigh the trade-offs between a subquery approach with filtering, limit-offset clauses, and window functions like DENSE_RANK. They recognize that a naive limit-offset can fail if multiple employees share the top salary. Finally, they choose the approach that best balances readability, performance, and correctness under edge cases.",
+    "common_mistakes": [
+      "States the conclusion with no justification using a naive LIMIT 1 OFFSET 1 without considering duplicate salaries.",
+      "Forgets to use DISTINCT when ordering descending, which returns the wrong row if the top two salaries are identical.",
+      "Fails to handle edge cases like a table with fewer than two employees, resulting in unexpected NULLs or empty sets.",
+      "Confuses RANK(), DENSE_RANK(), and ROW_NUMBER() when proposing a window function solution.",
+      "Writes a correlated subquery that performs poorly on large datasets without explaining the performance trade-off."
+    ],
+    "progressive_hints": [
+      "What edge case might occur if two different employees share the exact same highest salary in the table?",
+      "Think about how you would exclude the single maximum value before trying to find the maximum of what remains.",
+      "Consider using a window function like DENSE_RANK() or a subquery with a strict inequality filter to safely isolate the target rank."
+    ],
+    "learning_objective": "The candidate should walk away understanding how to correctly handle ranking, ties, and edge cases in SQL without relying on brittle sorting assumptions."
+  },
+  {
+    "id": "sql-0003",
+    "question": "What is the difference between WHERE and HAVING in SQL?",
+    "type": "conceptual",
+    "difficulty": 1,
+    "roles": [
+      "backend",
+      "data_scientist"
+    ],
+    "topics": [
+      "sql"
+    ],
+    "tech_keywords": [
+      "sql"
+    ],
+    "companies_common": [
+      "Infosys",
+      "TCS",
+      "Amazon"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "WHERE filters individual rows BEFORE grouping/aggregation happens",
+        "HAVING filters groups AFTER GROUP BY aggregation has been computed, and can reference aggregate functions like COUNT/SUM",
+        "You can't use an aggregate function in WHERE (e.g. WHERE COUNT(*) > 5 is invalid) — that's exactly what HAVING is for",
+        "Gives a concrete example distinguishing the two, e.g. filtering rows before grouping vs filtering resulting groups by an aggregate condition"
+      ],
+      "sample_answer": "WHERE filters individual rows before any grouping or aggregation happens, so it can't reference an aggregate function like COUNT or SUM directly. HAVING filters after GROUP BY has produced its aggregated groups, and is specifically meant to filter based on aggregate conditions, like keeping only groups where COUNT(*) > 5. For example, 'SELECT department, COUNT(*) FROM employees WHERE hire_date > 2020-01-01 GROUP BY department HAVING COUNT(*) > 10' first filters out employees hired before 2020 with WHERE, then groups the remaining ones by department, then HAVING keeps only departments with more than 10 such employees."
+    },
+    "follow_up_hint": "Ask them what happens if you try to use an aggregate function like COUNT(*) inside a WHERE clause.",
+    "concept": "SQL Query Execution",
+    "sub_concept": "Row-level versus Group-level Filtering",
+    "expected_reasoning": "A strong candidate begins by analyzing the logical processing order of a SQL query, specifically when rows are evaluated relative to grouping operations. They derive why aggregate functions cannot be computed on raw un-grouped rows, mapping WHERE to the pre-aggregation phase and HAVING to the post-aggregation phase. They weigh performance and syntax implications, demonstrating why attempting to use an aggregate inside a WHERE clause fails syntactically. Finally, they structure a concrete example contrasting row filtering with group filtering to solidify the distinction.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying 'WHERE is for rows and HAVING is for groups' without explaining query execution order.",
+      "Claims WHERE and HAVING are completely interchangeable as long as you write the right syntax.",
+      "Tries to use an aggregate function like SUM() or COUNT() inside a WHERE clause and assumes it evaluates over the groups.",
+      "Believes HAVING is only used for SUM() and cannot be used with standard columns if they are part of the GROUP BY clause.",
+      "Confuses the logical order of operations, thinking HAVING occurs before GROUP BY."
+    ],
+    "progressive_hints": [
+      "Think about the chronological order in which a SQL database engine processes a query. When do rows get bundled into groups?",
+      "Consider where in that lifecycle summary functions like COUNT() or SUM() are actually calculated relative to individual row attributes.",
+      "If you need to eliminate individual raw rows before any aggregation happens versus eliminating entire groups after aggregation, which clause serves which phase?"
+    ],
+    "learning_objective": "The candidate should understand that WHERE filters raw rows prior to aggregation while HAVING filters the resulting aggregated groups."
+  },
+  {
+    "id": "sql-0004",
+    "question": "Explain the difference between a SQL window function and a GROUP BY aggregate.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "data_scientist"
+    ],
+    "topics": [
+      "sql"
+    ],
+    "tech_keywords": [
+      "sql",
+      "window-functions"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "GROUP BY collapses multiple rows into one row per group, losing the individual row-level detail",
+        "A window function (using OVER()) computes an aggregate or ranking value per row while still returning every individual row, 'looking across' a defined window/partition of related rows",
+        "Useful for tasks like ranking rows within a group, computing a running total, or comparing each row to its group's aggregate — without collapsing the result set",
+        "Example: ROW_NUMBER(), RANK(), SUM() OVER (PARTITION BY ... ORDER BY ...)"
+      ],
+      "sample_answer": "GROUP BY collapses multiple rows into a single summary row per group, so you lose access to the individual row-level data — you only get the aggregated result per group. A window function, using the OVER() clause, computes an aggregate or ranking value for each individual row based on a defined 'window' of related rows — like all rows sharing the same department — while still returning every original row rather than collapsing them. This is useful for things GROUP BY can't easily do, like ranking each employee's salary within their department using RANK() OVER (PARTITION BY department ORDER BY salary DESC), or computing a running total with SUM() OVER (ORDER BY date), where you need the per-row detail retained alongside the aggregate context."
+    },
+    "follow_up_hint": "Ask them to write a query ranking employees by salary within each department using a window function.",
+    "concept": "SQL Aggregation",
+    "sub_concept": "Window Functions vs GROUP BY",
+    "expected_reasoning": "A strong candidate begins by identifying the fundamental difference in how rows are processed and outputted between the two approaches. They reason about the lifecycle of a query result set, recognizing that GROUP BY changes the cardinality by collapsing distinct rows into single summary rows, whereas window functions operate over a partition of rows while preserving the original row-level granularity. They then contrast the use cases, noting when it is necessary to see individual records alongside aggregate context, such as calculating moving averages or intra-partition rankings.",
+    "common_mistakes": [
+      "States that window functions are just a faster version of GROUP BY with no structural difference.",
+      "Claims that window functions cannot perform aggregations like SUM or AVG.",
+      "Fails to mention row cardinality and believes both approaches return the exact same number of rows.",
+      "Confounds the ORDER BY clause inside an OVER() statement with the outer query's sorting mechanism.",
+      "Assumes window functions can be used in the WHERE clause directly without a subquery or CTE."
+    ],
+    "progressive_hints": [
+      "Consider what happens to the total number of rows in your result set when you use a standard aggregation versus when you do not.",
+      "Think about whether you can display an individual user's specific transaction details alongside the total sum of all their transactions in a single standard GROUP BY query.",
+      "Focus on the effect of the OVER clause: how does it allow you to compute aggregate values while keeping every single row visible in the output?"
+    ],
+    "learning_objective": "Understand how to choose between GROUP BY and window functions based on whether row-level granularity must be preserved alongside aggregate metrics."
+  },
+  {
+    "id": "sql-0005",
+    "question": "What is a SQL transaction, and explain the ACID properties.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "sql",
+      "dbms"
+    ],
+    "tech_keywords": [
+      "sql",
+      "acid",
+      "transaction"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A transaction groups multiple operations into a single logical unit that either fully succeeds (commits) or fully fails (rolls back)",
+        "Atomicity: all operations in the transaction succeed together, or none of them take effect at all",
+        "Consistency: a transaction moves the database from one valid state to another, respecting all constraints/rules",
+        "Isolation: concurrently running transactions don't see each other's uncommitted intermediate changes (to the degree defined by the isolation level)",
+        "Durability: once committed, changes persist even through a crash immediately after"
+      ],
+      "sample_answer": "A transaction groups multiple database operations into a single logical unit of work that either all succeed together or all fail together, so the database never ends up in a half-updated state. ACID describes the guarantees: Atomicity means all the operations in the transaction commit together or none do — there's no partial application. Consistency means a transaction always moves the database from one valid state to another, respecting all its constraints and rules. Isolation means concurrently executing transactions don't see each other's uncommitted intermediate changes, to a degree that depends on the configured isolation level. Durability means once a transaction commits, its changes are permanently saved and will survive even a crash that happens immediately afterward."
+    },
+    "follow_up_hint": "Ask them to explain what a 'dirty read' is and which isolation level prevents it.",
+    "concept": "Database Transactions",
+    "sub_concept": "ACID Properties",
+    "expected_reasoning": "A strong candidate begins by defining a transaction as a logical boundary for grouped operations, emphasizing the all-or-nothing outcome. They then systematically break down ACID, explaining each letter not just by its literal definition, but by the specific failure mode or concurrency anomaly it prevents. For isolation, a sophisticated answer acknowledges that strict serializability has performance costs and mentions how isolation levels trade off safety for concurrency. Finally, they tie durability back to the storage layer, explaining how transaction logs ensure persistence even after a sudden hardware failure.",
+    "common_mistakes": [
+      "Reciting textbook acronym definitions (e.g., 'Atomicity means atomic') without explaining what happens under the hood or what failure mode it prevents.",
+      "Confusing Consistency with Isolation, or treating them as interchangeable database guarantees.",
+      "Stating that Isolation means complete independence without mentioning concurrency levels or trade-offs like phantom reads and dirty reads.",
+      "Describing Durability as just saving to disk, missing the role of write-ahead logging and crash recovery mechanisms.",
+      "Treating a transaction purely as a performance optimization rather than a correctness and data integrity boundary."
+    ],
+    "progressive_hints": [
+      "Think about what would happen to your data if a power outage occurred halfway through a sequence of dependent financial updates, like transferring money.",
+      "Consider the four distinct guarantees a database management system must provide to ensure multi-step operations remain safe, isolated, and permanently recorded.",
+      "Break down each letter of ACID: what specific threat does atomicity protect against versus durability, and how does isolation handle multiple users at once?"
+    ],
+    "learning_objective": "The candidate should understand how ACID properties collectively guarantee data integrity, reliable recovery, and safe concurrency when executing multi-step database operations."
+  }
 ]

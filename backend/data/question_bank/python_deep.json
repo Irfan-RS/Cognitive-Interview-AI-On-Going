@@ -1,6 +1,190 @@
 [
-  {"id":"pyd-0001","question":"Explain Python's list vs generator, and when you'd prefer a generator.","type":"trade_off_questions","difficulty":2,"roles":["backend"],"topics":["python"],"tech_keywords":["python","generators"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["A list holds all its elements in memory at once, fully computed upfront","A generator produces values lazily, one at a time, on demand, without holding the entire sequence in memory","Prefer a generator for large or unbounded sequences, or when you only need to iterate once and don't need random access/multiple passes","Trade-off: a generator can only be iterated once (it's exhausted afterward), while a list can be iterated repeatedly and supports indexing"],"sample_answer":"A list computes and holds every element in memory upfront, all at once. A generator instead produces values lazily, one at a time, only as they're requested, without ever materializing the whole sequence in memory simultaneously. I'd prefer a generator when working with a very large or even unbounded sequence — like processing a huge file line by line, or an infinite sequence — where holding everything in memory at once isn't feasible or necessary. The trade-off is a generator can only be iterated through once; once exhausted, it's done, whereas a list can be iterated multiple times and supports random access via indexing, which a generator does not."},"follow_up_hint":"Ask them to convert a list comprehension that loads a huge dataset into memory into a generator expression instead."},
-  {"id":"pyd-0002","question":"What are Python decorators, and how would you write one that logs a function's execution time?","type":"coding","difficulty":3,"roles":["backend"],"topics":["python"],"tech_keywords":["python","decorators"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["A decorator is a function that takes another function and returns a new function wrapping/extending its behavior, applied with the @decorator syntax","Explains the wrapper pattern: the decorator defines an inner function that calls the original, adds behavior before/after, and returns that inner function to replace the original","Correct timing decorator uses time.perf_counter() before and after calling the wrapped function, and typically uses functools.wraps to preserve the original function's name/docstring","Mentions decorators are commonly used for cross-cutting concerns: logging, timing, caching/memoization, access control, retries"],"sample_answer":"A decorator is a function that takes another function as input and returns a new function that wraps and extends its behavior, applied conveniently with @decorator syntax right above a function definition. To write a timing decorator: define an outer function taking the target function as an argument, define an inner wrapper function that records time.perf_counter() before calling the original function, calls it, records the time again after, prints or logs the difference, and returns the original result — then return that wrapper from the outer function. I'd also apply functools.wraps to the wrapper to preserve the original function's name and docstring, since without it, introspection tools and debugging would see the wrapper's metadata instead of the original function's. Decorators are commonly used for exactly this kind of cross-cutting concern — logging, timing, caching results, access control checks, or retry logic — without cluttering the core function's logic itself."},"follow_up_hint":"Ask them to write the actual code for this timing decorator from scratch, including functools.wraps."},
-  {"id":"pyd-0003","question":"Explain the difference between deep copy and shallow copy in Python.","type":"conceptual","difficulty":2,"roles":["backend"],"topics":["python"],"tech_keywords":["python"],"companies_common":["Amazon","Infosys"],"source_style":"common-interview","reference_solution":{"key_points":["A shallow copy creates a new outer container, but the elements inside it are still references to the SAME nested objects as the original — mutating a nested object affects both copies","A deep copy recursively copies the outer container AND all nested objects, so the copy is fully independent of the original at every level","copy.copy() does a shallow copy; copy.deepcopy() does a deep copy","Simple assignment (=) doesn't copy at all — it just creates another reference to the exact same object"],"sample_answer":"Simple assignment with = doesn't copy anything at all — it just creates a second name pointing to the exact same object. A shallow copy, via copy.copy(), creates a new outer container, but the elements inside that container are still references to the same nested objects as the original, so mutating a nested mutable object, like a list inside a list, affects both the original and the shallow copy since they're sharing that same inner object. A deep copy, via copy.deepcopy(), recursively copies the outer container and every nested object all the way down, producing a result that's fully independent of the original at every level — mutating anything in the deep copy has no effect on the original whatsoever."},"follow_up_hint":"Ask them to demonstrate the bug that occurs when shallow-copying a list of lists and mutating a nested list."},
-  {"id":"pyd-0004","question":"What is a Python context manager, and how does the `with` statement use it?","type":"conceptual","difficulty":2,"roles":["backend"],"topics":["python"],"tech_keywords":["python","context-manager"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["A context manager defines __enter__ and __exit__ methods, controlling setup and guaranteed cleanup around a block of code","The `with` statement calls __enter__ at the start of the block and guarantees __exit__ is called at the end, even if an exception occurred inside the block","Common use case: file handling (`with open(...) as f:`) guarantees the file is closed even if an error occurs while reading/writing","__exit__ can also suppress an exception if it returns True, though this should be used carefully"],"sample_answer":"A context manager is an object implementing __enter__ and __exit__ methods, used to guarantee that setup and cleanup code runs around a block, even if an exception occurs inside that block. The with statement calls __enter__ when entering the block and is guaranteed to call __exit__ when leaving it, whether the block completed normally or raised an exception — this is what makes `with open('file.txt') as f:` reliable, since the file is guaranteed to be closed even if something inside the block throws an error, without needing an explicit try/finally. __exit__ can also optionally suppress the exception by returning True from it, though that should be done carefully since silently swallowing exceptions can hide real bugs."},"follow_up_hint":"Ask them to write a custom context manager class (with __enter__/__exit__) that measures and prints elapsed time for the block."}
+  {
+    "id": "pyd-0001",
+    "question": "Explain Python's list vs generator, and when you'd prefer a generator.",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "python"
+    ],
+    "tech_keywords": [
+      "python",
+      "generators"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A list holds all its elements in memory at once, fully computed upfront",
+        "A generator produces values lazily, one at a time, on demand, without holding the entire sequence in memory",
+        "Prefer a generator for large or unbounded sequences, or when you only need to iterate once and don't need random access/multiple passes",
+        "Trade-off: a generator can only be iterated once (it's exhausted afterward), while a list can be iterated repeatedly and supports indexing"
+      ],
+      "sample_answer": "A list computes and holds every element in memory upfront, all at once. A generator instead produces values lazily, one at a time, only as they're requested, without ever materializing the whole sequence in memory simultaneously. I'd prefer a generator when working with a very large or even unbounded sequence — like processing a huge file line by line, or an infinite sequence — where holding everything in memory at once isn't feasible or necessary. The trade-off is a generator can only be iterated through once; once exhausted, it's done, whereas a list can be iterated multiple times and supports random access via indexing, which a generator does not."
+    },
+    "follow_up_hint": "Ask them to convert a list comprehension that loads a huge dataset into memory into a generator expression instead.",
+    "concept": "Memory Management",
+    "sub_concept": "Eager Evaluation vs Lazy Evaluation",
+    "expected_reasoning": "A strong candidate begins by contrasting how both data structures allocate memory, noting that lists store all elements simultaneously while generators compute values on demand. They then analyze access patterns, recognizing that random access and multiple iterations require a list. Finally, they weigh these characteristics against dataset size and performance constraints to determine the appropriate use case.",
+    "common_mistakes": [
+      "Stating that generators are always faster without mentioning memory trade-offs.",
+      "Claiming generators can be indexed just like lists.",
+      "Forgetting that generators are exhausted after a single pass of iteration.",
+      "Giving a purely superficial definition without discussing memory allocation.",
+      "Failing to mention unbounded or infinite data streams as a use case for generators."
+    ],
+    "progressive_hints": [
+      "What happens in memory when you deal with a billion items, and how does Python handle storing them?",
+      "Think about when elements are computed and whether you need to access index five before index two.",
+      "Consider what happens to your data after you loop through a generator a second time."
+    ],
+    "learning_objective": "Understand how to choose between eager and lazy evaluation based on memory constraints, access patterns, and iteration requirements."
+  },
+  {
+    "id": "pyd-0002",
+    "question": "What are Python decorators, and how would you write one that logs a function's execution time?",
+    "type": "coding",
+    "difficulty": 3,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "python"
+    ],
+    "tech_keywords": [
+      "python",
+      "decorators"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A decorator is a function that takes another function and returns a new function wrapping/extending its behavior, applied with the @decorator syntax",
+        "Explains the wrapper pattern: the decorator defines an inner function that calls the original, adds behavior before/after, and returns that inner function to replace the original",
+        "Correct timing decorator uses time.perf_counter() before and after calling the wrapped function, and typically uses functools.wraps to preserve the original function's name/docstring",
+        "Mentions decorators are commonly used for cross-cutting concerns: logging, timing, caching/memoization, access control, retries"
+      ],
+      "sample_answer": "A decorator is a function that takes another function as input and returns a new function that wraps and extends its behavior, applied conveniently with @decorator syntax right above a function definition. To write a timing decorator: define an outer function taking the target function as an argument, define an inner wrapper function that records time.perf_counter() before calling the original function, calls it, records the time again after, prints or logs the difference, and returns the original result — then return that wrapper from the outer function. I'd also apply functools.wraps to the wrapper to preserve the original function's name and docstring, since without it, introspection tools and debugging would see the wrapper's metadata instead of the original function's. Decorators are commonly used for exactly this kind of cross-cutting concern — logging, timing, caching results, access control checks, or retry logic — without cluttering the core function's logic itself."
+    },
+    "follow_up_hint": "Ask them to write the actual code for this timing decorator from scratch, including functools.wraps.",
+    "concept": "Python Decorators",
+    "sub_concept": "Higher-Order Functions and Wrapper Pattern",
+    "expected_reasoning": "A strong candidate begins by defining decorators conceptually as higher-order functions that leverage Python's first-class function support to modify behavior without altering source code. They then derive the implementation by walking through the mechanics of closure and wrapper functions, recognizing the need to accept arbitrary arguments using args and kwargs. They consider edge cases like preserving metadata using functools.wraps and selecting high-resolution timing utilities such as time.perf_counter for accurate measurement. Finally, they articulate why this pattern is ideal for separating cross-cutting concerns from core business logic.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely giving the syntax for @ without explaining closures",
+      "Fails to handle function arguments (*args, **kwargs), restricting the decorator to zero-argument functions",
+      "Forgets to return the wrapper function from the decorator, or forgets to return the original function's result inside the wrapper",
+      "Uses inaccurate timing mechanisms like time.time() instead of time.perf_counter()",
+      "Omits functools.wraps, which results in losing the original function's name and docstring",
+      "Confuses decorators with class inheritance or generator functions"
+    ],
+    "progressive_hints": [
+      "Think about how functions are first-class objects in Python and what it means to pass a function into another function.",
+      "You need the wrapper function to accept any arbitrary arguments the target function might take, and remember that metadata needs to be preserved.",
+      "If your wrapper function intercepts the call, how do you capture the start and end timestamps around the execution, and how do you ensure the wrapped function's return value is still passed back to the caller?"
+    ],
+    "learning_objective": "The candidate should understand how closures and wrappers enable non-invasive behavior modification in Python functions."
+  },
+  {
+    "id": "pyd-0003",
+    "question": "Explain the difference between deep copy and shallow copy in Python.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "python"
+    ],
+    "tech_keywords": [
+      "python"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A shallow copy creates a new outer container, but the elements inside it are still references to the SAME nested objects as the original — mutating a nested object affects both copies",
+        "A deep copy recursively copies the outer container AND all nested objects, so the copy is fully independent of the original at every level",
+        "copy.copy() does a shallow copy; copy.deepcopy() does a deep copy",
+        "Simple assignment (=) doesn't copy at all — it just creates another reference to the exact same object"
+      ],
+      "sample_answer": "Simple assignment with = doesn't copy anything at all — it just creates a second name pointing to the exact same object. A shallow copy, via copy.copy(), creates a new outer container, but the elements inside that container are still references to the same nested objects as the original, so mutating a nested mutable object, like a list inside a list, affects both the original and the shallow copy since they're sharing that same inner object. A deep copy, via copy.deepcopy(), recursively copies the outer container and every nested object all the way down, producing a result that's fully independent of the original at every level — mutating anything in the deep copy has no effect on the original whatsoever."
+    },
+    "follow_up_hint": "Ask them to demonstrate the bug that occurs when shallow-copying a list of lists and mutating a nested list.",
+    "concept": "Object Copying",
+    "sub_concept": "Shallow vs Deep Copy Mechanics and References",
+    "expected_reasoning": "A strong candidate begins by distinguishing between object reference assignment and actual duplication in memory. They then analyze how the memory hierarchy behaves when a collection contains nested mutable objects, contrasting single-level container duplication with recursive traversal. Finally, they tie these mechanics to practical consequences like mutation side effects and demonstrate knowledge of Python's standard library modules that handle these operations.",
+    "common_mistakes": [
+      "Confusing variable assignment (a = b) with a shallow copy, assuming it creates a new container",
+      "Believing a shallow copy duplicates nested objects because the outer container is new",
+      "Stating 'deep copy is just safer' without explaining the performance trade-offs and recursive memory overhead",
+      "Failing to mention how mutating elements inside a shallow copy affects the original object",
+      "Not knowing the specific Python library functions (copy.copy vs copy.deepcopy) used to implement them"
+    ],
+    "progressive_hints": [
+      "Consider what happens to variables in memory when you assign one list to another using the equals sign versus creating a new container.",
+      "Think about what happens to elements stored inside a copied list when those elements are themselves mutable collections like nested lists.",
+      "When a container holds references to other objects, ask yourself whether copying the container automatically duplicates the objects it points to, or just the pointers."
+    ],
+    "learning_objective": "Understand how Python handles object references and memory allocation, allowing you to correctly choose between reference assignment, shallow copies, and deep copies based on mutability and independence requirements."
+  },
+  {
+    "id": "pyd-0004",
+    "question": "What is a Python context manager, and how does the `with` statement use it?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend"
+    ],
+    "topics": [
+      "python"
+    ],
+    "tech_keywords": [
+      "python",
+      "context-manager"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A context manager defines __enter__ and __exit__ methods, controlling setup and guaranteed cleanup around a block of code",
+        "The `with` statement calls __enter__ at the start of the block and guarantees __exit__ is called at the end, even if an exception occurred inside the block",
+        "Common use case: file handling (`with open(...) as f:`) guarantees the file is closed even if an error occurs while reading/writing",
+        "__exit__ can also suppress an exception if it returns True, though this should be used carefully"
+      ],
+      "sample_answer": "A context manager is an object implementing __enter__ and __exit__ methods, used to guarantee that setup and cleanup code runs around a block, even if an exception occurs inside that block. The with statement calls __enter__ when entering the block and is guaranteed to call __exit__ when leaving it, whether the block completed normally or raised an exception — this is what makes `with open('file.txt') as f:` reliable, since the file is guaranteed to be closed even if something inside the block throws an error, without needing an explicit try/finally. __exit__ can also optionally suppress the exception by returning True from it, though that should be done carefully since silently swallowing exceptions can hide real bugs."
+    },
+    "follow_up_hint": "Ask them to write a custom context manager class (with __enter__/__exit__) that measures and prints elapsed time for the block.",
+    "concept": "Context Managers",
+    "sub_concept": "Resource acquisition and guaranteed cleanup via the with statement",
+    "expected_reasoning": "A strong candidate begins by identifying the fundamental problem context managers solve: safe resource management and cleanup. They trace the lifecycle of a resource-heavy operation, noting how manual try-finally blocks become tedious and error-prone. Next, they explain the mechanism behind the scenes, connecting the `with` statement to the underlying protocol methods that handle setup and teardown automatically. Finally, they discuss exception safety, highlighting how cleanup guarantees hold true even when unexpected errors interrupt the enclosed code block.",
+    "common_mistakes": [
+      "States that the `with` statement is just syntactic sugar for try-finally without explaining the `__enter__` and `__exit__` protocol.",
+      "Claims that context managers are only used for file handling and cannot be written by developers for custom objects.",
+      "Forgets to mention that exceptions raised inside the block are still propagated through `__exit__` unless explicitly suppressed.",
+      "Confuses the return value of `__enter__` with the value bound to the `as` clause variable.",
+      "Provides a superficial definition focusing only on code readability rather than deterministic resource lifecycle management."
+    ],
+    "progressive_hints": [
+      "Think about what needs to happen reliably every time you open a file, even if something goes wrong halfway through reading it.",
+      "Consider how Python's protocol-based design allows objects to intercept the entry and exit points of a specific code block.",
+      "Recall the two special magic methods an object must implement to participate in a `with` statement and handle resource acquisition and cleanup."
+    ],
+    "learning_objective": "Understand how Python's context management protocol and the `with` statement automate deterministic resource cleanup and exception safety."
+  }
 ]

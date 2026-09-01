@@ -1,4 +1,97 @@
 [
-  {"id":"eda-0001","question":"What is event-driven architecture, and how does it differ from a traditional request-response model?","type":"conceptual","difficulty":3,"roles":["backend","system_design"],"topics":["system-design","microservices"],"tech_keywords":["event-driven"],"companies_common":["Amazon","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["Event-driven architecture: components communicate by producing and reacting to events (facts that something happened) rather than direct request-response calls","Producers don't know or care who (if anyone) consumes an event, decoupling producers from consumers entirely — new consumers can be added without changing the producer","Contrasts with request-response, where the caller directly addresses a specific service and typically waits for its response, creating tighter coupling and availability dependency","Trade-offs: harder to trace/debug a flow spread across many asynchronous event handlers, and requires careful handling of ordering, duplicate events, and eventual consistency"],"sample_answer":"In event-driven architecture, components communicate by publishing events — facts that something happened, like 'OrderPlaced' — and other components subscribe to and react to events they care about, rather than one service directly calling another and waiting for a response. This decouples producers from consumers completely: the producer publishing an event doesn't know or care who's listening, or even if anyone is, so new consumers can be added later without ever touching the producer's code. This contrasts with a traditional request-response model, where the caller directly addresses a specific service by its API and typically blocks waiting for that service's response, creating tighter coupling and making the caller's own availability dependent on that service being up. The trade-off with event-driven systems is that the overall flow of what happens after an event is published becomes harder to trace and debug, since it's spread across many independent asynchronous handlers, and you need to carefully handle event ordering, potential duplicates, and the eventual consistency this style of architecture implies."},"follow_up_hint":"Ask them to design the event flow for an e-commerce order (OrderPlaced -> InventoryReserved -> PaymentCharged -> ShippingScheduled) and where a Saga pattern would fit in."},
-  {"id":"eda-0002","question":"What is event sourcing, and how does it differ from traditional state-based persistence?","type":"conceptual","difficulty":4,"roles":["backend","system_design"],"topics":["system-design"],"tech_keywords":["event-sourcing"],"companies_common":["Amazon","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["Traditional persistence stores only the current state of an entity (e.g. a bank account row with a current balance column), overwriting the previous value on each update","Event sourcing instead stores the full sequence of events that led to the current state (e.g. 'Deposited $100', 'Withdrew $30'), and the current state is derived by replaying/folding all events","Benefits: full audit trail/history is inherent (not bolted on separately), and you can reconstruct the state at any point in time, or fix a bug retroactively by replaying corrected event-processing logic","Trade-offs: querying current state requires replaying events (usually mitigated with periodic 'snapshots'), and it's a significant architectural commitment/complexity increase over simple CRUD"],"sample_answer":"Traditional persistence just stores an entity's current state — like a bank account row with a single 'balance' column that gets overwritten every time it changes. Event sourcing instead stores the full, ordered sequence of events that led to the current state — like 'AccountOpened', 'Deposited $100', 'Withdrew $30' — and the current state is derived by replaying and folding all of those events together whenever it's needed. The benefit is you get a complete audit trail and history inherently, for free, rather than needing separate audit logging, and you can reconstruct exactly what the state looked like at any past point in time, or even fix a historical processing bug and replay events with corrected logic to get a corrected current state. The trade-offs are that computing current state by replaying potentially very long event histories can get slow, which is usually mitigated by periodically saving a 'snapshot' of computed state so you only need to replay events since the last snapshot, and it's a meaningfully bigger architectural commitment and added complexity compared to simple CRUD persistence."},"follow_up_hint":"Ask them how event sourcing combines with CQRS to build efficient read models."}
+  {
+    "id": "eda-0001",
+    "question": "What is event-driven architecture, and how does it differ from a traditional request-response model?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "system-design",
+      "microservices"
+    ],
+    "tech_keywords": [
+      "event-driven"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Event-driven architecture: components communicate by producing and reacting to events (facts that something happened) rather than direct request-response calls",
+        "Producers don't know or care who (if anyone) consumes an event, decoupling producers from consumers entirely — new consumers can be added without changing the producer",
+        "Contrasts with request-response, where the caller directly addresses a specific service and typically waits for its response, creating tighter coupling and availability dependency",
+        "Trade-offs: harder to trace/debug a flow spread across many asynchronous event handlers, and requires careful handling of ordering, duplicate events, and eventual consistency"
+      ],
+      "sample_answer": "In event-driven architecture, components communicate by publishing events — facts that something happened, like 'OrderPlaced' — and other components subscribe to and react to events they care about, rather than one service directly calling another and waiting for a response. This decouples producers from consumers completely: the producer publishing an event doesn't know or care who's listening, or even if anyone is, so new consumers can be added later without ever touching the producer's code. This contrasts with a traditional request-response model, where the caller directly addresses a specific service by its API and typically blocks waiting for that service's response, creating tighter coupling and making the caller's own availability dependent on that service being up. The trade-off with event-driven systems is that the overall flow of what happens after an event is published becomes harder to trace and debug, since it's spread across many independent asynchronous handlers, and you need to carefully handle event ordering, potential duplicates, and the eventual consistency this style of architecture implies."
+    },
+    "follow_up_hint": "Ask them to design the event flow for an e-commerce order (OrderPlaced -> InventoryReserved -> PaymentCharged -> ShippingScheduled) and where a Saga pattern would fit in.",
+    "concept": "Event-Driven Architecture",
+    "sub_concept": "Asynchronous decoupling versus synchronous request-response",
+    "expected_reasoning": "A strong candidate begins by defining the core communication paradigms, contrasting the direct, synchronous nature of request-response with the asynchronous publish-subscribe model of event-driven systems. They then analyze the structural implications, highlighting how removing direct caller-callee dependencies alters service coupling and availability. Next, they evaluate the operational consequences, such as how the absence of direct return paths changes error handling and flow control. Finally, they weigh the trade-offs, recognizing that while decoupling improves scalability and extensibility, it introduces significant complexity in traceability, state management, and eventual consistency.",
+    "common_mistakes": [
+      "States the conclusion that EDA is 'faster' or 'better' with no justification or context.",
+      "Confuses event-driven architecture with simple asynchronous API calls or task queues.",
+      "Fails to mention producer-consumer decoupling and treats event brokers merely as message loggers.",
+      "Ignores the operational trade-offs like debugging difficulty, ordering challenges, and eventual consistency.",
+      "Frames request-response and event-driven models as mutually exclusive rather than architectural choices for different use cases."
+    ],
+    "progressive_hints": [
+      "Think about how a caller initiates an action and waits for an answer in a standard web API versus how multiple background processes might react independently when a user signs up.",
+      "Consider what happens to the producer's dependency on downstream services when you replace direct network calls with a message broker.",
+      "Analyze what changes regarding error handling, latency visibility, and state tracking when a single user action triggers a cascade of asynchronous reactions instead of a chained return path."
+    ],
+    "learning_objective": "Understand how shifting from synchronous request-response to decoupled event-driven communication alters system coupling, scalability, and operational complexity."
+  },
+  {
+    "id": "eda-0002",
+    "question": "What is event sourcing, and how does it differ from traditional state-based persistence?",
+    "type": "conceptual",
+    "difficulty": 4,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "system-design"
+    ],
+    "tech_keywords": [
+      "event-sourcing"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Traditional persistence stores only the current state of an entity (e.g. a bank account row with a current balance column), overwriting the previous value on each update",
+        "Event sourcing instead stores the full sequence of events that led to the current state (e.g. 'Deposited $100', 'Withdrew $30'), and the current state is derived by replaying/folding all events",
+        "Benefits: full audit trail/history is inherent (not bolted on separately), and you can reconstruct the state at any point in time, or fix a bug retroactively by replaying corrected event-processing logic",
+        "Trade-offs: querying current state requires replaying events (usually mitigated with periodic 'snapshots'), and it's a significant architectural commitment/complexity increase over simple CRUD"
+      ],
+      "sample_answer": "Traditional persistence just stores an entity's current state — like a bank account row with a single 'balance' column that gets overwritten every time it changes. Event sourcing instead stores the full, ordered sequence of events that led to the current state — like 'AccountOpened', 'Deposited $100', 'Withdrew $30' — and the current state is derived by replaying and folding all of those events together whenever it's needed. The benefit is you get a complete audit trail and history inherently, for free, rather than needing separate audit logging, and you can reconstruct exactly what the state looked like at any past point in time, or even fix a historical processing bug and replay events with corrected logic to get a corrected current state. The trade-offs are that computing current state by replaying potentially very long event histories can get slow, which is usually mitigated by periodically saving a 'snapshot' of computed state so you only need to replay events since the last snapshot, and it's a meaningfully bigger architectural commitment and added complexity compared to simple CRUD persistence."
+    },
+    "follow_up_hint": "Ask them how event sourcing combines with CQRS to build efficient read models.",
+    "concept": "Event Sourcing",
+    "sub_concept": "State Persistence Patterns",
+    "expected_reasoning": "A strong candidate starts by defining traditional state-based persistence as a snapshot model where updates overwrite existing data, highlighting that historical context is lost. They then contrast this by explaining that event sourcing captures every domain change as an immutable event. Next, they derive the core mechanism for reading state—replaying or folding the event log—and discuss how snapshots solve performance bottlenecks. Finally, they weigh the architectural trade-offs, balancing the rich audit trail and temporal query capabilities against the inherent complexity of eventual consistency and schema evolution.",
+    "common_mistakes": [
+      "Confusing event sourcing with simple audit logging, where events are a side effect rather than the source of truth.",
+      "Stating that event sourcing just means keeping a history table, without understanding that current state is dynamically derived by replaying events.",
+      "Ignoring the read performance implications, failing to mention snapshots or projections as necessary mitigations.",
+      "Overlooking the complexity of schema evolution and how changing historical event structures requires upcasters or migration strategies.",
+      "Treating event sourcing as a silver bullet for all data storage needs without acknowledging when traditional CRUD is more appropriate."
+    ],
+    "progressive_hints": [
+      "Consider what happens to the previous values of a database row when an update statement is executed in a standard relational database.",
+      "Think about how you would design a system where you need to know not just what the balance of an account is right now, but every single transaction that caused it, and why you might want to reconstruct the balance at 2 PM last Tuesday.",
+      "If your primary data store only contains immutable historical actions, how do you efficiently determine the current state of an entity without replaying thousands of past events every time a user loads a page?"
+    ],
+    "learning_objective": "Understand how event sourcing fundamentally changes data persistence from storing static current state to capturing an immutable sequence of domain events, along with its architectural trade-offs."
+  }
 ]

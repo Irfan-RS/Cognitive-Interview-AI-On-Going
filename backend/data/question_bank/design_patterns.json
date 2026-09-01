@@ -1,7 +1,243 @@
 [
-  {"id":"dp-0001","question":"Explain the Singleton design pattern, its use case, and why it's sometimes considered an anti-pattern.","type":"trade_off_questions","difficulty":2,"roles":["backend","general_sde"],"topics":["design-patterns","oop"],"tech_keywords":["singleton"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["Singleton ensures a class has exactly one instance, with a global access point to it — used for shared resources like a config manager or connection pool","Criticism: it introduces global mutable state, making code harder to test (hard to substitute a mock/fake) and creating hidden dependencies between unrelated parts of the code","In multi-threaded contexts, naive Singleton implementations can have race conditions during lazy initialization if not made thread-safe","Modern alternative: dependency injection, passing the single shared instance explicitly rather than having classes reach out to a global"],"sample_answer":"The Singleton pattern ensures a class has only one instance throughout the application, with some global point of access to it — commonly used for things like a configuration manager or a shared connection pool where having multiple instances would be wasteful or incorrect. It's often criticized as an anti-pattern because it introduces global mutable state, which makes unit testing harder since you can't easily substitute a fake or mock instance, and it creates hidden coupling — any code can reach into the singleton without that dependency being visible in a class's constructor or interface. A naive lazy-initialized Singleton can also have race conditions in multi-threaded code if not implemented carefully. Many modern codebases prefer dependency injection instead — creating one shared instance and explicitly passing it to whatever needs it — which keeps the same 'single instance' benefit while being far more testable."},"follow_up_hint":"Ask them to describe how they'd make a lazy-initialized Singleton thread-safe."},
-  {"id":"dp-0002","question":"Explain the Observer design pattern and give a real-world example of its use.","type":"conceptual","difficulty":2,"roles":["backend","frontend","general_sde"],"topics":["design-patterns","oop"],"tech_keywords":["observer-pattern"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["Observer pattern: a subject maintains a list of dependents (observers) and notifies them automatically of any state changes","Decouples the subject from the specific observers — the subject doesn't need to know concrete details of who's listening, only that they implement a common notification interface","Real-world examples: DOM event listeners, React/Vue reactive state updates triggering re-renders, pub/sub messaging systems, model-view frameworks (MVC 'view' observing 'model' changes)","Trade-off: can make control flow harder to trace since a state change can trigger a cascade of updates in code that isn't visibly connected at the call site"],"sample_answer":"The Observer pattern lets a subject maintain a list of dependent observers and automatically notify all of them whenever its state changes, without the subject needing to know any specifics about those observers beyond a common notification interface — this decouples the subject from whoever happens to be listening. A very familiar real-world example is DOM event listeners: clicking a button notifies all registered listener functions without the button needing to know what those callbacks do. React's state updates triggering component re-renders, and general pub/sub messaging systems, follow the same idea. The trade-off is that it can make control flow harder to trace, since a single state change can silently cascade into updates across several observers whose connection isn't visible just by reading the code at the point where the state changed."},"follow_up_hint":"Ask them to implement a minimal Observer pattern (subscribe/unsubscribe/notify) from scratch."},
-  {"id":"dp-0003","question":"What is the Factory pattern, and when would you use it instead of directly instantiating a class with 'new'?","type":"conceptual","difficulty":2,"roles":["backend","general_sde"],"topics":["design-patterns","oop"],"tech_keywords":["factory-pattern"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["Factory pattern: encapsulates object creation logic in a dedicated method/class, rather than the caller directly calling a constructor","Useful when the exact class to instantiate depends on runtime conditions (e.g. different payment processor implementations based on config), or when construction involves non-trivial setup logic","Decouples calling code from concrete classes — callers depend only on a common interface/abstract type, making it easier to introduce new implementations without changing calling code","Reduces duplication if the same complex construction logic would otherwise be repeated across many call sites"],"sample_answer":"The Factory pattern encapsulates the logic of creating an object inside a dedicated method or class, rather than having calling code directly instantiate a concrete class with 'new'. This is useful when the specific class to instantiate needs to be decided at runtime — for example, choosing between different payment processor implementations based on configuration — or when construction involves meaningful setup logic that shouldn't be duplicated everywhere an instance is needed. It also decouples calling code from concrete implementations: callers depend only on a common interface or abstract base type, so you can add a new implementation later without touching any of the existing call sites that create objects through the factory."},"follow_up_hint":"Ask them to distinguish Factory Method from Abstract Factory."},
-  {"id":"dp-0004","question":"Explain the Strategy design pattern with an example.","type":"conceptual","difficulty":2,"roles":["backend","general_sde"],"topics":["design-patterns","oop"],"tech_keywords":["strategy-pattern"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["Strategy pattern: defines a family of interchangeable algorithms/behaviors behind a common interface, and lets the algorithm be selected/swapped at runtime","The context class holds a reference to a strategy object and delegates the behavior to it, without knowing the concrete implementation","Avoids large conditional blocks (if/else or switch chains) picking behavior based on type — instead each behavior is its own class implementing the shared interface","Example: different sorting algorithms, different payment methods, or different compression algorithms all implementing a common interface, selected/injected based on context"],"sample_answer":"The Strategy pattern defines a family of interchangeable algorithms or behaviors behind a common interface, letting the actual algorithm used be selected or swapped at runtime rather than hardcoded. A 'context' object holds a reference to a strategy object and delegates the actual work to it through the shared interface, without needing to know which concrete strategy is plugged in. A concrete example is a checkout system supporting multiple payment methods — credit card, PayPal, wallet — each implemented as a class conforming to a common PaymentStrategy interface with a 'pay' method; the checkout context just calls strategy.pay() without caring which one it actually is. This avoids a large if/else or switch statement branching on payment type scattered through the codebase, and makes adding a new payment method as simple as adding a new class."},"follow_up_hint":"Ask them how Strategy differs from simply passing a function/lambda as a parameter in a language that supports first-class functions."},
-  {"id":"dp-0005","question":"What is the Decorator pattern, and how does it differ from simple inheritance for adding behavior?","type":"trade_off_questions","difficulty":3,"roles":["backend","general_sde"],"topics":["design-patterns","oop"],"tech_keywords":["decorator-pattern"],"companies_common":["Amazon","Microsoft"],"source_style":"faang-common","reference_solution":{"key_points":["Decorator wraps an object to add behavior/responsibilities dynamically at runtime, without modifying the original class or requiring a fixed subclass for every combination","Decorators implement the same interface as the object they wrap, so they can be stacked/composed and used interchangeably with the original","Inheritance defines behavior additions statically at compile time and can lead to a combinatorial explosion of subclasses if you need every combination of optional behaviors (e.g. CoffeeWithMilk, CoffeeWithMilkAndSugar, ...)","Real-world example: Java I/O streams (wrapping a FileInputStream with a BufferedInputStream, then a GZIPInputStream), or middleware layers each adding a responsibility"],"sample_answer":"The Decorator pattern wraps an object with another object that implements the same interface, adding extra behavior around calls to the wrapped object, and this can be done dynamically at runtime rather than being fixed at compile time. Because a decorator implements the same interface as what it wraps, decorators can be stacked in any combination, and callers can't tell the difference between the wrapped and unwrapped object. Inheritance, by contrast, bakes in behavior additions statically through subclassing, and if you need every combination of several optional behaviors, you end up needing a subclass for each combination — a classic example is a Coffee base class needing CoffeeWithMilk, CoffeeWithSugar, CoffeeWithMilkAndSugar subclasses, which explodes combinatorially, whereas decorators let you compose MilkDecorator and SugarDecorator around a base Coffee object flexibly. Java's I/O stream classes, where you wrap a FileInputStream with a BufferedInputStream and then a GZIPInputStream, are a well-known real example."},"follow_up_hint":"Ask them to implement a simple Decorator pattern for adding logging around an existing service's method calls."}
+  {
+    "id": "dp-0001",
+    "question": "Explain the Singleton design pattern, its use case, and why it's sometimes considered an anti-pattern.",
+    "type": "trade_off_questions",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "design-patterns",
+      "oop"
+    ],
+    "tech_keywords": [
+      "singleton"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Singleton ensures a class has exactly one instance, with a global access point to it — used for shared resources like a config manager or connection pool",
+        "Criticism: it introduces global mutable state, making code harder to test (hard to substitute a mock/fake) and creating hidden dependencies between unrelated parts of the code",
+        "In multi-threaded contexts, naive Singleton implementations can have race conditions during lazy initialization if not made thread-safe",
+        "Modern alternative: dependency injection, passing the single shared instance explicitly rather than having classes reach out to a global"
+      ],
+      "sample_answer": "The Singleton pattern ensures a class has only one instance throughout the application, with some global point of access to it — commonly used for things like a configuration manager or a shared connection pool where having multiple instances would be wasteful or incorrect. It's often criticized as an anti-pattern because it introduces global mutable state, which makes unit testing harder since you can't easily substitute a fake or mock instance, and it creates hidden coupling — any code can reach into the singleton without that dependency being visible in a class's constructor or interface. A naive lazy-initialized Singleton can also have race conditions in multi-threaded code if not implemented carefully. Many modern codebases prefer dependency injection instead — creating one shared instance and explicitly passing it to whatever needs it — which keeps the same 'single instance' benefit while being far more testable."
+    },
+    "follow_up_hint": "Ask them to describe how they'd make a lazy-initialized Singleton thread-safe.",
+    "concept": "Singleton Pattern",
+    "sub_concept": "Global State and Architectural Trade-offs",
+    "expected_reasoning": "A strong candidate begins by defining the core mechanism of the Singleton pattern: a private constructor combined with a static method that controls instantiation. They then immediately ground this in a concrete use case, such as managing a database connection pool or hardware interface where resource contention must be avoided. Moving past the definition, they evaluate the architectural consequences, contrasting the convenience of global access against the tight coupling and testing friction it introduces. Finally, they contrast the pattern with modern practices like dependency injection to demonstrate an awareness of how software design has evolved.",
+    "common_mistakes": [
+      "States the definition and use case with no justification for why it's considered an anti-pattern.",
+      "Claims Singletons are purely beneficial without acknowledging testing or concurrency issues.",
+      "Confuses the Singleton pattern with static classes or simple global variables.",
+      "Fails to mention multi-threading concerns and race conditions during lazy initialization.",
+      "Proposes a fix (like synchronization) without discussing performance overhead or cleaner modern alternatives like dependency injection."
+    ],
+    "progressive_hints": [
+      "Consider what problem the pattern tries to solve, but also think about how it affects other parts of an application that rely on this class.",
+      "Think about unit testing code that internally calls a global static method to fetch its dependencies, and what happens when you want to isolate that unit.",
+      "Reflect on how tightly coupling your classes to a single global instance impacts flexibility, and how modern frameworks choose to pass shared dependencies instead."
+    ],
+    "learning_objective": "Understand both the structural mechanism of the Singleton pattern and why its reliance on global mutable state makes it a problematic choice for modern testable architectures."
+  },
+  {
+    "id": "dp-0002",
+    "question": "Explain the Observer design pattern and give a real-world example of its use.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "frontend",
+      "general_sde"
+    ],
+    "topics": [
+      "design-patterns",
+      "oop"
+    ],
+    "tech_keywords": [
+      "observer-pattern"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Observer pattern: a subject maintains a list of dependents (observers) and notifies them automatically of any state changes",
+        "Decouples the subject from the specific observers — the subject doesn't need to know concrete details of who's listening, only that they implement a common notification interface",
+        "Real-world examples: DOM event listeners, React/Vue reactive state updates triggering re-renders, pub/sub messaging systems, model-view frameworks (MVC 'view' observing 'model' changes)",
+        "Trade-off: can make control flow harder to trace since a state change can trigger a cascade of updates in code that isn't visibly connected at the call site"
+      ],
+      "sample_answer": "The Observer pattern lets a subject maintain a list of dependent observers and automatically notify all of them whenever its state changes, without the subject needing to know any specifics about those observers beyond a common notification interface — this decouples the subject from whoever happens to be listening. A very familiar real-world example is DOM event listeners: clicking a button notifies all registered listener functions without the button needing to know what those callbacks do. React's state updates triggering component re-renders, and general pub/sub messaging systems, follow the same idea. The trade-off is that it can make control flow harder to trace, since a single state change can silently cascade into updates across several observers whose connection isn't visible just by reading the code at the point where the state changed."
+    },
+    "follow_up_hint": "Ask them to implement a minimal Observer pattern (subscribe/unsubscribe/notify) from scratch.",
+    "concept": "Observer Design Pattern",
+    "sub_concept": "Decoupled Event Notification and State Synchronization",
+    "expected_reasoning": "A strong candidate begins by defining the core decoupling problem the pattern solves, explaining how one-to-many dependencies require an automated update mechanism without tight coupling. They then walk through the structural components: a subject that maintains a registry of listeners and a common interface that all observers implement. Next, they provide a concrete, real-world example—such as UI event listeners or reactive state management—to illustrate the flow of control in practice. Finally, they balance the architectural benefits of extensibility against the practical maintenance trade-offs, such as debugging cascading side effects and managing memory leaks from unregistering listeners.",
+    "common_mistakes": [
+      "Stating the definition without explaining how it decouples the subject from the observers.",
+      "Confusing the Observer pattern with unrelated patterns like Singleton or Factory.",
+      "Failing to provide a concrete, real-world example and staying entirely in abstract theoretical terms.",
+      "Ignoring the negative trade-offs, such as implicit control flow and debugging difficulty.",
+      "Describing a tightly coupled polling mechanism instead of an event-driven push or pull notification system."
+    ],
+    "progressive_hints": [
+      "Think about a scenario where one component's state change needs to automatically update several other independent components without the first component knowing their specific identities.",
+      "Consider how the main object maintains its list of listeners and what common interface those listeners must share so the main object can trigger updates uniformly.",
+      "Reflect on what happens when a state change ripples through multiple listeners and how this hidden execution path impacts debugging and code maintainability."
+    ],
+    "learning_objective": "Understand how the Observer pattern achieves loose coupling in event-driven architectures and weigh its benefits against the complexity of tracking implicit control flows."
+  },
+  {
+    "id": "dp-0003",
+    "question": "What is the Factory pattern, and when would you use it instead of directly instantiating a class with 'new'?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "design-patterns",
+      "oop"
+    ],
+    "tech_keywords": [
+      "factory-pattern"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Factory pattern: encapsulates object creation logic in a dedicated method/class, rather than the caller directly calling a constructor",
+        "Useful when the exact class to instantiate depends on runtime conditions (e.g. different payment processor implementations based on config), or when construction involves non-trivial setup logic",
+        "Decouples calling code from concrete classes — callers depend only on a common interface/abstract type, making it easier to introduce new implementations without changing calling code",
+        "Reduces duplication if the same complex construction logic would otherwise be repeated across many call sites"
+      ],
+      "sample_answer": "The Factory pattern encapsulates the logic of creating an object inside a dedicated method or class, rather than having calling code directly instantiate a concrete class with 'new'. This is useful when the specific class to instantiate needs to be decided at runtime — for example, choosing between different payment processor implementations based on configuration — or when construction involves meaningful setup logic that shouldn't be duplicated everywhere an instance is needed. It also decouples calling code from concrete implementations: callers depend only on a common interface or abstract base type, so you can add a new implementation later without touching any of the existing call sites that create objects through the factory."
+    },
+    "follow_up_hint": "Ask them to distinguish Factory Method from Abstract Factory.",
+    "concept": "Factory Pattern",
+    "sub_concept": "Decoupling object instantiation from business logic using creational patterns",
+    "expected_reasoning": "A strong candidate begins by contrasting direct instantiation via 'new' with delegating creation to a specialized method or class. They identify that 'new' couples caller code tightly to a concrete implementation, making it rigid when requirements shift. Next, they reason about scenarios where the concrete type isn't known until runtime, such as configuration-driven choices or complex initialization sequences. Finally, they weigh the trade-offs, recognizing that while factories introduce an extra layer of abstraction and complexity, they provide crucial extensibility and maintainability as a codebase grows.",
+    "common_mistakes": [
+      "Stating that it's just a method that returns an object without explaining the architectural benefit",
+      "Confusing the Factory Method pattern with Abstract Factory or simple dependency injection",
+      "Claiming you should use a factory for every single object creation in an application",
+      "Failing to mention runtime polymorphism or interfaces, focusing only on code organization",
+      "Providing a syntax-only explanation of a class with a static method without discussing decoupling"
+    ],
+    "progressive_hints": [
+      "Think about what happens to your client code if the specific class you need to instantiate changes based on a user configuration file.",
+      "Consider how hard-coding 'new PaymentProcessor()' everywhere in your codebase affects your ability to swap in a new vendor later without touching every file.",
+      "If you centralize the decision-making logic of *which* object to build into a dedicated function or class, what does the rest of your application code get to ignore?"
+    ],
+    "learning_objective": "Understand how the Factory pattern decouples object creation from business logic, enabling flexible, runtime-determined instantiation and cleaner architectural boundaries."
+  },
+  {
+    "id": "dp-0004",
+    "question": "Explain the Strategy design pattern with an example.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "design-patterns",
+      "oop"
+    ],
+    "tech_keywords": [
+      "strategy-pattern"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Strategy pattern: defines a family of interchangeable algorithms/behaviors behind a common interface, and lets the algorithm be selected/swapped at runtime",
+        "The context class holds a reference to a strategy object and delegates the behavior to it, without knowing the concrete implementation",
+        "Avoids large conditional blocks (if/else or switch chains) picking behavior based on type — instead each behavior is its own class implementing the shared interface",
+        "Example: different sorting algorithms, different payment methods, or different compression algorithms all implementing a common interface, selected/injected based on context"
+      ],
+      "sample_answer": "The Strategy pattern defines a family of interchangeable algorithms or behaviors behind a common interface, letting the actual algorithm used be selected or swapped at runtime rather than hardcoded. A 'context' object holds a reference to a strategy object and delegates the actual work to it through the shared interface, without needing to know which concrete strategy is plugged in. A concrete example is a checkout system supporting multiple payment methods — credit card, PayPal, wallet — each implemented as a class conforming to a common PaymentStrategy interface with a 'pay' method; the checkout context just calls strategy.pay() without caring which one it actually is. This avoids a large if/else or switch statement branching on payment type scattered through the codebase, and makes adding a new payment method as simple as adding a new class."
+    },
+    "follow_up_hint": "Ask them how Strategy differs from simply passing a function/lambda as a parameter in a language that supports first-class functions.",
+    "concept": "Strategy Pattern",
+    "sub_concept": "Behavioral delegation and runtime algorithm swapping",
+    "expected_reasoning": "A strong candidate begins by defining the core purpose of the pattern—encapsulating interchangeable behaviors behind a uniform interface. They then reason about the structural relationship, explaining how a context object delegates work to this interface rather than implementing algorithms directly. To illustrate the value, they discuss how it eliminates rigid conditional statements and open-closed principle violations. Finally, they tie it together with a concrete, everyday software example like payment processing or sorting strategies.",
+    "common_mistakes": [
+      "States the definition without giving a concrete code or system design example",
+      "Confuses the Strategy pattern with the State pattern, failing to recognize that strategies are typically chosen by the client or context upfront, whereas state transitions happen internally",
+      "Keeps business logic inside the context class via large if/else or switch statements instead of delegating to the strategy interface",
+      "Couples the concrete strategy implementations directly to the context, defeating the purpose of the abstraction layer",
+      "Treats it as a mere syntax trick rather than a tool for managing varying algorithms and open-closed compliance"
+    ],
+    "progressive_hints": [
+      "Think about how you would design a system that needs to support multiple ways of calculating shipping costs without cluttering your core order class with switch statements.",
+      "Consider separating the algorithm itself from the object that uses it by introducing a common interface that all variations implement.",
+      "If your context class holds a reference to a shared interface type rather than a concrete class, how does that let you swap behaviors at runtime without changing the context's code?"
+    ],
+    "learning_objective": "Understand how to encapsulate family algorithms behind a common interface to decouple behavior from context and eliminate conditional complexity."
+  },
+  {
+    "id": "dp-0005",
+    "question": "What is the Decorator pattern, and how does it differ from simple inheritance for adding behavior?",
+    "type": "trade_off_questions",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "general_sde"
+    ],
+    "topics": [
+      "design-patterns",
+      "oop"
+    ],
+    "tech_keywords": [
+      "decorator-pattern"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Decorator wraps an object to add behavior/responsibilities dynamically at runtime, without modifying the original class or requiring a fixed subclass for every combination",
+        "Decorators implement the same interface as the object they wrap, so they can be stacked/composed and used interchangeably with the original",
+        "Inheritance defines behavior additions statically at compile time and can lead to a combinatorial explosion of subclasses if you need every combination of optional behaviors (e.g. CoffeeWithMilk, CoffeeWithMilkAndSugar, ...)",
+        "Real-world example: Java I/O streams (wrapping a FileInputStream with a BufferedInputStream, then a GZIPInputStream), or middleware layers each adding a responsibility"
+      ],
+      "sample_answer": "The Decorator pattern wraps an object with another object that implements the same interface, adding extra behavior around calls to the wrapped object, and this can be done dynamically at runtime rather than being fixed at compile time. Because a decorator implements the same interface as what it wraps, decorators can be stacked in any combination, and callers can't tell the difference between the wrapped and unwrapped object. Inheritance, by contrast, bakes in behavior additions statically through subclassing, and if you need every combination of several optional behaviors, you end up needing a subclass for each combination — a classic example is a Coffee base class needing CoffeeWithMilk, CoffeeWithSugar, CoffeeWithMilkAndSugar subclasses, which explodes combinatorially, whereas decorators let you compose MilkDecorator and SugarDecorator around a base Coffee object flexibly. Java's I/O stream classes, where you wrap a FileInputStream with a BufferedInputStream and then a GZIPInputStream, are a well-known real example."
+    },
+    "follow_up_hint": "Ask them to implement a simple Decorator pattern for adding logging around an existing service's method calls.",
+    "concept": "Decorator Pattern",
+    "sub_concept": "Runtime Behavior Composition Versus Compile-Time Inheritance",
+    "expected_reasoning": "A strong candidate begins by identifying the core limitation of inheritance for extending classes, specifically noting how adding multiple orthogonal features leads to a class explosion. They then reason about wrapping as an alternative, realizing that if a wrapper implements the same interface as the wrapped object, behaviors can be composed dynamically and arbitrarily. They weigh the flexibility of composition against the complexity of managing many small wrapper objects and forwarding method calls. Finally, they illustrate this with a classic structural example like I/O streams or middleware where order and combination matter.",
+    "common_mistakes": [
+      "States the conclusion with no justification, just saying 'Decorator is better than inheritance' without explaining why.",
+      "Confuses the Decorator pattern with the Adapter pattern, focusing on interface translation rather than behavior extension.",
+      "Claims inheritance is always bad and should never be used for behavior extension.",
+      "Fails to mention that decorators must share the same interface/type as the object they wrap.",
+      "Gives a trivial example without explaining how stacking multiple decorators works in practice."
+    ],
+    "progressive_hints": [
+      "Think about what happens to your class hierarchy if you have three optional features and a user can choose any combination of them.",
+      "Consider how you might attach a new behavior to an individual object instance at runtime rather than defining a new class for it at compile time.",
+      "What structural relationship do the wrapper and the wrapped object need to share so that clients can use them interchangeably and stack them infinitely?"
+    ],
+    "learning_objective": "Understand how the Decorator pattern uses object composition and shared interfaces to add responsibilities dynamically at runtime, avoiding the rigidity and combinatorial explosion of static inheritance hierarchies."
+  }
 ]

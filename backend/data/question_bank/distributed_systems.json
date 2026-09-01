@@ -1,8 +1,292 @@
 [
-  {"id":"dist-0001","question":"Explain the CAP theorem and what it means for a distributed database.","type":"conceptual","difficulty":3,"roles":["backend","system_design"],"topics":["distributed-systems","system-design"],"tech_keywords":["cap-theorem"],"companies_common":["Amazon","Google","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["CAP theorem: under a network partition (P), a distributed system must choose between Consistency (every read gets the latest write) and Availability (every request gets a response)","Since network partitions are unavoidable in a real distributed system, the real-world choice is CP vs AP during a partition, not a permanent 3-way trade-off","CP systems (e.g. many configurations of HBase, Zookeeper) reject/block requests during a partition to guarantee consistency","AP systems (e.g. Cassandra, DynamoDB by default) keep serving requests during a partition, possibly returning stale data, then reconcile afterward"],"sample_answer":"The CAP theorem says that when a network partition occurs — which is unavoidable at some point in any real distributed system — you have to choose between Consistency, where every read reflects the most recent write, and Availability, where every request still gets a response even if it might be stale. So practically, CAP is really about the CP vs AP choice specifically during a partition, not a permanent trade-off you make once. A CP system, like Zookeeper in typical configurations, will reject or block requests during a partition to avoid returning stale data. An AP system, like Cassandra or DynamoDB by default, keeps serving requests during the partition, accepting that some responses might be stale, and reconciles the data once the partition heals."},"follow_up_hint":"Ask them to explain how this differs from PACELC, which also considers the latency/consistency trade-off when there's no partition."},
-  {"id":"dist-0002","question":"What is a consistent hashing, and why is it used in distributed caching and databases?","type":"conceptual","difficulty":4,"roles":["backend","system_design"],"topics":["distributed-systems"],"tech_keywords":["consistent-hashing"],"companies_common":["Amazon","Google"],"source_style":"faang-common","reference_solution":{"key_points":["Naive hashing (key % N servers) requires remapping almost all keys when a server is added/removed, causing a massive cache miss storm/data reshuffle","Consistent hashing maps both servers and keys onto a hash ring; a key belongs to the next server clockwise on the ring","Adding/removing one server only affects the keys between it and its neighbor on the ring — a small fraction of total keys, not all of them","Virtual nodes (multiple points per physical server on the ring) are used to spread load more evenly and avoid hotspots from an uneven ring distribution"],"sample_answer":"With naive hashing like key % N, adding or removing a single server changes N and remaps almost every key to a different server, causing a huge cache-miss storm or data reshuffle across the whole cluster. Consistent hashing instead maps both servers and keys onto points on a conceptual hash ring, and a key is owned by the next server found going clockwise from its position. When a server is added or removed, only the keys that fall between it and its neighboring server on the ring need to move — a small fraction of the total, not everything. To avoid uneven load if servers land unevenly on the ring, each physical server is usually represented by multiple 'virtual nodes' scattered around the ring, which smooths out the distribution."},"follow_up_hint":"Ask what problem virtual nodes specifically solve, and what would happen without them."},
-  {"id":"dist-0003","question":"What is a quorum in a distributed database, and how do read/write quorums relate to consistency guarantees?","type":"conceptual","difficulty":4,"roles":["backend","system_design"],"topics":["distributed-systems"],"tech_keywords":["quorum","replication"],"companies_common":["Amazon","Google"],"source_style":"faang-common","reference_solution":{"key_points":["In a replicated system with N replicas, a quorum is the minimum number of nodes that must acknowledge a read (R) or write (W) for it to succeed","If R + W > N, every read is guaranteed to overlap with at least one node that has the latest write, giving strong consistency","If R + W <= N, reads and writes can be faster/more available but may return stale data (eventual consistency)","Common tunable trade-off in systems like Cassandra/DynamoDB, letting per-request choice of consistency vs latency/availability"],"sample_answer":"With N replicas of a piece of data, a write quorum W is how many replicas must acknowledge a write before it's considered successful, and a read quorum R is how many replicas must respond to a read before returning a result. If you configure R + W to be greater than N, you're guaranteed that any read quorum and any write quorum overlap in at least one replica, so a read is guaranteed to see the most recent write — that's strong consistency. If R + W is less than or equal to N, reads and writes can complete faster and tolerate more node failures, but a read might miss the latest write and return stale data, which is the eventual consistency trade-off. Systems like Cassandra let you tune R and W per request, so you can choose stronger consistency for critical reads and looser consistency for less critical ones."},"follow_up_hint":"Ask what the trade-off looks like if you set W=N (write to all replicas) — what happens to write availability if one replica is down?"},
-  {"id":"dist-0004","question":"What is the difference between strong consistency and eventual consistency, with a real-world example of when each is appropriate?","type":"scenario_based","difficulty":3,"roles":["backend","system_design"],"topics":["distributed-systems"],"tech_keywords":["consistency"],"companies_common":["Amazon","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["Strong consistency: every read reflects the most recent write immediately, as if there were only one copy of the data","Eventual consistency: replicas may temporarily diverge after a write, but will converge to the same value given enough time with no new writes","Strong consistency needed where correctness depends on the very latest state: bank account balances, inventory counts preventing overselling","Eventual consistency acceptable where brief staleness is tolerable: social media like counts, view counts, a user's own profile picture propagating across CDN edges"],"sample_answer":"Strong consistency guarantees every read reflects the most recent write immediately, as though there were just one authoritative copy of the data, which usually requires more coordination and adds latency. Eventual consistency allows replicas to temporarily show different values right after a write, but guarantees they'll converge to the same value eventually if no further writes happen. I'd want strong consistency for something like a bank account balance or inventory count where stale data could let you overspend or oversell. Eventual consistency is fine for something like a 'likes' counter or view count on a social post, where a user briefly seeing a slightly outdated number causes no real harm, and the system gains lower latency and higher availability in exchange."},"follow_up_hint":"Ask them where inventory counts for a flash sale would fall on this spectrum and why that's a genuinely hard case."},
-  {"id":"dist-0005","question":"What is a leader election algorithm, and why is it needed in distributed systems?","type":"conceptual","difficulty":3,"roles":["backend","system_design"],"topics":["distributed-systems"],"tech_keywords":["leader-election","raft"],"companies_common":["Google","Amazon"],"source_style":"faang-common","reference_solution":{"key_points":["Many distributed systems need exactly one node acting as 'leader' at a time to coordinate writes or make decisions, avoiding conflicting concurrent actions","Leader election is the process nodes use to agree on who that leader is, and to detect and replace a failed leader","Consensus algorithms like Raft or Paxos ensure only one leader is elected per 'term', even under network partitions or crashes, avoiding a 'split brain' where two nodes both believe they're leader","Explains a 'split brain' scenario (two leaders operating independently) as the dangerous failure mode these algorithms are designed to prevent"],"sample_answer":"Many distributed systems need exactly one node to act as the leader at any given time — coordinating writes, sequencing operations, or making authoritative decisions — since letting multiple nodes make conflicting decisions independently would corrupt data or produce inconsistent behavior. Leader election is the mechanism nodes use to agree on who that leader is, and to detect when the current leader has failed and elect a replacement. Consensus algorithms like Raft or Paxos are designed specifically to guarantee that only one leader is recognized at a time even during network partitions or node crashes, preventing a 'split brain' scenario where a network partition causes two separate groups of nodes to each elect their own leader and both start acting authoritatively, which can cause serious data conflicts."},"follow_up_hint":"Ask how Raft specifically prevents split-brain using its term numbers and majority-vote requirement."},
-  {"id":"dist-0006","question":"What is idempotency, and why is it important when designing APIs that might be retried?","type":"conceptual","difficulty":2,"roles":["backend","system_design"],"topics":["distributed-systems","api-design"],"tech_keywords":["idempotency"],"companies_common":["Amazon","Stripe","Uber"],"source_style":"common-interview","reference_solution":{"key_points":["An idempotent operation produces the same end result no matter how many times it's applied — calling it twice has the same effect as calling it once","Networks are unreliable: a client might retry a request after a timeout, not knowing whether the original request actually succeeded server-side","Without idempotency, a retried 'charge $10' request could double-charge a customer","Common implementation: client generates a unique idempotency key per logical operation; server checks if that key was already processed and returns the original result instead of reprocessing"],"sample_answer":"An idempotent operation gives the same end result whether it's performed once or multiple times — like setting a value to X, versus incrementing a counter by 1, which is NOT idempotent since repeating it changes the result each time. This matters for retried API calls because networks are unreliable: if a client sends a payment request and times out waiting for a response, it doesn't actually know whether the charge went through or not, so it needs to be safe to retry. Without idempotency, that retry could double-charge the customer. The standard solution is for the client to generate a unique idempotency key per logical operation and send it with the request; the server records which keys it's already processed and, if it sees a repeat, returns the original result instead of executing the operation again."},"follow_up_hint":"Ask them to design the idempotency-key storage and expiration strategy on the server side."}
+  {
+    "id": "dist-0001",
+    "question": "Explain the CAP theorem and what it means for a distributed database.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "distributed-systems",
+      "system-design"
+    ],
+    "tech_keywords": [
+      "cap-theorem"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "CAP theorem: under a network partition (P), a distributed system must choose between Consistency (every read gets the latest write) and Availability (every request gets a response)",
+        "Since network partitions are unavoidable in a real distributed system, the real-world choice is CP vs AP during a partition, not a permanent 3-way trade-off",
+        "CP systems (e.g. many configurations of HBase, Zookeeper) reject/block requests during a partition to guarantee consistency",
+        "AP systems (e.g. Cassandra, DynamoDB by default) keep serving requests during a partition, possibly returning stale data, then reconcile afterward"
+      ],
+      "sample_answer": "The CAP theorem says that when a network partition occurs — which is unavoidable at some point in any real distributed system — you have to choose between Consistency, where every read reflects the most recent write, and Availability, where every request still gets a response even if it might be stale. So practically, CAP is really about the CP vs AP choice specifically during a partition, not a permanent trade-off you make once. A CP system, like Zookeeper in typical configurations, will reject or block requests during a partition to avoid returning stale data. An AP system, like Cassandra or DynamoDB by default, keeps serving requests during the partition, accepting that some responses might be stale, and reconciles the data once the partition heals."
+    },
+    "follow_up_hint": "Ask them to explain how this differs from PACELC, which also considers the latency/consistency trade-off when there's no partition.",
+    "concept": "CAP Theorem",
+    "sub_concept": "Trade-offs during network partitions in distributed databases",
+    "expected_reasoning": "A strong candidate begins by defining the three properties of CAP and clarifying how they apply under real-world network conditions rather than ideal ones. They derive why a network partition forces a fundamental trade-off, explaining that communication failure means nodes cannot stay in lockstep without halting. Next, they weigh the operational impact of choosing consistency versus availability during that partition. Finally, they tie this abstract theorem to concrete system designs like CP and AP databases.",
+    "common_mistakes": [
+      "States that a system can choose any combination of all three properties at all times",
+      "Confuses CAP consistency with ACID consistency",
+      "Claims network partitions can be prevented entirely with enough hardware redundancy",
+      "Provides textbook definitions without explaining the operational trade-offs during a partition",
+      "Assumes a system is permanently either CP or AP, ignoring that AP systems often provide tunable consistency outside of partitions"
+    ],
+    "progressive_hints": [
+      "What real-world network condition forces a distributed system to choose between staying operational and staying synchronized?",
+      "Think about what happens when a network link drops between two data centers: can both halves of the system simultaneously accept new writes and guarantee they match?",
+      "If your database chooses availability over consistency during a partition, what kind of data might a client receive when querying different nodes?"
+    ],
+    "learning_objective": "The candidate should understand that the CAP theorem is not a three-way menu of features, but a forced trade-off between consistency and availability specifically when a network partition occurs."
+  },
+  {
+    "id": "dist-0002",
+    "question": "What is a consistent hashing, and why is it used in distributed caching and databases?",
+    "type": "conceptual",
+    "difficulty": 4,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "distributed-systems"
+    ],
+    "tech_keywords": [
+      "consistent-hashing"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Naive hashing (key % N servers) requires remapping almost all keys when a server is added/removed, causing a massive cache miss storm/data reshuffle",
+        "Consistent hashing maps both servers and keys onto a hash ring; a key belongs to the next server clockwise on the ring",
+        "Adding/removing one server only affects the keys between it and its neighbor on the ring — a small fraction of total keys, not all of them",
+        "Virtual nodes (multiple points per physical server on the ring) are used to spread load more evenly and avoid hotspots from an uneven ring distribution"
+      ],
+      "sample_answer": "With naive hashing like key % N, adding or removing a single server changes N and remaps almost every key to a different server, causing a huge cache-miss storm or data reshuffle across the whole cluster. Consistent hashing instead maps both servers and keys onto points on a conceptual hash ring, and a key is owned by the next server found going clockwise from its position. When a server is added or removed, only the keys that fall between it and its neighboring server on the ring need to move — a small fraction of the total, not everything. To avoid uneven load if servers land unevenly on the ring, each physical server is usually represented by multiple 'virtual nodes' scattered around the ring, which smooths out the distribution."
+    },
+    "follow_up_hint": "Ask what problem virtual nodes specifically solve, and what would happen without them.",
+    "concept": "Consistent Hashing",
+    "sub_concept": "Minimizing key redistribution during server topology changes in distributed systems",
+    "expected_reasoning": "A strong candidate starts by analyzing the failure mode of traditional modulo hashing when the cluster size changes. They recognize that changing the denominator invalidates nearly every key mapping, leading to catastrophic cache invalidation or data movement. To solve this, they derive the need for a mapping technique that decouples key location from the absolute count of servers. They propose a continuous circular space where both keys and servers are hashed, ensuring that adding or removing a node only impacts its immediate neighbors. Finally, they reason through the statistical imbalance that occurs on a simple ring and introduce virtual nodes to distribute the load evenly.",
+    "common_mistakes": [
+      "Stating that consistent hashing eliminates cache misses completely instead of just minimizing them",
+      "Failing to explain what happens to keys when a server is added or removed",
+      "Confusing consistent hashing with cryptographic hashing algorithms like SHA-256 without context",
+      "Omitting the purpose of virtual nodes and how they address hotspotting on the ring",
+      "Describing the hash ring as storing keys ordered by value rather than by their hashed position",
+      "Giving a purely memorized definition of the algorithm without explaining the distributed systems problem it solves"
+    ],
+    "progressive_hints": [
+      "What happens to the location of existing keys in a cluster when you scale the number of database nodes from 10 to 11 using standard modulo hashing?",
+      "You are remapping almost every key because the hashing formula depends directly on the total server count. How could you design a routing space where a server's presence only affects its immediate neighborhood?",
+      "If both servers and keys are placed onto a shared circular integer space, how can a key find which server is responsible for it without knowing about every other server in the cluster?"
+    ],
+    "learning_objective": "Understand how consistent hashing and virtual nodes enable horizontal scaling in distributed systems by minimizing data movement and balancing load when nodes join or leave."
+  },
+  {
+    "id": "dist-0003",
+    "question": "What is a quorum in a distributed database, and how do read/write quorums relate to consistency guarantees?",
+    "type": "conceptual",
+    "difficulty": 4,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "distributed-systems"
+    ],
+    "tech_keywords": [
+      "quorum",
+      "replication"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "In a replicated system with N replicas, a quorum is the minimum number of nodes that must acknowledge a read (R) or write (W) for it to succeed",
+        "If R + W > N, every read is guaranteed to overlap with at least one node that has the latest write, giving strong consistency",
+        "If R + W <= N, reads and writes can be faster/more available but may return stale data (eventual consistency)",
+        "Common tunable trade-off in systems like Cassandra/DynamoDB, letting per-request choice of consistency vs latency/availability"
+      ],
+      "sample_answer": "With N replicas of a piece of data, a write quorum W is how many replicas must acknowledge a write before it's considered successful, and a read quorum R is how many replicas must respond to a read before returning a result. If you configure R + W to be greater than N, you're guaranteed that any read quorum and any write quorum overlap in at least one replica, so a read is guaranteed to see the most recent write — that's strong consistency. If R + W is less than or equal to N, reads and writes can complete faster and tolerate more node failures, but a read might miss the latest write and return stale data, which is the eventual consistency trade-off. Systems like Cassandra let you tune R and W per request, so you can choose stronger consistency for critical reads and looser consistency for less critical ones."
+    },
+    "follow_up_hint": "Ask what the trade-off looks like if you set W=N (write to all replicas) — what happens to write availability if one replica is down?",
+    "concept": "Distributed Consensus",
+    "sub_concept": "Read and Write Quorums",
+    "expected_reasoning": "A strong candidate starts by defining replication factor N and how data is distributed across nodes. They then explain the mechanics of write quorums (W) and read quorums (R), identifying that the core challenge is ensuring a read operation always encounters at least one replica with the most recent write. To derive consistency, they analyze the intersection of the two quorum sets using the pigeonhole principle. Finally, they weigh the trade-offs between strict consistency and lower latency or higher availability when tuning R and W.",
+    "common_mistakes": [
+      "States the math R + W > N as a memorized formula without explaining the overlapping node intersection.",
+      "Confuses replication factor N with the total number of nodes in the entire cluster.",
+      "Assumes quorums provide serializable isolation rather than just read-after-write or strong consistency guarantees.",
+      "Claims that R + W <= N means data loss will occur, rather than recognizing it leads to eventual consistency or stale reads.",
+      "Fails to mention tunable trade-offs, treating quorum sizes as static and universal.",
+      "Provides a hand-wavy definition of consistency without explaining how overlapping nodes share state."
+    ],
+    "progressive_hints": [
+      "Think about what happens when you write data to a subset of replicas and then immediately read from a different subset.",
+      "Consider how many nodes need to overlap between a write operation and a read operation to guarantee the reader sees the latest update.",
+      "If every write goes to W out of N nodes, and every read checks R out of N nodes, what mathematical condition ensures at least one node is in both sets?"
+    ],
+    "learning_objective": "Understand how mathematical intersection of read and write quorums governs the trade-off between strong consistency and availability in distributed storage systems."
+  },
+  {
+    "id": "dist-0004",
+    "question": "What is the difference between strong consistency and eventual consistency, with a real-world example of when each is appropriate?",
+    "type": "scenario_based",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "distributed-systems"
+    ],
+    "tech_keywords": [
+      "consistency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Strong consistency: every read reflects the most recent write immediately, as if there were only one copy of the data",
+        "Eventual consistency: replicas may temporarily diverge after a write, but will converge to the same value given enough time with no new writes",
+        "Strong consistency needed where correctness depends on the very latest state: bank account balances, inventory counts preventing overselling",
+        "Eventual consistency acceptable where brief staleness is tolerable: social media like counts, view counts, a user's own profile picture propagating across CDN edges"
+      ],
+      "sample_answer": "Strong consistency guarantees every read reflects the most recent write immediately, as though there were just one authoritative copy of the data, which usually requires more coordination and adds latency. Eventual consistency allows replicas to temporarily show different values right after a write, but guarantees they'll converge to the same value eventually if no further writes happen. I'd want strong consistency for something like a bank account balance or inventory count where stale data could let you overspend or oversell. Eventual consistency is fine for something like a 'likes' counter or view count on a social post, where a user briefly seeing a slightly outdated number causes no real harm, and the system gains lower latency and higher availability in exchange."
+    },
+    "follow_up_hint": "Ask them where inventory counts for a flash sale would fall on this spectrum and why that's a genuinely hard case.",
+    "concept": "Distributed Consistency Models",
+    "sub_concept": "Trade-offs between strong and eventual consistency in distributed data stores",
+    "expected_reasoning": "A strong candidate begins by defining the core guarantee of each model regarding time, state, and replica propagation. They then analyze how the CAP theorem or latency trade-offs force this architectural choice. Next, they weigh the operational costs, such as increased latency for strong consistency versus stale read risks for eventual consistency. Finally, they map these characteristics to concrete business domains where correctness outweighs latency or vice versa.",
+    "common_mistakes": [
+      "Stating definitions without providing or analyzing real-world examples",
+      "Confusing eventual consistency with complete lack of data durability",
+      "Claiming strong consistency is always better without mentioning latency or availability penalties",
+      "Giving a banking example for eventual consistency or a social media like counter for strong consistency",
+      "Failing to explain *why* replicas diverge in eventual consistency systems"
+    ],
+    "progressive_hints": [
+      "Think about what happens to a user reading data immediately after a write if the system has multiple geographic replicas.",
+      "Consider the trade-off between the time it takes to confirm a write across all nodes versus the risk of returning stale data to a reader.",
+      "Evaluate whether a user checking a friend's comment count needs absolute real-time accuracy compared to someone transferring funds between bank accounts."
+    ],
+    "learning_objective": "Understand how to select the appropriate consistency model by balancing business requirements for correctness and availability against distributed system performance trade-offs."
+  },
+  {
+    "id": "dist-0005",
+    "question": "What is a leader election algorithm, and why is it needed in distributed systems?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "distributed-systems"
+    ],
+    "tech_keywords": [
+      "leader-election",
+      "raft"
+    ],
+    "companies_common": [
+      "Google",
+      "Amazon"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Many distributed systems need exactly one node acting as 'leader' at a time to coordinate writes or make decisions, avoiding conflicting concurrent actions",
+        "Leader election is the process nodes use to agree on who that leader is, and to detect and replace a failed leader",
+        "Consensus algorithms like Raft or Paxos ensure only one leader is elected per 'term', even under network partitions or crashes, avoiding a 'split brain' where two nodes both believe they're leader",
+        "Explains a 'split brain' scenario (two leaders operating independently) as the dangerous failure mode these algorithms are designed to prevent"
+      ],
+      "sample_answer": "Many distributed systems need exactly one node to act as the leader at any given time — coordinating writes, sequencing operations, or making authoritative decisions — since letting multiple nodes make conflicting decisions independently would corrupt data or produce inconsistent behavior. Leader election is the mechanism nodes use to agree on who that leader is, and to detect when the current leader has failed and elect a replacement. Consensus algorithms like Raft or Paxos are designed specifically to guarantee that only one leader is recognized at a time even during network partitions or node crashes, preventing a 'split brain' scenario where a network partition causes two separate groups of nodes to each elect their own leader and both start acting authoritatively, which can cause serious data conflicts."
+    },
+    "follow_up_hint": "Ask how Raft specifically prevents split-brain using its term numbers and majority-vote requirement.",
+    "concept": "Leader Election",
+    "sub_concept": "Distributed coordination and split-brain prevention",
+    "expected_reasoning": "A strong candidate begins by identifying why distributed nodes need coordination, noting that uncoordinated writes lead to data corruption or race conditions. They then deduce the need for a designated coordinator, or leader, to serialize decisions. Next, they analyze what happens if that leader fails and how nodes must autonomously agree on a replacement. Finally, they weigh the risks of network partitions, explaining how consensus mechanisms prevent the catastrophic 'split-brain' scenario where two isolated sub-networks elect separate leaders.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'it picks a node to be in charge' without explaining why coordination is necessary",
+      "Fails to mention network partitions or split-brain scenarios altogether",
+      "Confuses leader election with general load balancing or service discovery",
+      "Assumes leader election happens instantly without considering the downtime window during failover",
+      "Treats leader election as trivial, ignoring the challenges of achieving agreement when network communication is unreliable"
+    ],
+    "progressive_hints": [
+      "What kind of operational conflict could arise if multiple nodes in a distributed database tried to write to the same record simultaneously?",
+      "If you assign one node to coordinate those writes, what happens to the system if that specific node suddenly loses power or gets disconnected?",
+      "If a network splits a cluster into two halves, and both halves can't talk to each other, how do you ensure they don't both independently decide to elect their own separate leaders?"
+    ],
+    "learning_objective": "Understand that leader election is a critical consensus mechanism used in distributed systems to safely coordinate operations and prevent split-brain states during node failures or network partitions."
+  },
+  {
+    "id": "dist-0006",
+    "question": "What is idempotency, and why is it important when designing APIs that might be retried?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "distributed-systems",
+      "api-design"
+    ],
+    "tech_keywords": [
+      "idempotency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Stripe",
+      "Uber"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "An idempotent operation produces the same end result no matter how many times it's applied — calling it twice has the same effect as calling it once",
+        "Networks are unreliable: a client might retry a request after a timeout, not knowing whether the original request actually succeeded server-side",
+        "Without idempotency, a retried 'charge $10' request could double-charge a customer",
+        "Common implementation: client generates a unique idempotency key per logical operation; server checks if that key was already processed and returns the original result instead of reprocessing"
+      ],
+      "sample_answer": "An idempotent operation gives the same end result whether it's performed once or multiple times — like setting a value to X, versus incrementing a counter by 1, which is NOT idempotent since repeating it changes the result each time. This matters for retried API calls because networks are unreliable: if a client sends a payment request and times out waiting for a response, it doesn't actually know whether the charge went through or not, so it needs to be safe to retry. Without idempotency, that retry could double-charge the customer. The standard solution is for the client to generate a unique idempotency key per logical operation and send it with the request; the server records which keys it's already processed and, if it sees a repeat, returns the original result instead of executing the operation again."
+    },
+    "follow_up_hint": "Ask them to design the idempotency-key storage and expiration strategy on the server side.",
+    "concept": "Idempotency",
+    "sub_concept": "API Design and Distributed Retries",
+    "expected_reasoning": "A strong candidate begins by defining the core mathematical and software property that multiple identical requests yield the exact same state as a single request. They then connect this abstract definition to real-world distributed systems failures, specifically noting that network timeouts create uncertainty where neither the client nor server knows if a message arrived. By examining the impact on state-changing operations like financial transactions, they deduce the absolute necessity of safe retries. Finally, they propose a practical engineering solution—such as client-generated unique keys tracked by the server—to deduplicate operations safely without side effects.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'it means you can retry safely without side effects' without explaining network unreliability.",
+      "Confuses idempotency with being safe or read-only, assuming only GET requests are idempotent while ignoring how POST/PUT can be made idempotent.",
+      "Fails to explain the core mechanism of how a server actually tracks requests (e.g., ignoring idempotency keys or request deduplication stores).",
+      "Focuses solely on the client-side retry logic without explaining the server-side state implications and the risk of double-processing.",
+      "Conflates caching with idempotency, not realizing idempotency handles state mutation and side-effect prevention rather than just performance speedups."
+    ],
+    "progressive_hints": [
+      "What assumptions are you making about network reliability when a client sends a request and the connection drops before receiving a response?",
+      "If a client times out waiting for a server response to a payment request, how does the server know whether to process the retry as a new charge or ignore it?",
+      "What if the client attached a unique identifier to every distinct intent (like a transaction attempt) that the server could use to track and cache the outcome?"
+    ],
+    "learning_objective": "Understand how to guarantee safe operation retries in distributed, unreliable network environments by implementing idempotent API design patterns."
+  }
 ]

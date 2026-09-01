@@ -1,5 +1,146 @@
 [
-  {"id":"lb-0001","question":"What is a load balancer, and what are common algorithms it uses to distribute traffic?","type":"conceptual","difficulty":2,"roles":["backend","devops","system_design"],"topics":["system-design","networking"],"tech_keywords":["load-balancer"],"companies_common":["Amazon","Google"],"source_style":"common-interview","reference_solution":{"key_points":["A load balancer distributes incoming requests across multiple backend server instances, improving scalability, fault tolerance, and avoiding overloading any single server","Round robin: distributes requests sequentially/evenly across servers, simple but ignores current server load","Least connections: sends new requests to whichever server currently has the fewest active connections — accounts for uneven request duration","Weighted/IP-hash variants: weighted for heterogeneous server capacity, IP-hash for session affinity/sticky sessions routing the same client consistently to the same server"],"sample_answer":"A load balancer sits in front of multiple backend server instances and distributes incoming requests across them, which improves scalability by spreading load, and fault tolerance by routing around servers that go down. Round robin is the simplest algorithm, cycling through servers evenly regardless of their current load, which works fine when requests are roughly uniform in cost. Least connections routes each new request to whichever server currently has the fewest active connections, which handles cases better where some requests take much longer than others. There's also weighted round robin for servers with different capacities, and IP-hash based routing, which consistently sends the same client to the same server — useful for sticky sessions when server-side session state isn't shared across instances."},"follow_up_hint":"Ask why sticky sessions can be a scalability problem, and what the better alternative is (shared/external session store)."},
-  {"id":"lb-0002","question":"What is the difference between a Layer 4 (transport layer) and a Layer 7 (application layer) load balancer?","type":"conceptual","difficulty":3,"roles":["devops","system_design"],"topics":["system-design","networking"],"tech_keywords":["load-balancer"],"companies_common":["Amazon","Google"],"source_style":"faang-common","reference_solution":{"key_points":["Layer 4 load balancer routes based on IP address and port information (TCP/UDP level) without inspecting the actual application data/content","Layer 7 load balancer inspects the actual request content (HTTP headers, URL path, cookies) to make more intelligent routing decisions","L4 is faster/lower overhead since it doesn't parse application data; L7 is more flexible, enabling content-based routing (e.g. route /api to one service, /static to another) but adds processing overhead","L7 also enables features like SSL termination, request/response modification, and more sophisticated health checks based on actual application responses"],"sample_answer":"A Layer 4 load balancer operates at the transport layer, making routing decisions based only on IP address and port information from TCP or UDP packets, without looking into the actual application content — it's fast and low-overhead precisely because it doesn't need to parse anything beyond that. A Layer 7 load balancer operates at the application layer and actually inspects the request content — HTTP headers, the URL path, cookies — to make smarter, more granular routing decisions, like routing requests to /api to one backend service and /static to a completely different one. This added intelligence comes with more processing overhead, but it also enables useful features like SSL/TLS termination at the load balancer, modifying requests or responses in flight, and health checks that actually validate the application is responding correctly rather than just checking if a port is open."},"follow_up_hint":"Ask them to design content-based routing rules for an API gateway serving both a REST API and static frontend assets from the same domain."},
-  {"id":"lb-0003","question":"How would you design a system to handle a single point of failure in the load balancer itself?","type":"scenario_based","difficulty":3,"roles":["devops","system_design"],"topics":["system-design"],"tech_keywords":["high-availability"],"companies_common":["Amazon","Google"],"source_style":"faang-common","reference_solution":{"key_points":["A single load balancer instance is itself a single point of failure — if it goes down, the entire system becomes unreachable regardless of how many healthy backend servers exist","Solution: run multiple load balancer instances in an active-passive or active-active configuration","DNS-level or a floating/virtual IP (with a protocol like VRRP/keepalived) can fail over traffic to a standby load balancer if the primary becomes unhealthy","Cloud-managed load balancers (AWS ALB/ELB, GCP Load Balancer) already handle this redundancy internally, which is one strong reason to prefer them over self-managed for most cases"],"sample_answer":"A single load balancer instance is itself a single point of failure — no matter how redundant the backend servers are, if the one load balancer routing to them goes down, the whole system becomes unreachable. The fix is running multiple load balancer instances, either active-passive with automatic failover, or active-active sharing traffic. This is typically achieved with a floating/virtual IP managed by a protocol like VRRP via keepalived, so if the primary load balancer becomes unhealthy, the virtual IP moves to the standby instance transparently, or via DNS-based failover directing traffic to a healthy load balancer. In practice, using a cloud provider's managed load balancer, like an AWS Application Load Balancer, sidesteps this problem entirely, since the provider already runs it redundantly across multiple availability zones internally — which is one strong reason to prefer a managed load balancer over self-hosting one for most production systems."},"follow_up_hint":"Ask what DNS TTL considerations matter if failover relies on updating a DNS record rather than a floating IP."}
+  {
+    "id": "lb-0001",
+    "question": "What is a load balancer, and what are common algorithms it uses to distribute traffic?",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "backend",
+      "devops",
+      "system_design"
+    ],
+    "topics": [
+      "system-design",
+      "networking"
+    ],
+    "tech_keywords": [
+      "load-balancer"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "A load balancer distributes incoming requests across multiple backend server instances, improving scalability, fault tolerance, and avoiding overloading any single server",
+        "Round robin: distributes requests sequentially/evenly across servers, simple but ignores current server load",
+        "Least connections: sends new requests to whichever server currently has the fewest active connections — accounts for uneven request duration",
+        "Weighted/IP-hash variants: weighted for heterogeneous server capacity, IP-hash for session affinity/sticky sessions routing the same client consistently to the same server"
+      ],
+      "sample_answer": "A load balancer sits in front of multiple backend server instances and distributes incoming requests across them, which improves scalability by spreading load, and fault tolerance by routing around servers that go down. Round robin is the simplest algorithm, cycling through servers evenly regardless of their current load, which works fine when requests are roughly uniform in cost. Least connections routes each new request to whichever server currently has the fewest active connections, which handles cases better where some requests take much longer than others. There's also weighted round robin for servers with different capacities, and IP-hash based routing, which consistently sends the same client to the same server — useful for sticky sessions when server-side session state isn't shared across instances."
+    },
+    "follow_up_hint": "Ask why sticky sessions can be a scalability problem, and what the better alternative is (shared/external session store).",
+    "concept": "Load Balancing",
+    "sub_concept": "Traffic distribution algorithms and architectural role",
+    "expected_reasoning": "A strong candidate begins by defining the core function of a load balancer as a reverse proxy that sits in front of backend servers to abstract infrastructure and prevent single points of failure. They then systematically break down traffic distribution strategies by identifying the operational trade-offs of each approach. Rather than listing algorithms blindly, they explain the conditions under which one would choose a static strategy like round-robin versus a dynamic strategy like least connections based on request duration and server heterogeneity. Finally, they address edge cases such as state management and sticky sessions, showing an understanding of how traffic routing interacts with application state.",
+    "common_mistakes": [
+      "States the conclusion with no justification, merely listing algorithm names without explaining how they work or when to use them.",
+      "Confuses round-robin with least connections, assuming naive round-robin accounts for actual server load.",
+      "Fails to mention why a load balancer is necessary in the first place (scalability, high availability, fault tolerance).",
+      "Ignores server heterogeneity, missing why weighted algorithms are required when instances have different hardware specs.",
+      "Treats all requests as stateless and uniform, omitting the problem of session affinity and sticky sessions."
+    ],
+    "progressive_hints": [
+      "Consider what happens to an application when a single server receives a sudden spike in traffic, and think about where you might place a traffic manager.",
+      "Think about the different ways you might decide which server gets the next request—some strategies look only at the sequence, while others check the current health or load of the servers.",
+      "Consider how you would route traffic if some requests take minutes to process while others take milliseconds, or if a user needs to hit the exact same server to preserve their login session."
+    ],
+    "learning_objective": "Understand how load balancers improve system scalability and availability, and how to select the appropriate traffic distribution algorithm based on workload characteristics."
+  },
+  {
+    "id": "lb-0002",
+    "question": "What is the difference between a Layer 4 (transport layer) and a Layer 7 (application layer) load balancer?",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "devops",
+      "system_design"
+    ],
+    "topics": [
+      "system-design",
+      "networking"
+    ],
+    "tech_keywords": [
+      "load-balancer"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Layer 4 load balancer routes based on IP address and port information (TCP/UDP level) without inspecting the actual application data/content",
+        "Layer 7 load balancer inspects the actual request content (HTTP headers, URL path, cookies) to make more intelligent routing decisions",
+        "L4 is faster/lower overhead since it doesn't parse application data; L7 is more flexible, enabling content-based routing (e.g. route /api to one service, /static to another) but adds processing overhead",
+        "L7 also enables features like SSL termination, request/response modification, and more sophisticated health checks based on actual application responses"
+      ],
+      "sample_answer": "A Layer 4 load balancer operates at the transport layer, making routing decisions based only on IP address and port information from TCP or UDP packets, without looking into the actual application content — it's fast and low-overhead precisely because it doesn't need to parse anything beyond that. A Layer 7 load balancer operates at the application layer and actually inspects the request content — HTTP headers, the URL path, cookies — to make smarter, more granular routing decisions, like routing requests to /api to one backend service and /static to a completely different one. This added intelligence comes with more processing overhead, but it also enables useful features like SSL/TLS termination at the load balancer, modifying requests or responses in flight, and health checks that actually validate the application is responding correctly rather than just checking if a port is open."
+    },
+    "follow_up_hint": "Ask them to design content-based routing rules for an API gateway serving both a REST API and static frontend assets from the same domain.",
+    "concept": "Load Balancing",
+    "sub_concept": "Layer 4 versus Layer 7 Routing Mechanics",
+    "expected_reasoning": "A strong candidate begins by framing load balancing through the OSI model layers, mapping where each type of balancer operates. They analyze the information available at each layer, contrasting raw transport headers with parsed application payloads. Next, they derive the trade-offs in performance and visibility, connecting lower-layer routing speed with upper-layer contextual intelligence. Finally, they weigh operational considerations like SSL termination and routing flexibility to demonstrate how architectural requirements dictate the choice between them.",
+    "common_mistakes": [
+      "States that Layer 7 is always better without mentioning the performance and latency trade-offs.",
+      "Confuses transport layer packet inspection with application layer payload parsing.",
+      "Provides a shallow definition (e.g., 'L4 is for network, L7 is for apps') without explaining how routing decisions are actually made.",
+      "Misses critical capabilities unique to Layer 7 such as path-based routing, header modification, and advanced health checks.",
+      "Fails to mention how SSL termination is handled differently across the two layers."
+    ],
+    "progressive_hints": [
+      "Think about what information is available as a packet travels up the OSI model stack from the transport layer to the application layer.",
+      "Consider what a load balancer can see regarding the actual HTTP request content versus just the TCP or UDP packet headers.",
+      "Reflect on how routing traffic to different microservices based on a URL path requires inspecting deeper into the packet than just the IP and port."
+    ],
+    "learning_objective": "Understand how the OSI layer at which a load balancer operates determines its performance profile, routing flexibility, and feature set."
+  },
+  {
+    "id": "lb-0003",
+    "question": "How would you design a system to handle a single point of failure in the load balancer itself?",
+    "type": "scenario_based",
+    "difficulty": 3,
+    "roles": [
+      "devops",
+      "system_design"
+    ],
+    "topics": [
+      "system-design"
+    ],
+    "tech_keywords": [
+      "high-availability"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "A single load balancer instance is itself a single point of failure — if it goes down, the entire system becomes unreachable regardless of how many healthy backend servers exist",
+        "Solution: run multiple load balancer instances in an active-passive or active-active configuration",
+        "DNS-level or a floating/virtual IP (with a protocol like VRRP/keepalived) can fail over traffic to a standby load balancer if the primary becomes unhealthy",
+        "Cloud-managed load balancers (AWS ALB/ELB, GCP Load Balancer) already handle this redundancy internally, which is one strong reason to prefer them over self-managed for most cases"
+      ],
+      "sample_answer": "A single load balancer instance is itself a single point of failure — no matter how redundant the backend servers are, if the one load balancer routing to them goes down, the whole system becomes unreachable. The fix is running multiple load balancer instances, either active-passive with automatic failover, or active-active sharing traffic. This is typically achieved with a floating/virtual IP managed by a protocol like VRRP via keepalived, so if the primary load balancer becomes unhealthy, the virtual IP moves to the standby instance transparently, or via DNS-based failover directing traffic to a healthy load balancer. In practice, using a cloud provider's managed load balancer, like an AWS Application Load Balancer, sidesteps this problem entirely, since the provider already runs it redundantly across multiple availability zones internally — which is one strong reason to prefer a managed load balancer over self-hosting one for most production systems."
+    },
+    "follow_up_hint": "Ask what DNS TTL considerations matter if failover relies on updating a DNS record rather than a floating IP.",
+    "concept": "High Availability Architecture",
+    "sub_concept": "Load Balancer Redundancy and Failover",
+    "expected_reasoning": "A strong candidate first identifies that while backend servers are often scaled out, the entry point itself represents a critical chokepoint. They reason through how clients resolve addresses and discover that traffic must be dynamically rerouted when a hardware or software failure occurs on the primary gateway. They weigh the operational complexity of managing custom failover protocols like VRRP versus offloading the redundancy to cloud-native managed solutions. Finally, they evaluate active-passive versus active-active topologies based on statefulness and cost trade-offs.",
+    "common_mistakes": [
+      "States that adding more backend servers solves the problem without realizing the load balancer is a single point of failure",
+      "Suggests a simple DNS change without considering TTL delays and client caching behavior during an outage",
+      "Fails to distinguish between self-managed load balancers requiring custom failover and cloud-managed managed services that handle it automatically",
+      "Proposes a stateless active-active setup without addressing how session stickiness or state is synchronized across instances",
+      "Provides a high-level conclusion that high availability is important without explaining the actual mechanism of IP failover or health checking"
+    ],
+    "progressive_hints": [
+      "What happens to incoming traffic if the machine sitting right in front of all your backend servers suddenly loses power?",
+      "If you have a backup load balancer ready to take over, how do client requests actually find that backup instead of the dead primary IP?",
+      "Look into virtual IP addresses and protocols like VRRP, or consider how managed cloud infrastructure abstracts this layer away entirely."
+    ],
+    "learning_objective": "The candidate should walk away understanding how to identify single points of failure at the network ingress layer and design automated IP failover or managed redundancy to ensure system resilience."
+  }
 ]

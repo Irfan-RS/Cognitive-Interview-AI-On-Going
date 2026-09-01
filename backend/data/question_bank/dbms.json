@@ -4,10 +4,25 @@
     "question": "Explain the ACID properties of a database transaction with an example of each.",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["general_sde", "backend"],
-    "topics": ["transactions", "acid"],
-    "tech_keywords": ["dbms", "sql", "transactions"],
-    "companies_common": ["Amazon", "Microsoft", "Infosys", "TCS"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "transactions",
+      "acid"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "sql",
+      "transactions"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Infosys",
+      "TCS"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -19,17 +34,46 @@
       ],
       "sample_answer": "Atomicity means a transaction is all-or-nothing — transferring money debits one account and credits another as a single unit; if the credit fails, the debit is rolled back too. Consistency means the database only moves between valid states, e.g. a constraint preventing a negative balance is never violated even mid-transaction. Isolation means concurrent transactions don't observe each other's uncommitted changes, preventing dirty reads. Durability means once a transaction commits, the change survives even a crash right after, because it's been persisted to durable storage like a write-ahead log."
     },
-    "follow_up_hint": "Ask them to explain how a database implements durability in practice, e.g. via write-ahead logging."
+    "follow_up_hint": "Ask them to explain how a database implements durability in practice, e.g. via write-ahead logging.",
+    "concept": "ACID",
+    "sub_concept": "transactions",
+    "expected_reasoning": "A strong candidate will first clarify what a transaction is in the context of database operations. They will then derive the concept of atomicity by considering a real-world example of a transaction, such as a money transfer. They will explain how atomicity ensures that all operations (debit and credit) either both succeed or fail together. Next, they will discuss consistency by explaining how a transaction must maintain the database's integrity, for example, by ensuring that a transaction cannot result in a negative balance. They will then address isolation by describing how concurrent transactions do not see each other's partial results. Finally, they will discuss durability by explaining that once a transaction is committed, its changes are safe from crashes and survive to be persisted to durable storage.",
+    "common_mistakes": [
+      "states the conclusion with no justification",
+      "gives a generic example instead of a concrete one",
+      "confuses consistency with atomicity",
+      "ignores isolation and durability"
+    ],
+    "progressive_hints": [
+      "What is a transaction in the context of database operations?",
+      "Can you give an example of a transaction and explain how it works?",
+      "How does a transaction ensure that all operations either succeed or fail together?"
+    ],
+    "learning_objective": "Understand the ACID properties and their importance in maintaining database integrity and reliability."
   },
   {
     "id": "dbms-0002",
     "question": "Explain database normalization: what are 1NF, 2NF, and 3NF, and why normalize at all?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["normalization", "schema-design"],
-    "tech_keywords": ["dbms", "sql", "normalization"],
-    "companies_common": ["Amazon", "Microsoft", "Infosys"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "normalization",
+      "schema-design"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "sql",
+      "normalization"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Infosys"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -41,17 +85,42 @@
       ],
       "sample_answer": "1NF requires every column to hold a single atomic value, no lists or repeating groups packed into one field. 2NF builds on that by requiring every non-key attribute to depend on the entire primary key, which matters for composite keys — a partial dependency violates it. 3NF further requires no transitive dependencies, meaning a non-key column can't depend on another non-key column. Normalizing reduces redundancy and prevents anomalies like updating a value in one row but forgetting a duplicate elsewhere — but it does mean more joins, which is why read-heavy systems sometimes deliberately denormalize for performance."
     },
-    "follow_up_hint": "Ask for a concrete example of an update anomaly that occurs in an un-normalized table."
+    "follow_up_hint": "Ask for a concrete example of an update anomaly that occurs in an un-normalized table.",
+    "concept": "Normalization",
+    "sub_concept": "1NF, 2NF, 3NF",
+    "expected_reasoning": "A strong candidate first clarifies what 1NF means, then explains how 2NF and 3NF build upon 1NF by addressing dependencies and redundancy. They derive the conditions for each normal form and discuss why normalization is important for reducing data redundancy and update anomalies.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as directly stating what normalization does without explaining the reasoning behind it. Also, candidates may confuse the concepts or fail to distinguish between the normal forms or their implications. They might also overlook the trade-off between normalization and performance in certain use cases."
+    ],
+    "progressive_hints": [
+      "What is the main issue with the current schema that 1NF addresses?",
+      "Why is it important for every non-key column to depend on the whole primary key in 2NF?",
+      "What prevents the non-key columns from being dependent on other non-key columns in 3NF?"
+    ],
+    "learning_objective": "Understand the importance and implications of database normalization in reducing data redundancy and update anomalies."
   },
   {
     "id": "dbms-0003",
     "question": "Explain the difference between a clustered and a non-clustered index.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["indexing"],
-    "tech_keywords": ["dbms", "sql", "indexing"],
-    "companies_common": ["Amazon", "Microsoft", "Oracle"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "indexing"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "sql",
+      "indexing"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Oracle"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -63,17 +132,47 @@
       ],
       "sample_answer": "A clustered index physically orders the table's data rows according to the index key — there can only be one, since data can only be sorted one way. A non-clustered index is a separate structure that stores the indexed column's values alongside a pointer back to the actual row (or the clustering key), so a table can have many. Looking up through a non-clustered index sometimes needs an extra step to fetch the rest of the row if the needed columns aren't included in the index itself. The primary key is commonly used as the clustered index by default, though it doesn't have to be."
     },
-    "follow_up_hint": "Ask what a covering index is and how it avoids the extra lookup step."
+    "follow_up_hint": "Ask what a covering index is and how it avoids the extra lookup step.",
+    "concept": "Database Indexing",
+    "sub_concept": "Clustered versus Non-Clustered Indexes",
+    "expected_reasoning": "A strong candidate begins by contrasting the fundamental difference in how data is stored versus how it is referenced. They explain that the clustered index dictates the physical layout of the table itself, meaning only one can exist per table. Next, they deduce how non-clustered indexes must operate as separate structures, leading to the necessity of secondary lookups or pointer resolutions. Finally, they weigh the performance implications of both structures on reads and writes, such as write amplification during inserts and the impact of bookmark lookups.",
+    "common_mistakes": [
+      "States that a table can have multiple clustered indexes because they are both indexes.",
+      "Claims non-clustered indexes contain duplicate copies of all table data rather than pointers or keys.",
+      "Misses the impact on write performance and fragmentation caused by clustered index insert patterns.",
+      "Fails to mention the extra lookup step (bookmark lookup) required when fetching columns not covered by a non-clustered index.",
+      "Conflates the primary key with a clustered index as if they are always identical concepts."
+    ],
+    "progressive_hints": [
+      "Think about what happens to the physical data on disk when a new row is inserted into a table.",
+      "Consider how many ways you can physically sort a single pile of books versus how many different index cards you could write to point to those books.",
+      "If a non-clustered index only stores the indexed column values and a reference, what extra step must the database engine take if you request a column not in that index?"
+    ],
+    "learning_objective": "Understand how database storage architecture relies on physical row ordering versus secondary pointer structures to balance read efficiency against write overhead."
   },
   {
     "id": "dbms-0004",
     "question": "What are the different types of SQL joins (INNER, LEFT, RIGHT, FULL OUTER), and give an example of when to use each.",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["general_sde", "backend"],
-    "topics": ["sql", "joins"],
-    "tech_keywords": ["sql", "dbms"],
-    "companies_common": ["Amazon", "Infosys", "TCS", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "sql",
+      "joins"
+    ],
+    "tech_keywords": [
+      "sql",
+      "dbms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys",
+      "TCS",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -85,17 +184,48 @@
       ],
       "sample_answer": "INNER JOIN only returns rows where both tables have matching keys, e.g. orders that have a valid customer. LEFT JOIN returns every row from the left table regardless of a match, filling in NULLs otherwise — good for 'all customers, including those with no orders'. RIGHT JOIN mirrors that from the right table's side. FULL OUTER JOIN returns all rows from both sides, matched where possible and NULL-filled otherwise, useful for finding mismatches in both directions at once, like reconciling two datasets."
     },
-    "follow_up_hint": "Ask them to write a query using LEFT JOIN plus a WHERE clause to find customers with zero orders."
+    "follow_up_hint": "Ask them to write a query using LEFT JOIN plus a WHERE clause to find customers with zero orders.",
+    "concept": "Database Joins",
+    "sub_concept": "Relational Operators and Set Theory",
+    "expected_reasoning": "A strong candidate begins by framing joins as set operations that combine rows from two or more tables based on a related column between them. They systematically work through each join type by defining how unmatched rows are handled on either side of the relationship. To ground their explanation, they construct a relatable schema example, such as customers and orders, to demonstrate the practical output differences. Finally, they reason about business logic requirements to explain precisely when the data model necessitates each specific join type.",
+    "common_mistakes": [
+      "Listing definitions without providing concrete use cases or data examples",
+      "Confusing LEFT and RIGHT joins or reversing which table retains all rows",
+      "Stating that FULL OUTER JOIN is commonly used for standard transactional reporting without mentioning performance or data quality implications",
+      "Failing to explain what happens to unmatched columns (i.e., that they evaluate to NULL)",
+      "Treating INNER JOIN as the default choice for all queries without considering missing relational data"
+    ],
+    "progressive_hints": [
+      "Think about what happens to rows in one table when there is no matching record in the other table.",
+      "Consider how the direction of the join (left vs. right) determines which table's complete dataset is preserved.",
+      "If you need to ensure that every single record from both tables appears in the output regardless of whether a match exists, which join operator guarantees that?"
+    ],
+    "learning_objective": "Understand how relational database join types dictate the inclusion and exclusion of unmatched rows to satisfy different business reporting requirements."
   },
   {
     "id": "dbms-0005",
     "question": "What is a database transaction isolation level? Explain the anomalies (dirty read, non-repeatable read, phantom read) that different levels prevent.",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["transactions", "isolation-levels"],
-    "tech_keywords": ["dbms", "sql", "transactions", "concurrency"],
-    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "transactions",
+      "isolation-levels"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "sql",
+      "transactions",
+      "concurrency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Microsoft"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -107,17 +237,48 @@
       ],
       "sample_answer": "A dirty read means seeing another transaction's uncommitted data, which could later be rolled back. A non-repeatable read means reading the same row twice in one transaction and getting different values because another transaction committed a change between the reads. A phantom read means re-running the same filtered query and getting a different set of rows because rows were inserted or deleted elsewhere. Read Uncommitted allows all of these; Read Committed prevents dirty reads; Repeatable Read additionally prevents non-repeatable reads; Serializable prevents all three, but at the cost of the most locking and least concurrency."
     },
-    "follow_up_hint": "Ask how Repeatable Read in some databases (e.g. MySQL InnoDB via MVCC) actually also prevents most phantom reads, unlike the strict standard definition."
+    "follow_up_hint": "Ask how Repeatable Read in some databases (e.g. MySQL InnoDB via MVCC) actually also prevents most phantom reads, unlike the strict standard definition.",
+    "concept": "Database Transactions",
+    "sub_concept": "Isolation Levels and Concurrency Anomalies",
+    "expected_reasoning": "A strong candidate begins by defining transaction isolation as the mechanism controlling how concurrent transactions see each other's modifications. They systematically define the three classic anomalies by distinguishing between reading uncommitted data, seeing modified row values across reads, and seeing newly inserted or deleted rows. Next, they map these anomalies to the standard SQL isolation levels, explaining how moving from Read Uncommitted up to Serializable trades off data consistency against concurrency and locking overhead.",
+    "common_mistakes": [
+      "Confusing non-repeatable reads with phantom reads by failing to distinguish between column updates on existing rows and row insertions/deletions.",
+      "Stating isolation level names and anomalies without explaining the underlying concurrency mechanisms or trade-offs involving locks.",
+      "Claiming that Read Committed prevents non-repeatable reads, misunderstanding that it only blocks dirty reads.",
+      "Asserting that Serializable isolation is always the best choice without acknowledging its impact on throughput and contention.",
+      "Failing to mention that concurrent transactions are the root cause of all three anomalies."
+    ],
+    "progressive_hints": [
+      "Consider what happens when multiple transactions access the same data concurrently, and how databases decide what one transaction is allowed to see of another's work.",
+      "Think about the timeline of a single transaction executing a read query twice: what specific changes made by *other* transactions could cause those two reads to differ, and how do those scenarios differ between updating existing rows versus adding new ones?",
+      "Review the four standard SQL isolation levels and map them directly against dirty reads, non-repeatable reads, and phantoms to identify which level stops which anomaly."
+    ],
+    "learning_objective": "The candidate should understand how database isolation levels form a trade-off between preventing specific concurrency anomalies and maximizing system throughput via reduced locking."
   },
   {
     "id": "dbms-0006",
     "question": "Explain how a B-tree (or B+ tree) index works, and why databases use it instead of a hash table or binary search tree for indexing.",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["indexing", "data-structures"],
-    "tech_keywords": ["dbms", "sql", "indexing", "data-structures"],
-    "companies_common": ["Amazon", "Microsoft", "Oracle"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "indexing",
+      "data-structures"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "sql",
+      "indexing",
+      "data-structures"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Oracle"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -129,17 +290,49 @@
       ],
       "sample_answer": "A B+ tree is a balanced tree with a very high fan-out per node, designed around how disks read data in blocks — each node typically corresponds to one disk page, so a wide, shallow tree minimizes the number of disk reads for a lookup even with millions of rows. Unlike a hash index, which is only good for exact-match lookups, a B+ tree keeps keys sorted, so it also efficiently supports range queries. All actual row pointers live in the leaf nodes, which are linked together, making sequential range scans fast. A plain binary search tree would be far deeper for the same data and isn't structured around disk block sizes, making it a poor fit for on-disk indexes."
     },
-    "follow_up_hint": "Ask why a hash index can be faster for exact-match lookups but is unusable for range queries."
+    "follow_up_hint": "Ask why a hash index can be faster for exact-match lookups but is unusable for range queries.",
+    "concept": "Database Indexing",
+    "sub_concept": "B+ Tree versus Hash Tables and Binary Search Trees",
+    "expected_reasoning": "A strong candidate begins by contrasting the performance characteristics of disk-based storage versus in-memory structures, noting that minimizing disk I/O is the primary constraint. They evaluate hash tables, recognizing their O(1) point lookup capability while realizing their complete inability to handle range queries. Next, they analyze why standard binary search trees fail in practice due to unconstrained height and poor cache/block locality. Finally, they derive how the wide, balanced structure and leaf-node linked lists of a B+ tree simultaneously solve the disk-seek and range-query problems.",
+    "common_mistakes": [
+      "States that B-trees are faster than hash tables overall without mentioning that hash tables are actually faster for exact point lookups.",
+      "Ignores disk I/O economics entirely, treating memory and disk access as having identical latency.",
+      "Confuses a B-tree with a B+ tree and fails to mention that leaf node linking is critical for range scans.",
+      "Assumes a binary search tree is efficient for databases without considering tree balancing or disk block sizes.",
+      "States the conclusion that B+ trees are good for databases with no justification regarding tree height or fan-out."
+    ],
+    "progressive_hints": [
+      "Consider the physical medium where databases store indexes: what is the most expensive operational cost when fetching data from a disk?",
+      "Think about the two primary query patterns databases must support: point lookups and range scans. How does a hash table perform on the latter?",
+      "If your index needs to stay shallow to minimize disk reads while keeping data sorted for range queries, what structural property must your nodes have regarding their child count and data placement?"
+    ],
+    "learning_objective": "Understand why B+ trees are the standard database index structure due to their high fan-out minimizing disk I/O and their leaf-node architecture supporting both point and range queries efficiently."
   },
   {
     "id": "dbms-0007",
     "question": "What is the N+1 query problem in an ORM, and how would you fix it?",
     "type": "scenario",
     "difficulty": 2,
-    "roles": ["general_sde", "backend", "fullstack"],
-    "topics": ["orm", "performance"],
-    "tech_keywords": ["dbms", "sql", "orm", "performance"],
-    "companies_common": ["Amazon", "Microsoft", "Flipkart"],
+    "roles": [
+      "general_sde",
+      "backend",
+      "fullstack"
+    ],
+    "topics": [
+      "orm",
+      "performance"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "sql",
+      "orm",
+      "performance"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Flipkart"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -151,17 +344,48 @@
       ],
       "sample_answer": "The N+1 problem happens when you fetch a list of N parent records, then the ORM lazily issues a separate query for each one's related data as you access it in a loop — resulting in N+1 total database round trips instead of one or two. The fix is eager loading: use a JOIN to fetch parents and children in one query, or issue a single batched query fetching all children with an IN clause on the parent IDs. Most ORMs expose this directly, like Django's select_related/prefetch_related or Hibernate's JOIN FETCH."
     },
-    "follow_up_hint": "Ask them to identify the N+1 pattern in a given code snippet and rewrite it using eager loading."
+    "follow_up_hint": "Ask them to identify the N+1 pattern in a given code snippet and rewrite it using eager loading.",
+    "concept": "ORM Performance",
+    "sub_concept": "N+1 Query Problem and Eager Loading",
+    "expected_reasoning": "A strong candidate begins by analyzing what happens when an application iterates over a collection of parent records and accesses an un-loaded lazy association for each. They derive the query pattern, noting that one initial query fetches the parents and then N subsequent queries fetch the children individually. They then weigh the network and database overhead of these round trips against the memory cost of loading unneeded data. Finally, they propose an eager loading strategy using specific ORM mechanisms to consolidate these trips into a single query or a batched lookup.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply saying 'it runs too many queries' without explaining how or why",
+      "Confuses lazy loading with eager loading and recommends lazy loading as the performance fix",
+      "Believes the ORM automatically optimizes all relationships without explicit developer configuration",
+      "Fails to explain the performance bottleneck in terms of database round-trips and network latency",
+      "Only knows the concept in one specific framework and cannot generalize the mechanism to other ORMs"
+    ],
+    "progressive_hints": [
+      "What happens at the database level when you loop through a list of 100 users and access each user's profile inside that loop?",
+      "You are triggering a separate database query per iteration. How can you change when or how those related records are retrieved relative to the initial query?",
+      "Look into eager loading techniques such as JOINs or IN-clauses to fetch parent and child data in a single or batched trip."
+    ],
+    "learning_objective": "Understand how lazy-loaded associations cause the N+1 query problem and how to resolve it using ORM eager loading strategies to minimize database round trips."
   },
   {
     "id": "dbms-0008",
     "question": "Explain the CAP theorem and give an example of a system that chooses CP versus one that chooses AP.",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["distributed-systems", "cap-theorem"],
-    "tech_keywords": ["dbms", "distributed-systems", "nosql"],
-    "companies_common": ["Amazon", "Google", "Netflix", "Uber"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "distributed-systems",
+      "cap-theorem"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "distributed-systems",
+      "nosql"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Netflix",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -173,17 +397,49 @@
       ],
       "sample_answer": "CAP theorem says that during a network partition, a distributed system must choose between Consistency (every node sees the same, latest data) and Availability (every request gets a response, even if possibly stale). A CP system, like ZooKeeper or a strongly consistent database configuration, will refuse or delay requests during a partition rather than risk inconsistency. An AP system, like Cassandra or DynamoDB by default, keeps serving reads and writes during a partition, accepting temporary inconsistency that gets reconciled later. Outside of an actual partition, a system can be both consistent and available — CAP is specifically about the trade-off forced during a partition."
     },
-    "follow_up_hint": "Ask them to explain PACELC and how it extends CAP to also cover the latency-consistency trade-off in normal operation."
+    "follow_up_hint": "Ask them to explain PACELC and how it extends CAP to also cover the latency-consistency trade-off in normal operation.",
+    "concept": "CAP Theorem",
+    "sub_concept": "Trade-offs under network partitions",
+    "expected_reasoning": "A strong candidate begins by defining the three guarantees of CAP and immediately clarifying that the choice only manifests when a network partition actually occurs. They then derive why consistency and availability are mutually exclusive during a partition, explaining how one node must either block/error out (choosing consistency) or risk serving stale data (choosing availability). Finally, they ground this theory by mapping real-world systems to each side and optionally introducing PACELC to show a nuanced understanding of trade-offs during normal operation.",
+    "common_mistakes": [
+      "Stating that a system can pick any two of Consistency, Availability, and Partition Tolerance out of three",
+      "Failing to mention that partitions are network failures rather than normal operational states",
+      "Listing a CP or AP system without explaining the exact failure mode or behavior during a partition",
+      "Confusing database ACID consistency with CAP linearizability or sequential consistency",
+      "Ignoring the normal-state trade-offs or omitting modern refinements like PACELC"
+    ],
+    "progressive_hints": [
+      "What specific network condition forces a distributed system to choose between its guarantees?",
+      "If a network split isolates two halves of a cluster, how must each side handle incoming writes to remain consistent versus remaining available?",
+      "Think about systems like ZooKeeper versus Cassandra: what happens to a client trying to write when a node cannot reach the quorum?"
+    ],
+    "learning_objective": "Understand that the CAP theorem is fundamentally about how a distributed system must sacrifice either consistency or availability specifically during a network partition."
   },
   {
     "id": "dbms-0009",
     "question": "What is the difference between a SQL and a NoSQL database, and when would you choose one over the other?",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["sql", "nosql"],
-    "tech_keywords": ["dbms", "sql", "nosql", "mongodb"],
-    "companies_common": ["Amazon", "Google", "Uber", "Netflix"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "sql",
+      "nosql"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "sql",
+      "nosql",
+      "mongodb"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Uber",
+      "Netflix"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -195,17 +451,49 @@
       ],
       "sample_answer": "SQL databases enforce a fixed relational schema with strong ACID guarantees and support rich joins across tables — a good fit for data with complex relationships and correctness requirements, like financial records. NoSQL databases trade some of that structure and consistency for flexibility and easier horizontal scaling — document stores like MongoDB suit evolving, semi-structured data; key-value stores like DynamoDB suit very high-throughput simple lookups; column-family stores like Cassandra suit massive write volumes. The choice comes down to whether you need strong relational consistency and complex queries, or flexible schema and horizontal scale."
     },
-    "follow_up_hint": "Ask them to design the schema for a product catalog in both a relational and a document-store style, and compare trade-offs."
+    "follow_up_hint": "Ask them to design the schema for a product catalog in both a relational and a document-store style, and compare trade-offs.",
+    "concept": "Database Selection",
+    "sub_concept": "SQL vs NoSQL Architectural Trade-offs",
+    "expected_reasoning": "A strong candidate begins by contrasting the core structural and consistency models of relational versus non-relational databases, focusing on schema enforcement and scaling paradigms. They then analyze how access patterns, transaction requirements, and data volatility drive the choice between them, rather than relying on dogma. Finally, they acknowledge the modern convergence where the lines between the two paradigms have increasingly blurred.",
+    "common_mistakes": [
+      "States that SQL is always slow and NoSQL is always fast without any architectural context",
+      "Claims NoSQL databases never support transactions or consistency",
+      "Assumes NoSQL means 'MongoDB' and SQL means 'PostgreSQL' without addressing underlying data models",
+      "Fails to mention data access patterns or schema evolution as decision drivers",
+      "States the conclusion with no justification regarding when to use which"
+    ],
+    "progressive_hints": [
+      "What fundamental constraints on data structure and consistency usually drive the choice between storing data in tables versus documents?",
+      "Consider how scaling a database horizontally changes your ability to enforce strict multi-table transactions across nodes.",
+      "Think about how the nature of your workload—specifically whether your schema changes frequently or your queries require complex multi-table joins—dictates your storage engine."
+    ],
+    "learning_objective": "The candidate should understand that choosing between SQL and NoSQL is a trade-off driven by data structures, query patterns, scalability requirements, and consistency guarantees rather than arbitrary preference."
   },
   {
     "id": "dbms-0010",
     "question": "Explain database sharding: what is it, and what are common sharding strategies?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["distributed-systems", "scalability"],
-    "tech_keywords": ["dbms", "sharding", "distributed-systems", "scalability"],
-    "companies_common": ["Amazon", "Uber", "Facebook", "Google"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "distributed-systems",
+      "scalability"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "sharding",
+      "distributed-systems",
+      "scalability"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Uber",
+      "Facebook",
+      "Google"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -217,17 +505,47 @@
       ],
       "sample_answer": "Sharding splits data across multiple database instances so no single machine has to hold or serve the entire dataset. Range-based sharding assigns contiguous key ranges to each shard, which is simple but can create hot spots if access is skewed toward a particular range. Hash-based sharding distributes keys more evenly via a hash function, but makes range queries across the whole dataset harder since related keys are scattered. Directory-based sharding uses a separate lookup service to map keys to shards, which is flexible for rebalancing but adds an extra hop and a potential bottleneck. Cross-shard joins and rebalancing when adding/removing shards are the classic hard problems with any sharding strategy."
     },
-    "follow_up_hint": "Ask how consistent hashing helps minimize data movement when a shard is added or removed."
+    "follow_up_hint": "Ask how consistent hashing helps minimize data movement when a shard is added or removed.",
+    "concept": "Database Sharding",
+    "sub_concept": "Horizontal Partitioning and Distribution Strategies",
+    "expected_reasoning": "A strong candidate begins by defining the physical limitation of a single machine and why vertical scaling eventually hits a wall. They then explain horizontal partitioning as a mechanism to distribute data subsets across independent instances. Next, they systematically walk through different partition key strategies, evaluating how each handles data distribution and query routing. Finally, they analyze the operational trade-offs introduced by sharding, particularly regarding cross-shard queries and cluster rebalancing complexity.",
+    "common_mistakes": [
+      "Confuses database sharding with database replication or clustering for high availability.",
+      "States that sharding solves all scalability problems without mentioning cross-shard joins or transactions.",
+      "Claims range-based sharding provides perfectly even data distribution regardless of access patterns.",
+      "Fails to explain how a client or router actually knows which shard to query.",
+      "Ignores the operational challenge of rebalancing data when adding or removing shards."
+    ],
+    "progressive_hints": [
+      "What physical bottleneck of a single database server does sharding fundamentally try to solve?",
+      "Think about how you would divide a massive table across multiple independent machines. What criteria would you use to decide which row goes to which machine, and what are the trade-offs of that choice?",
+      "Consider the scenarios where a single query needs data from two different shards, or when your data distribution becomes heavily skewed. How do different sharding algorithms handle these cases?"
+    ],
+    "learning_objective": "Understand how horizontal data partitioning scales database capacity beyond single-machine limits and evaluate the trade-offs between different routing strategies."
   },
   {
     "id": "dbms-0011",
     "question": "What is a database deadlock, and how does a database engine typically detect and resolve it?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["transactions", "concurrency"],
-    "tech_keywords": ["dbms", "sql", "concurrency"],
-    "companies_common": ["Amazon", "Microsoft", "Oracle"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "transactions",
+      "concurrency"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "sql",
+      "concurrency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Oracle"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -239,17 +557,46 @@
       ],
       "sample_answer": "A database deadlock happens when two transactions each hold a lock the other is waiting for, forming a cycle with no way to proceed. Most database engines maintain a wait-for graph internally and periodically scan for cycles; when found, they pick a 'victim' transaction — often the cheapest to roll back — abort it, and release its locks so the other transaction can proceed. The application then needs to catch that deadlock error and retry the aborted transaction. At the application level, you can reduce deadlock frequency by always acquiring locks/updating rows in a consistent order across all code paths."
     },
-    "follow_up_hint": "Ask them how consistent row-locking order in application code would have prevented a specific deadlock scenario."
+    "follow_up_hint": "Ask them how consistent row-locking order in application code would have prevented a specific deadlock scenario.",
+    "concept": "Database Concurrency Control",
+    "sub_concept": "Deadlock Detection and Resolution",
+    "expected_reasoning": "A strong candidate first defines the core state of mutual blocking where concurrent transactions form a circular dependency. They then trace how a database engine discovers this state by maintaining and traversing a background wait-for graph. Next, they explain the resolution phase, discussing how the engine selects a victim based on metrics like cost or work done and issues a rollback. Finally, they tie this into system architecture by emphasizing the necessity of application-level retries and preventive design patterns like uniform lock ordering.",
+    "common_mistakes": [
+      "Confusing a deadlock with a simple timeout or lock contention where transactions just wait indefinitely.",
+      "Stating that deadlocks are prevented entirely by the database engine rather than requiring application-level handling and retry logic.",
+      "Failing to explain how the engine actually detects the cycle, missing the concept of a wait-for graph.",
+      "Giving a vague resolution strategy without explaining how or why a specific transaction is chosen as a victim for rollback.",
+      "Ignoring the role of the application layer in recovering from a deadlock via transaction retries."
+    ],
+    "progressive_hints": [
+      "What happens when Transaction A holds a lock needed by Transaction B, while Transaction B simultaneously holds a lock needed by Transaction A?",
+      "Think about how the database tracks resource dependencies between multiple active transactions in memory. What kind of data structure represents who is waiting for whom?",
+      "Once a circular dependency in the wait-for graph is identified, the database must break the loop. How does it choose which transaction to sacrifice, and what happens to the remaining transactions?"
+    ],
+    "learning_objective": "Understand how database engines identify circular locking dependencies and the cooperative role of the application layer in resolving them through rollbacks and retries."
   },
   {
     "id": "dbms-0012",
     "question": "Explain what a database view is, and the difference between a regular view and a materialized view.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["sql", "views"],
-    "tech_keywords": ["dbms", "sql"],
-    "companies_common": ["Amazon", "Infosys", "Oracle"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "sql",
+      "views"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "sql"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys",
+      "Oracle"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -261,17 +608,47 @@
       ],
       "sample_answer": "A regular view is just a saved query — every time you select from it, the database re-runs the underlying query against the live tables, so it's always up to date but pays the full query cost each time. A materialized view actually stores the computed result set on disk, making reads fast, but the data can go stale until it's explicitly refreshed on a schedule or trigger. A regular view fits simplifying a common join for application code; a materialized view fits an expensive aggregate report that's read far more often than the underlying data changes."
     },
-    "follow_up_hint": "Ask how they'd decide the refresh strategy (scheduled vs incremental) for a materialized view in a reporting dashboard."
+    "follow_up_hint": "Ask how they'd decide the refresh strategy (scheduled vs incremental) for a materialized view in a reporting dashboard.",
+    "concept": "Database Views",
+    "sub_concept": "Regular versus Materialized Views",
+    "expected_reasoning": "A strong candidate begins by defining a regular view as a virtual table backed by a saved query, emphasizing that it contains no physical data of its own. They then contrast this with a materialized view, noting that it physically persists the result set to disk for performance optimization. From there, they weigh the core trade-off between the two: regular views guarantee up-to-date data at the cost of running the underlying query on every read, while materialized views offer fast read performance at the expense of storage and data freshness. Finally, they tie these mechanics to practical use cases, such as using regular views for code simplification and security encapsulation, and materialized views for expensive analytics and reporting workloads.",
+    "common_mistakes": [
+      "States that a regular view stores physical data just like a table.",
+      "Claims that a materialized view updates automatically in real-time on every underlying table modification without overhead.",
+      "Treats views merely as a naming alias without explaining how they execute against underlying tables.",
+      "Misses the performance versus data freshness trade-off entirely.",
+      "Fails to provide distinct use cases for when to choose a regular view versus a materialized view."
+    ],
+    "progressive_hints": [
+      "Think about what happens to the underlying tables and queries every time you select from a regular view versus when you create one.",
+      "Consider where the data actually lives when you query a view. Does the database store the results ahead of time for both types, or only one?",
+      "Weigh the performance implications of each approach: one guarantees live data by paying a runtime query cost every time, while the other trades data freshness for instantaneous reads."
+    ],
+    "learning_objective": "The candidate should understand how to evaluate the storage, performance, and freshness trade-offs between regular and materialized views to choose the right approach for specific query and reporting workloads."
   },
   {
     "id": "dbms-0013",
     "question": "Write a SQL query to find the second-highest salary from an Employees table without using LIMIT/OFFSET.",
     "type": "coding",
     "difficulty": 2,
-    "roles": ["general_sde", "backend"],
-    "topics": ["sql", "queries"],
-    "tech_keywords": ["sql", "dbms"],
-    "companies_common": ["Amazon", "Microsoft", "Infosys", "TCS"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "sql",
+      "queries"
+    ],
+    "tech_keywords": [
+      "sql",
+      "dbms"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Infosys",
+      "TCS"
+    ],
     "source_style": "leetcode-style",
     "reference_solution": {
       "key_points": [
@@ -283,17 +660,47 @@
       ],
       "sample_answer": "A simple approach: SELECT MAX(salary) FROM Employees WHERE salary < (SELECT MAX(salary) FROM Employees) — this naturally returns NULL if there's no second distinct salary. A more general approach using a window function: SELECT salary FROM (SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk FROM Employees) t WHERE rnk = 2 — DENSE_RANK is used instead of ROW_NUMBER so tied top salaries are correctly treated as rank 1, and this generalizes easily to the Nth-highest case."
     },
-    "follow_up_hint": "Ask them to generalize the query to find the Nth highest salary for an arbitrary N."
+    "follow_up_hint": "Ask them to generalize the query to find the Nth highest salary for an arbitrary N.",
+    "concept": "SQL Subqueries and Ranking",
+    "sub_concept": "Finding the Nth Highest Value Without Limit",
+    "expected_reasoning": "A strong candidate begins by identifying the core constraint: finding the second-highest value without using LIMIT or OFFSET requires either set-based logic or window functions. They will likely consider a subquery approach using an aggregate function to exclude the absolute maximum, or a ranking function that assigns sequence numbers. They will analyze how duplicates affect the outcome, ensuring they distinguish between second-highest distinct salary versus second row. Finally, they will evaluate the trade-offs between a straightforward subquery for a fixed 'second' rank versus a scalable window function approach for an arbitrary 'Nth' rank.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply throwing out a query without explaining why it handles edge cases like ties.",
+      "Uses a basic MAX() query twice without considering that the highest and second-highest salaries might be identical duplicates.",
+      "Forgets that if an employee table has fewer than two distinct rows, the query must return NULL instead of failing or returning an empty set.",
+      "Tries to use standard subquery inequalities without realizing the need for distinct filtering when multiple employees share the top salary.",
+      "Assumes ROW_NUMBER() and DENSE_RANK() behave identically in the presence of duplicate salaries without weighing the business logic difference."
+    ],
+    "progressive_hints": [
+      "What information would you need to filter out of the entire dataset to leave only the value you are looking for?",
+      "If you know what the absolute maximum salary is, how can you constrain a subquery to look strictly below that threshold?",
+      "Consider how window functions like DENSE_RANK() or an aggregate subquery can isolate a specific hierarchical position without relying on pagination keywords."
+    ],
+    "learning_objective": "The candidate should walk away understanding how to isolate specific ordered ranks in SQL using set-based subqueries and window functions while properly handling duplicate values and edge cases."
   },
   {
     "id": "dbms-0014",
     "question": "Explain what an EXPLAIN plan is and how you'd use it to diagnose a slow SQL query.",
     "type": "scenario",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["performance", "query-optimization"],
-    "tech_keywords": ["sql", "dbms", "performance"],
-    "companies_common": ["Amazon", "Microsoft", "Uber"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "performance",
+      "query-optimization"
+    ],
+    "tech_keywords": [
+      "sql",
+      "dbms",
+      "performance"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -305,17 +712,47 @@
       ],
       "sample_answer": "EXPLAIN (or EXPLAIN ANALYZE, which actually runs the query and reports real timings) shows the database's chosen execution plan — which indexes it used, if any, the join order and algorithm, and estimated versus actual row counts at each step. A common finding is a sequential/full table scan where an index scan should be possible, which usually means a missing index or a query written in a way that prevents the optimizer from using an existing one (e.g. a function applied to the indexed column). Large gaps between estimated and actual rows suggest outdated table statistics. The process is iterative: find the costliest step, fix it (add an index, rewrite a subquery, update statistics), and re-run EXPLAIN to confirm the plan improved."
     },
-    "follow_up_hint": "Ask them to give an example of a query pattern that prevents an existing index from being used, like wrapping the column in a function."
+    "follow_up_hint": "Ask them to give an example of a query pattern that prevents an existing index from being used, like wrapping the column in a function.",
+    "concept": "Query Optimization",
+    "sub_concept": "Execution Plan Analysis",
+    "expected_reasoning": "A strong candidate begins by defining the purpose of an EXPLAIN plan as a window into the query optimizer's decision-making process. They then outline a systematic diagnostic flow, starting from identifying the most expensive operation down the execution tree. They discuss comparing estimated versus actual costs or row counts to spot outdated statistics, and checking access methods like table scans versus index scans. Finally, they frame optimization as an iterative loop of making an adjustment—such as adding an index—and re-running the plan to verify the performance delta.",
+    "common_mistakes": [
+      "States that EXPLAIN actually runs the query and returns timings, confusing EXPLAIN with EXPLAIN ANALYZE.",
+      "Lists individual SQL clauses like WHERE or JOIN without explaining how the database engine actually executes them.",
+      "Suggests adding indexes blindly to every column mentioned in the query without checking selectivity or composite index structure.",
+      "Ignores the importance of database statistics, failing to mention row count discrepancies between estimates and reality.",
+      "Treats query optimization as a one-shot fix instead of an iterative, measure-and-verify process."
+    ],
+    "progressive_hints": [
+      "Before looking at specific lines, what is the database actually trying to figure out when it compiles your SQL query?",
+      "Look closely at the access methods and row counts for each step of the plan. Where is the database doing much more work than expected?",
+      "If the plan shows a sequential scan on a massive table where an index lookup was intended, or if the estimated row counts are wildly off from reality, what two distinct actions should you take to fix those issues?"
+    ],
+    "learning_objective": "The candidate should understand how to systematically read an execution plan to isolate performance bottlenecks like missing indexes or stale statistics."
   },
   {
     "id": "dbms-0015",
     "question": "What is optimistic versus pessimistic locking, and when would you use each?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["general_sde", "backend"],
-    "topics": ["concurrency", "transactions"],
-    "tech_keywords": ["dbms", "sql", "concurrency"],
-    "companies_common": ["Amazon", "Microsoft", "Uber"],
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "concurrency",
+      "transactions"
+    ],
+    "tech_keywords": [
+      "dbms",
+      "sql",
+      "concurrency"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Uber"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -327,6 +764,22 @@
       ],
       "sample_answer": "Pessimistic locking grabs a lock on a row before working with it, blocking any other transaction from touching it until the lock is released — good when conflicts are frequent and you'd rather wait than redo work. Optimistic locking assumes conflicts are rare: it reads data without locking, then at update time checks a version number or timestamp to see if the row changed since it was read, rejecting or retrying the update if a conflict is detected. A common example is an e-commerce checkout using a version column on the inventory row, so a concurrent stock update fails fast and gets retried, rather than serializing all checkouts through a lock."
     },
-    "follow_up_hint": "Ask them to design the version-column schema and update logic for the optimistic-locking checkout example."
+    "follow_up_hint": "Ask them to design the version-column schema and update logic for the optimistic-locking checkout example.",
+    "concept": "Concurrency Control",
+    "sub_concept": "Optimistic vs Pessimistic Locking Trade-offs",
+    "expected_reasoning": "A strong candidate begins by defining the core philosophical difference between the two approaches regarding how they handle resource contention. They then analyze the operational mechanics, explaining how pessimistic locking uses database-level locks to serialize access proactively, whereas optimistic locking defers validation until the write phase using versioning or timestamps. Next, they evaluate the performance implications under different workloads, noting that pessimistic locks can create bottlenecks and deadlocks while optimistic locks risk high retry overhead under heavy contention. Finally, they anchor their explanation with a concrete application example, such as inventory management or seat reservation, to demonstrate how concurrency patterns dictate the architecture choice.",
+    "common_mistakes": [
+      "States definitions or gives high-level summaries without explaining the underlying mechanics of version checking or database locking.",
+      "Claims optimistic locking is universally better because it avoids locks, completely ignoring the cost of frequent rollbacks and retries under high contention.",
+      "Fails to provide a concrete, real-world scenario or domain example where the choice between the two matters.",
+      "Confuses application-level optimistic locking with database isolation levels or transaction serializability.",
+      "Omits the role of version columns, timestamps, or conditional updates in detecting concurrent modifications during an optimistic write."
+    ],
+    "progressive_hints": [
+      "Think about what happens to other concurrent transactions when one transaction wants to read and potentially modify the exact same database row.",
+      "Consider the performance impact if you held a database lock for a long period versus letting everyone read freely and checking for changes only at the exact moment of saving.",
+      "Imagine an e-commerce checkout where thousands of users check out items simultaneously; evaluate when failing a transaction late via a version check becomes more expensive than serializing access upfront."
+    ],
+    "learning_objective": "Understand how to choose between optimistic and pessimistic locking by evaluating the trade-off between database lock contention overhead and application-level transaction retry costs."
   }
 ]

@@ -1,7 +1,241 @@
 [
-  {"id":"solid-0001","question":"Explain the Single Responsibility Principle with an example of violating and then fixing it.","type":"conceptual","difficulty":2,"roles":["general_sde","backend"],"topics":["oop","design-patterns"],"tech_keywords":["solid"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["SRP: a class/module should have exactly one reason to change — one clear responsibility","Violation example: a User class that both manages user data AND handles saving to a database AND formats an email notification — three unrelated reasons to change","Fix: separate into a User (data), UserRepository (persistence), and EmailNotifier (notification) — each with one responsibility","Benefit: changes to one concern (e.g. switching databases) don't risk breaking unrelated logic (e.g. email formatting) bundled into the same class"],"sample_answer":"The Single Responsibility Principle says a class or module should have exactly one reason to change — one clearly defined responsibility. A violation would be a User class that holds user data, also contains the logic to save that user to a database, and also formats and sends a welcome email — that class now has three unrelated reasons to change: a change in data model, a change in the database technology, or a change in email templates could all force edits to the same class. The fix is splitting it into a User class holding just data, a separate UserRepository handling persistence, and an EmailNotifier handling notifications, so each class has one job. The benefit is that changing how you persist data, say switching databases, only touches the repository class and can't accidentally break unrelated email logic that happened to be bundled into the same file."},"follow_up_hint":"Ask them to identify a class in a real codebase they've worked on that violated SRP, and how they'd refactor it."},
-  {"id":"solid-0002","question":"Explain the Open/Closed Principle and how the Strategy pattern helps satisfy it.","type":"conceptual","difficulty":3,"roles":["general_sde","backend"],"topics":["oop","design-patterns"],"tech_keywords":["solid"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["Open/Closed Principle: software entities should be open for extension but closed for modification — you should be able to add new behavior without changing existing, already-tested code","Violation pattern: a large if/else or switch statement on a 'type' field that must be edited every time a new type is added","Fix via polymorphism/Strategy: define a common interface, and add new behavior by creating a new class implementing it, without touching the existing dispatch code at all","Benefit: reduces risk of breaking already-working, tested code just to add a new case"],"sample_answer":"The Open/Closed Principle says code should be open for extension but closed for modification — you should be able to add new functionality without editing and risking existing, already-tested code. A common violation is a large switch or if/else chain branching on a type field, like calculating a discount differently for each customer type, where adding a new customer type means modifying that existing function and re-testing all the other branches too. The Strategy pattern helps satisfy OCP here: you define a common interface like DiscountStrategy, and each customer type gets its own class implementing it; adding a new customer type just means adding a new class implementing the interface, without touching any of the existing, already-verified strategy classes or the code that invokes them."},"follow_up_hint":"Ask them how they'd refactor a specific switch-statement-based function they've written to follow OCP using polymorphism."},
-  {"id":"solid-0003","question":"What is the Liskov Substitution Principle, and give a classic example of violating it.","type":"conceptual","difficulty":3,"roles":["general_sde"],"topics":["oop"],"tech_keywords":["solid","liskov"],"companies_common":["Amazon","Microsoft","Google"],"source_style":"faang-common","reference_solution":{"key_points":["LSP: objects of a subclass should be substitutable for objects of the base class without altering the correctness of the program","Classic violation: Square extends Rectangle, overriding setWidth/setHeight to keep both sides equal — this breaks code that assumes setting width alone doesn't change height, since Square's behavior contradicts the base class's contract","This shows 'is-a' relationships in the real world don't always translate cleanly into safe subtyping relationships in code","Fix: don't force an inheritance relationship where the subtype can't honestly fulfill the supertype's behavioral contract — favor composition or a different abstraction"],"sample_answer":"The Liskov Substitution Principle says that if S is a subclass of T, you should be able to use an instance of S anywhere a T is expected, without breaking the correctness of the program — the subclass shouldn't violate expectations set by the base class's behavior. The classic violation is having Square extend Rectangle: if Rectangle has independent setWidth and setHeight methods, Square is forced to override them so that setting one also changes the other to keep it a square — but that breaks any code written against Rectangle that assumes setting width alone leaves height unchanged, like a test asserting area equals width times height after only setWidth is called with a specific expected height. This shows that a real-world 'is-a' relationship — a square is a rectangle — doesn't always translate into a safe subtyping relationship in code, since the base class's actual behavioral contract matters more than the conceptual hierarchy. The fix is usually to avoid that inheritance relationship altogether and favor composition or a shared interface both implement independently."},"follow_up_hint":"Ask them to identify a subtler LSP violation, like a subclass overriding a method to throw an exception the base class's contract doesn't document."},
-  {"id":"solid-0004","question":"Explain the Interface Segregation Principle and why 'fat' interfaces are problematic.","type":"conceptual","difficulty":2,"roles":["general_sde"],"topics":["oop"],"tech_keywords":["solid"],"companies_common":["Amazon","Microsoft"],"source_style":"common-interview","reference_solution":{"key_points":["ISP: clients shouldn't be forced to depend on methods they don't use — prefer several small, focused interfaces over one large general-purpose one","A 'fat' interface with many unrelated methods forces every implementing class to provide (or stub out/throw NotImplemented on) methods irrelevant to it","Example: a single Worker interface with both work() and eat() forces a RobotWorker to implement a meaningless eat() method","Fix: split into smaller interfaces (e.g. Workable, Eatable) so classes only implement what's actually relevant to them"],"sample_answer":"The Interface Segregation Principle says clients shouldn't be forced to depend on methods they don't actually use — it's better to have several small, focused interfaces than one large, general-purpose one. A 'fat' interface causes problems because every class implementing it has to provide an implementation for every method, even ones that don't make sense for that class, often leading to stub methods that just throw a 'not implemented' error or silently do nothing, which is misleading and error-prone. The classic example is a single Worker interface with both work() and eat() methods — a RobotWorker implementing it would be forced to implement a meaningless eat() method. The fix is splitting it into smaller interfaces like Workable and Eatable, so a class only implements the interfaces that are actually meaningful for it, and a RobotWorker just implements Workable."},"follow_up_hint":"Ask them to identify a fat interface they've encountered in a real API or codebase and how they'd split it."},
-  {"id":"solid-0005","question":"Explain the Dependency Inversion Principle, and how it relates to dependency injection.","type":"conceptual","difficulty":3,"roles":["general_sde","backend"],"topics":["oop"],"tech_keywords":["solid","dependency-injection"],"companies_common":["Amazon","Microsoft","Google"],"source_style":"faang-common","reference_solution":{"key_points":["DIP: high-level modules shouldn't depend on low-level modules directly — both should depend on abstractions (interfaces); abstractions shouldn't depend on details, details should depend on abstractions","Without DIP, a high-level business logic class directly instantiates and depends on a concrete low-level class (e.g. a specific database implementation), making it hard to swap implementations or test in isolation","Dependency injection is a common technique to satisfy DIP: instead of a class creating its own dependencies, they're passed in (injected) from outside, typically as an interface/abstract type","Benefit: enables swapping implementations (e.g. real DB vs in-memory fake for tests) without changing the high-level class's code at all"],"sample_answer":"The Dependency Inversion Principle says high-level modules shouldn't depend directly on low-level modules — both should depend on abstractions, like interfaces, rather than the high-level code depending on concrete low-level implementation details. Without this, a business logic class that directly instantiates a specific database client class is now tightly coupled to that implementation, making it hard to test in isolation or swap in a different database later. Dependency injection is the common technique used to satisfy DIP in practice: instead of a class creating its own dependencies internally, they're passed in from outside — usually through the constructor — typed as an interface rather than a concrete class. This means the high-level business logic depends only on an abstract 'Repository' interface, and you can inject a real database-backed implementation in production and a simple in-memory fake in tests, without changing the business logic class at all."},"follow_up_hint":"Ask them to refactor a class that directly instantiates `new PostgresDatabase()` internally to instead receive a Database interface via constructor injection."}
+  {
+    "id": "solid-0001",
+    "question": "Explain the Single Responsibility Principle with an example of violating and then fixing it.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "oop",
+      "design-patterns"
+    ],
+    "tech_keywords": [
+      "solid"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "SRP: a class/module should have exactly one reason to change — one clear responsibility",
+        "Violation example: a User class that both manages user data AND handles saving to a database AND formats an email notification — three unrelated reasons to change",
+        "Fix: separate into a User (data), UserRepository (persistence), and EmailNotifier (notification) — each with one responsibility",
+        "Benefit: changes to one concern (e.g. switching databases) don't risk breaking unrelated logic (e.g. email formatting) bundled into the same class"
+      ],
+      "sample_answer": "The Single Responsibility Principle says a class or module should have exactly one reason to change — one clearly defined responsibility. A violation would be a User class that holds user data, also contains the logic to save that user to a database, and also formats and sends a welcome email — that class now has three unrelated reasons to change: a change in data model, a change in the database technology, or a change in email templates could all force edits to the same class. The fix is splitting it into a User class holding just data, a separate UserRepository handling persistence, and an EmailNotifier handling notifications, so each class has one job. The benefit is that changing how you persist data, say switching databases, only touches the repository class and can't accidentally break unrelated email logic that happened to be bundled into the same file."
+    },
+    "follow_up_hint": "Ask them to identify a class in a real codebase they've worked on that violated SRP, and how they'd refactor it.",
+    "concept": "Single Responsibility Principle",
+    "sub_concept": "Class Cohesion And Separation Of Concerns",
+    "expected_reasoning": "A strong candidate begins by defining the core principle as having a single reason to change, rather than merely performing a single action. They then construct a relatable example of a monolithic class, systematically identifying the distinct actors or domains—such as business logic, persistence, and communication—that interact with it. Next, they analyze why coupling these concerns invites fragility during maintenance or refactoring. Finally, they demonstrate how to decouple these responsibilities into focused classes, highlighting how isolation improves testability and reduces blast radius.",
+    "common_mistakes": [
+      "Stating that a class should only have a single method or function",
+      "Confusing the Single Responsibility Principle with the DRY principle",
+      "Providing a violation example where all methods are tightly coupled to the exact same business logic change",
+      "Listing responsibilities without explaining the concept of a 'reason to change'",
+      "Failing to show a concrete before-and-after code or structural example"
+    ],
+    "progressive_hints": [
+      "Think about what factors or stakeholders might cause a piece of software to need modification over time.",
+      "Look at your example class and identify how many different actors or external systems could independently require code changes inside it.",
+      "If your data model, database driver, and notification service all change for completely different business reasons, what does that imply about where their logic should live?"
+    ],
+    "learning_objective": "The candidate should understand that classes should be organized around distinct reasons to change, isolating separate concerns to minimize risk and improve maintainability."
+  },
+  {
+    "id": "solid-0002",
+    "question": "Explain the Open/Closed Principle and how the Strategy pattern helps satisfy it.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "oop",
+      "design-patterns"
+    ],
+    "tech_keywords": [
+      "solid"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Open/Closed Principle: software entities should be open for extension but closed for modification — you should be able to add new behavior without changing existing, already-tested code",
+        "Violation pattern: a large if/else or switch statement on a 'type' field that must be edited every time a new type is added",
+        "Fix via polymorphism/Strategy: define a common interface, and add new behavior by creating a new class implementing it, without touching the existing dispatch code at all",
+        "Benefit: reduces risk of breaking already-working, tested code just to add a new case"
+      ],
+      "sample_answer": "The Open/Closed Principle says code should be open for extension but closed for modification — you should be able to add new functionality without editing and risking existing, already-tested code. A common violation is a large switch or if/else chain branching on a type field, like calculating a discount differently for each customer type, where adding a new customer type means modifying that existing function and re-testing all the other branches too. The Strategy pattern helps satisfy OCP here: you define a common interface like DiscountStrategy, and each customer type gets its own class implementing it; adding a new customer type just means adding a new class implementing the interface, without touching any of the existing, already-verified strategy classes or the code that invokes them."
+    },
+    "follow_up_hint": "Ask them how they'd refactor a specific switch-statement-based function they've written to follow OCP using polymorphism.",
+    "concept": "Open Closed Principle",
+    "sub_concept": "Applying Polymorphism and the Strategy Pattern for Extensibility",
+    "expected_reasoning": "A strong candidate begins by defining the core tension of the Open/Closed Principle: adding features without rewriting tested code. They trace how a naive implementation—typically a sprawling conditional statement checking a type flag—creates a maintenance bottleneck and violates the principle whenever a new requirement arrives. Next, they derive the solution by introducing an abstraction boundary, separating the invariant execution flow from the variant behavioral details. Finally, they explain how injecting a polymorphic strategy decouples the consumer from concrete implementations, ensuring new behaviors are added purely through addition rather than modification.",
+    "common_mistakes": [
+      "Reciting textbook definitions without providing or analyzing a concrete code example",
+      "Confusing 'extension' with subclass inheritance overload rather than interface implementation",
+      "Failing to mention the maintenance hazard of editing existing switch or if/else blocks",
+      "Describing the Strategy pattern mechanically without connecting it back to the Open/Closed rule",
+      "Claiming code can be closed to all modification, ignoring that initial wiring or configuration must sometimes change"
+    ],
+    "progressive_hints": [
+      "What typically happens to your existing codebase and test suite every time a new feature variant needs to be supported in a naive conditional implementation?",
+      "Think about how you can isolate the parts of the logic that change from the parts that stay the same by introducing an interface or abstraction.",
+      "If you encapsulate each varying behavior into its own class implementing a shared interface, how does the main execution block invoke them without needing to know about new types in advance?"
+    ],
+    "learning_objective": "Understand how to design systems that accommodate new requirements through pure extension via interfaces rather than modifying existing conditional logic."
+  },
+  {
+    "id": "solid-0003",
+    "question": "What is the Liskov Substitution Principle, and give a classic example of violating it.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "oop"
+    ],
+    "tech_keywords": [
+      "solid",
+      "liskov"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "LSP: objects of a subclass should be substitutable for objects of the base class without altering the correctness of the program",
+        "Classic violation: Square extends Rectangle, overriding setWidth/setHeight to keep both sides equal — this breaks code that assumes setting width alone doesn't change height, since Square's behavior contradicts the base class's contract",
+        "This shows 'is-a' relationships in the real world don't always translate cleanly into safe subtyping relationships in code",
+        "Fix: don't force an inheritance relationship where the subtype can't honestly fulfill the supertype's behavioral contract — favor composition or a different abstraction"
+      ],
+      "sample_answer": "The Liskov Substitution Principle says that if S is a subclass of T, you should be able to use an instance of S anywhere a T is expected, without breaking the correctness of the program — the subclass shouldn't violate expectations set by the base class's behavior. The classic violation is having Square extend Rectangle: if Rectangle has independent setWidth and setHeight methods, Square is forced to override them so that setting one also changes the other to keep it a square — but that breaks any code written against Rectangle that assumes setting width alone leaves height unchanged, like a test asserting area equals width times height after only setWidth is called with a specific expected height. This shows that a real-world 'is-a' relationship — a square is a rectangle — doesn't always translate into a safe subtyping relationship in code, since the base class's actual behavioral contract matters more than the conceptual hierarchy. The fix is usually to avoid that inheritance relationship altogether and favor composition or a shared interface both implement independently."
+    },
+    "follow_up_hint": "Ask them to identify a subtler LSP violation, like a subclass overriding a method to throw an exception the base class's contract doesn't document.",
+    "concept": "Object Oriented Design",
+    "sub_concept": "Liskov Substitution Principle",
+    "expected_reasoning": "A strong candidate starts by defining LSP formally through behavioral contracts rather than just structural inheritance. They then walk through the classic Rectangle-Square dilemma to demonstrate why real-world 'is-a' assumptions fail in type hierarchies. Next, they analyze how overriding mutator methods in the subclass breaks client code that relies on the supertype's invariants. Finally, they conclude that subtyping requires behavioral substitutability, leading to alternative designs like avoiding inheritance or using composition.",
+    "common_mistakes": [
+      "Reciting a vague definition of inheritance without mentioning substitutability or behavioral contracts",
+      "Stating that Square 'is-a' Rectangle in the real world, so it must inherit from it in code without considering behavioral consequences",
+      "Confusing LSP with general polymorphism or runtime method dispatch",
+      "Explaining the Rectangle-Square violation vaguely without detailing why setWidth or setHeight breaks client expectations",
+      "Failing to offer an alternative design pattern like composition or extracting a shared interface"
+    ],
+    "progressive_hints": [
+      "Think about what a 'contract' means for a base class when a client writes code against it without knowing the specific subclass.",
+      "Consider what happens when a subclass modifies a base class method in a way that violates assumptions about independent state changes, like width and height.",
+      "Think about the classic geometry example involving shapes where setting one dimension unexpectedly alters another, and why that breaks code expecting standard rectangle behavior."
+    ],
+    "learning_objective": "Understand that inheritance requires behavioral substitutability rather than naive real-world 'is-a' modeling, and learn how to recognize and fix contract violations."
+  },
+  {
+    "id": "solid-0004",
+    "question": "Explain the Interface Segregation Principle and why 'fat' interfaces are problematic.",
+    "type": "conceptual",
+    "difficulty": 2,
+    "roles": [
+      "general_sde"
+    ],
+    "topics": [
+      "oop"
+    ],
+    "tech_keywords": [
+      "solid"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft"
+    ],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "ISP: clients shouldn't be forced to depend on methods they don't use — prefer several small, focused interfaces over one large general-purpose one",
+        "A 'fat' interface with many unrelated methods forces every implementing class to provide (or stub out/throw NotImplemented on) methods irrelevant to it",
+        "Example: a single Worker interface with both work() and eat() forces a RobotWorker to implement a meaningless eat() method",
+        "Fix: split into smaller interfaces (e.g. Workable, Eatable) so classes only implement what's actually relevant to them"
+      ],
+      "sample_answer": "The Interface Segregation Principle says clients shouldn't be forced to depend on methods they don't actually use — it's better to have several small, focused interfaces than one large, general-purpose one. A 'fat' interface causes problems because every class implementing it has to provide an implementation for every method, even ones that don't make sense for that class, often leading to stub methods that just throw a 'not implemented' error or silently do nothing, which is misleading and error-prone. The classic example is a single Worker interface with both work() and eat() methods — a RobotWorker implementing it would be forced to implement a meaningless eat() method. The fix is splitting it into smaller interfaces like Workable and Eatable, so a class only implements the interfaces that are actually meaningful for it, and a RobotWorker just implements Workable."
+    },
+    "follow_up_hint": "Ask them to identify a fat interface they've encountered in a real API or codebase and how they'd split it.",
+    "concept": "Interface Segregation Principle",
+    "sub_concept": "Fat Interfaces vs Client-Specific Interfaces",
+    "expected_reasoning": "A strong candidate begins by defining the core principle that clients should never be forced to depend on methods they do not use. They then analyze the architectural consequences of violating this rule by introducing a single, monolithic interface containing diverse behaviors. Next, they trace the concrete failure mode: implementing classes are forced to write empty stubs or throw exceptions for methods outside their domain. Finally, they articulate the solution of breaking down the fat interface into granular, focused abstractions that classes implement a la carte.",
+    "common_mistakes": [
+      "Reciting a textbook definition without explaining the concrete impact on code maintenance or implementation.",
+      "Confusing the Interface Segregation Principle with the Single Responsibility Principle.",
+      "Failing to provide a clear, relatable example of a fat interface and its forced stubbing overhead.",
+      "Stating that multiple interfaces create unnecessary boilerplate without recognizing the long-term coupling benefits.",
+      "Assuming that throwing NotImplementedError for unused methods satisfies the requirements of good interface design."
+    ],
+    "progressive_hints": [
+      "Think about what happens to a class when an interface contains methods that only half of its implementers actually need.",
+      "Consider the pain point for a class that inherits a method it cannot logically perform — how do developers usually hack around this in strongly typed languages?",
+      "If you want to prevent classes from being bogged down by irrelevant methods, how should you structure your contracts relative to the clients that consume them?"
+    ],
+    "learning_objective": "Understand how breaking large, monolithic interfaces into client-specific contracts eliminates coupling to irrelevant code and prevents forced stubbing."
+  },
+  {
+    "id": "solid-0005",
+    "question": "Explain the Dependency Inversion Principle, and how it relates to dependency injection.",
+    "type": "conceptual",
+    "difficulty": 3,
+    "roles": [
+      "general_sde",
+      "backend"
+    ],
+    "topics": [
+      "oop"
+    ],
+    "tech_keywords": [
+      "solid",
+      "dependency-injection"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Google"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "DIP: high-level modules shouldn't depend on low-level modules directly — both should depend on abstractions (interfaces); abstractions shouldn't depend on details, details should depend on abstractions",
+        "Without DIP, a high-level business logic class directly instantiates and depends on a concrete low-level class (e.g. a specific database implementation), making it hard to swap implementations or test in isolation",
+        "Dependency injection is a common technique to satisfy DIP: instead of a class creating its own dependencies, they're passed in (injected) from outside, typically as an interface/abstract type",
+        "Benefit: enables swapping implementations (e.g. real DB vs in-memory fake for tests) without changing the high-level class's code at all"
+      ],
+      "sample_answer": "The Dependency Inversion Principle says high-level modules shouldn't depend directly on low-level modules — both should depend on abstractions, like interfaces, rather than the high-level code depending on concrete low-level implementation details. Without this, a business logic class that directly instantiates a specific database client class is now tightly coupled to that implementation, making it hard to test in isolation or swap in a different database later. Dependency injection is the common technique used to satisfy DIP in practice: instead of a class creating its own dependencies internally, they're passed in from outside — usually through the constructor — typed as an interface rather than a concrete class. This means the high-level business logic depends only on an abstract 'Repository' interface, and you can inject a real database-backed implementation in production and a simple in-memory fake in tests, without changing the business logic class at all."
+    },
+    "follow_up_hint": "Ask them to refactor a class that directly instantiates `new PostgresDatabase()` internally to instead receive a Database interface via constructor injection.",
+    "concept": "Dependency Inversion Principle",
+    "sub_concept": "Relationship between architectural inversion and injection mechanisms",
+    "expected_reasoning": "A strong candidate begins by defining the Dependency Inversion Principle as an architectural guideline focusing on abstractions rather than concrete implementations. They then trace how tightly coupled systems violate this rule when business logic directly instantiates low-level components like databases. Next, they explain how dependency injection serves as a mechanism to fulfill the principle by supplying those abstractions from the outside. Finally, they articulate the practical benefits this relationship unlocks, such as isolated unit testing and effortless implementation swapping.",
+    "common_mistakes": [
+      "Confusing the Dependency Inversion Principle with Dependency Injection, treating them as synonyms.",
+      "Stating that dependency injection is the only way to satisfy the Dependency Inversion Principle without mentioning other patterns like service locators or factories.",
+      "Explaining dependency injection purely as passing arguments to a constructor without explaining the role of abstractions and interfaces.",
+      "Failing to mention how DIP aids in testing or decoupling business logic from infrastructure.",
+      "Giving a purely structural definition without explaining why the direction of dependency is 'inverted' relative to traditional procedural design."
+    ],
+    "progressive_hints": [
+      "Think about what direction dependencies normally flow between high-level business logic and low-level details, and how that creates tight coupling.",
+      "Consider the difference between a class creating its own dependencies via the 'new' keyword versus receiving them, and what kind of type those dependencies should be declared as.",
+      "If your business logic depends directly on a concrete MySQLDatabase class, how does introducing an interface invert that dependency relationship, and how does injection deliver the concrete instance?"
+    ],
+    "learning_objective": "Understand that the Dependency Inversion Principle is a design guideline about depending on abstractions, while dependency injection is a structural technique used to deliver those abstractions and achieve decoupling."
+  }
 ]

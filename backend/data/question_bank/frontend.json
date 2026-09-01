@@ -4,10 +4,23 @@
     "question": "Explain the CSS box model, including the difference between `content-box` and `border-box` sizing.",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["frontend", "fullstack"],
-    "topics": ["css", "layout"],
-    "tech_keywords": ["css", "html"],
-    "companies_common": ["Amazon", "Meta", "Infosys"],
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "css",
+      "layout"
+    ],
+    "tech_keywords": [
+      "css",
+      "html"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta",
+      "Infosys"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -19,17 +32,47 @@
       ],
       "sample_answer": "Every element's rendered box consists of content, padding, border, and margin from the inside out. With the default content-box model, a width/height you set applies only to the content area — padding and border add on top, so the element's actual rendered size ends up larger than the number you specified. With border-box, the width/height instead represent the total size including padding and border, making layout math far more predictable. Because of this, most modern CSS resets set `* { box-sizing: border-box; }` globally so sizing behaves intuitively across the whole page."
     },
-    "follow_up_hint": "Ask them to explain how margin collapsing works between two adjacent block elements."
+    "follow_up_hint": "Ask them to explain how margin collapsing works between two adjacent block elements.",
+    "concept": "CSS Box Model",
+    "sub_concept": "Box Sizing and Layout Calculation",
+    "expected_reasoning": "A strong candidate begins by breaking down an element into its concentric layers from inside out: content, padding, border, and margin. They then analyze how dimensions are calculated under the default `content-box` model, noting that adding padding or borders expands the overall footprint beyond the specified width. Next, they compare this behavior with `border-box`, explaining mathematically how it folds padding and borders inside the specified dimensions for easier layout math. Finally, they discuss the practical application of switching to `border-box` globally via resets for more intuitive and predictable web layouts.",
+    "common_mistakes": [
+      "States the conclusion with no justification, e.g., 'border-box is better' without explaining math or sizing.",
+      "Confuses margins as part of the element's width/height calculation in border-box.",
+      "Claims that border-box includes margins in the specified dimensions.",
+      "Thinks content-box automatically shrinks content when padding is added.",
+      "Fails to mention the order of layers (content, padding, border, margin) from inside out."
+    ],
+    "progressive_hints": [
+      "Think about what happens to the total physical width of an element if you explicitly set a width of 200px and then add 20px of padding and a 5px border on both sides.",
+      "Consider how the browser calculates the final rendered box dimensions under the default setting versus when you change the box-sizing property.",
+      "Think about which layout mode makes it easier to design responsive grids where columns must add up to exact percentages without overflow math."
+    ],
+    "learning_objective": "Understand how browser layout engines calculate element dimensions and why switching to border-box sizing prevents layout blowouts caused by padding and borders."
   },
   {
     "id": "frontend-0002",
     "question": "Explain the difference between Flexbox and CSS Grid, and when you'd choose one over the other.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["frontend", "fullstack"],
-    "topics": ["css", "layout"],
-    "tech_keywords": ["css", "flexbox", "grid"],
-    "companies_common": ["Amazon", "Meta", "Google"],
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "css",
+      "layout"
+    ],
+    "tech_keywords": [
+      "css",
+      "flexbox",
+      "grid"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta",
+      "Google"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -41,17 +84,48 @@
       ],
       "sample_answer": "Flexbox is a one-dimensional layout model — it arranges and distributes items along a single row or column, handling alignment and spacing along that axis well. Grid is two-dimensional, letting you define both rows and columns at once and place items precisely into that structure. Flexbox is a natural fit for component-level layout like a navbar or a row of buttons that need to be aligned or evenly spaced; Grid fits page-level layouts or anything needing simultaneous control over rows and columns, like a dashboard or card gallery. In practice they're often combined — Grid for the overall page skeleton, Flexbox for aligning content inside individual grid areas."
     },
-    "follow_up_hint": "Ask them to lay out a specific responsive card grid using CSS Grid, explaining how auto-fit and minmax() work together."
+    "follow_up_hint": "Ask them to lay out a specific responsive card grid using CSS Grid, explaining how auto-fit and minmax() work together.",
+    "concept": "CSS Layout Systems",
+    "sub_concept": "Dimensionality and Use Cases of Flexbox versus Grid",
+    "expected_reasoning": "A strong candidate begins by contrasting the dimensional nature of both layout engines, establishing that layout decisions start with whether content flows primarily in one direction or requires explicit control across two. They derive the choice by analyzing the problem scope, distinguishing between micro-level component arrangements and macro-level structural positioning. Finally, they weigh how the two systems cooperate rather than compete, demonstrating that modern layout design routinely nests one inside the other to handle different hierarchical levels of the page.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying 'use Grid for big things and Flexbox for small things' without explaining why",
+      "Confuses Flexbox as being obsolete or replaced by CSS Grid",
+      "Assumes Grid cannot handle one-dimensional layouts or that Flexbox cannot wrap into multiple lines",
+      "Focuses entirely on syntax differences rather than the conceptual difference in layout dimensions",
+      "Fails to mention that the two systems are designed to be used together cooperatively"
+    ],
+    "progressive_hints": [
+      "Think about the fundamental geometric difference in how items are arranged when you add them to a container in each system.",
+      "Consider how you would handle an element that needs to align simultaneously with both a specific row and a specific column versus flowing along a single line.",
+      "If you were building a dashboard page, which tool would handle the overall page regions best, and which tool would handle the icon and text alignment inside a single card?"
+    ],
+    "learning_objective": "The candidate should walk away understanding how to select between one-dimensional and two-dimensional CSS layout models based on structural requirements rather than habit."
   },
   {
     "id": "frontend-0003",
     "question": "What is the Critical Rendering Path, and what are common techniques to improve a page's initial load performance?",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["frontend", "fullstack"],
-    "topics": ["performance", "rendering"],
-    "tech_keywords": ["css", "html", "javascript", "performance"],
-    "companies_common": ["Amazon", "Meta", "Google"],
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "performance",
+      "rendering"
+    ],
+    "tech_keywords": [
+      "css",
+      "html",
+      "javascript",
+      "performance"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta",
+      "Google"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -63,17 +137,46 @@
       ],
       "sample_answer": "The Critical Rendering Path is the sequence from receiving raw HTML/CSS/JS to actual pixels on screen: parsing HTML into the DOM, parsing CSS into the CSSOM, combining them into a render tree, computing layout, then painting. Render-blocking resources — a synchronous script tag in the head, or an external stylesheet — force the browser to pause this pipeline until they're fetched and processed. Common optimizations include marking non-critical scripts as `defer` or `async`, inlining critical above-the-fold CSS so the browser doesn't wait on an external file for the first paint, lazy-loading images below the fold, and using `<link rel=preload>` for critical resources. Server-side rendering also helps by shipping meaningful HTML immediately rather than requiring JS execution before anything visible appears — measured in practice via Core Web Vitals like Largest Contentful Paint."
     },
-    "follow_up_hint": "Ask them to explain the difference between `defer` and `async` on a script tag and when each is appropriate."
+    "follow_up_hint": "Ask them to explain the difference between `defer` and `async` on a script tag and when each is appropriate.",
+    "concept": "Critical Rendering Path",
+    "sub_concept": "Browser Rendering Pipeline and Optimization",
+    "expected_reasoning": "A strong candidate begins by systematically breaking down the browser's sequence of operations from receiving raw bytes to painting pixels on the screen. They trace how HTML and CSS are parsed into separate object models, how those models combine into a render tree, and where bottlenecks naturally occur due to blocking scripts and stylesheets. Next, they evaluate how specific bottlenecks delay the first meaningful paint and connect those structural delays to modern performance metrics. Finally, they propose targeted mitigations—such as altering script loading behavior or inlining critical styles—while weighing the trade-offs of each approach against overall page weight and execution order.",
+    "common_mistakes": [
+      "Listing optimization techniques without explaining the underlying browser pipeline that makes them necessary",
+      "Confusing the DOM and the CSSOM or missing how they combine into the render tree",
+      "Failing to explain why certain resources like standard scripts and stylesheets block the rendering process",
+      "Treating all JavaScript as inherently render-blocking without distinguishing between synchronous and deferred execution",
+      "Stating conclusions or optimization tips with zero justification regarding where the time is actually spent"
+    ],
+    "progressive_hints": [
+      "What are the sequential steps a browser must take starting from the moment raw HTML bytes arrive over the network to the point pixels are actually drawn on the screen?",
+      "Look specifically at how the browser handles external stylesheets and JavaScript tags encountered in the head of a document. Why do they pause the construction of the page?",
+      "Think about what parts of your CSS and JavaScript are strictly necessary for the user to see the initial viewport, and how changing when those assets are fetched or parsed could unblock the paint."
+    ],
+    "learning_objective": "The candidate should understand how the browser transforms code into visual pixels and how to manipulate resource delivery to minimize time to first paint."
   },
   {
     "id": "frontend-0004",
     "question": "Explain the concept of responsive web design, and how CSS media queries and relative units (rem, %, vw/vh) support it.",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["frontend", "fullstack"],
-    "topics": ["css", "responsive-design"],
-    "tech_keywords": ["css", "responsive-design"],
-    "companies_common": ["Amazon", "Infosys", "Meta"],
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "css",
+      "responsive-design"
+    ],
+    "tech_keywords": [
+      "css",
+      "responsive-design"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Infosys",
+      "Meta"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -85,17 +188,47 @@
       ],
       "sample_answer": "Responsive design means one layout adapts fluidly to different screen sizes, rather than serving separate mobile and desktop sites. Media queries let you apply different CSS rules based on conditions like viewport width, which is how breakpoint-based layout changes (e.g. stacking a two-column layout into one column below 768px) are implemented. For sizing, `rem` scales relative to the root element's font size, which is great for consistent, accessibility-respecting typography; `%` sizes relative to a parent element; `vw`/`vh` size relative to the viewport itself, useful for things like a full-height hero section. A common approach is 'mobile-first': write base styles targeting small screens, then layer on media queries that adjust the layout for progressively larger viewports."
     },
-    "follow_up_hint": "Ask why a mobile-first approach (using min-width media queries) is often recommended over a desktop-first approach (max-width)."
+    "follow_up_hint": "Ask why a mobile-first approach (using min-width media queries) is often recommended over a desktop-first approach (max-width).",
+    "concept": "Responsive Web Design",
+    "sub_concept": "Adaptive Layouts and Relative Sizing",
+    "expected_reasoning": "A strong candidate begins by defining the core philosophy of responsive design—creating a single, fluid codebase that gracefully adapts across varied devices. They then systematically connect layout control to tools, explaining how relative units decouple sizing from absolute pixels. Next, they articulate how media queries act as conditional checkpoints to shift structural layouts at specific viewport thresholds. Finally, they tie these mechanics together by outlining the mobile-first methodology as an efficient architectural strategy.",
+    "common_mistakes": [
+      "Stating that responsive design simply means shrinking a fixed desktop site to fit a mobile screen without adjusting structure.",
+      "Confusing absolute units like pixels with scalable relative units like rem, vw, and percentages.",
+      "Explaining media queries as purely device-type detectors rather than evaluating viewport dimensions and features.",
+      "Treating mobile-first design as an afterthought rather than a deliberate architectural and structural baseline.",
+      "Failing to explain how relative units derive their values from parents, roots, or the viewport."
+    ],
+    "progressive_hints": [
+      "What fundamental problem does responsive web design solve compared to building separate mobile and desktop websites?",
+      "Think about how sizing elements with fixed pixels behaves on different screens. What types of units allow elements to scale dynamically?",
+      "Consider how you structure CSS rules when a layout needs to change entirely at a specific screen width, and whether you should style for the smallest or largest screen first."
+    ],
+    "learning_objective": "The candidate should understand how to use relative units and media queries together to build fluid, adaptable interfaces using a mobile-first philosophy."
   },
   {
     "id": "frontend-0005",
     "question": "Explain React's reconciliation process and why keys matter when rendering a list of components.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["frontend", "fullstack"],
-    "topics": ["react", "virtual-dom"],
-    "tech_keywords": ["react", "javascript", "virtual-dom"],
-    "companies_common": ["Meta", "Amazon", "Netflix"],
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "react",
+      "virtual-dom"
+    ],
+    "tech_keywords": [
+      "react",
+      "javascript",
+      "virtual-dom"
+    ],
+    "companies_common": [
+      "Meta",
+      "Amazon",
+      "Netflix"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -107,17 +240,45 @@
       ],
       "sample_answer": "Reconciliation is how React compares the newly rendered Virtual DOM tree to the previous one and figures out the minimal set of real DOM changes needed. For a list of children, React uses each item's 'key' prop to match elements across renders instead of relying purely on their position. If you use the array index as a key and the list can reorder or have items inserted/removed, React can incorrectly match the wrong element to the wrong key across renders — a classic bug is a list of text inputs keyed by index: inserting a new item at the top shifts every subsequent input's associated DOM node, so users see their typed values appear to jump to different fields. The fix is using a stable, unique identifier from the actual data (like a database ID) as the key, not the array index."
     },
-    "follow_up_hint": "Ask them to walk through exactly what goes wrong, step by step, in the index-as-key input-reordering bug."
+    "follow_up_hint": "Ask them to walk through exactly what goes wrong, step by step, in the index-as-key input-reordering bug.",
+    "concept": "Virtual DOM Reconciliation",
+    "sub_concept": "List Diffing and Key Prop Mechanics",
+    "expected_reasoning": "A strong candidate begins by defining the core mechanics of React's diffing algorithm and why the Virtual DOM requires an efficient update strategy. They then trace how React compares lists of elements, identifying the default behavior of positional indexing versus identifier-based matching. Next, they analyze the lifecycle and state-preservation implications of stale or unstable keys during insertions, deletions, or reorderings. Finally, they synthesize a concrete example—such as state corruption in form inputs—to prove why stable, unique database IDs are necessary.",
+    "common_mistakes": [
+      "States that keys are only used for performance optimizations without mentioning correctness or state bugs.",
+      "Claims that array indices are always acceptable keys as long as the list length doesn't change.",
+      "Confuses Virtual DOM diffing with direct browser DOM mutation performance without explaining the diffing heuristic.",
+      "Fails to explain the concrete failure mode of using indices (e.g., input values shifting to wrong items upon reordering).",
+      "Assumes React compares component contents deeply rather than relying on identity props."
+    ],
+    "progressive_hints": [
+      "Think about what React is actually comparing when a parent component re-renders with a completely new array of children.",
+      "Consider how React decides whether a specific DOM node in a list can be reused versus destroyed and recreated when items are reordered or inserted at the beginning.",
+      "Imagine a list of inputs where each has typed text stored locally, and an item is inserted at index 0. If React matches elements purely by their new versus old array position, what happens to the existing DOM nodes and their associated local state?"
+    ],
+    "learning_objective": "Understand how React uses the key prop during reconciliation to preserve component state and identity across renders, and why unstable keys cause bugs."
   },
   {
     "id": "frontend-0006",
     "question": "Explain the difference between controlled and uncontrolled components in React forms.",
     "type": "theory",
     "difficulty": 1,
-    "roles": ["frontend", "fullstack"],
-    "topics": ["react", "forms"],
-    "tech_keywords": ["react", "javascript"],
-    "companies_common": ["Meta", "Amazon"],
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "react",
+      "forms"
+    ],
+    "tech_keywords": [
+      "react",
+      "javascript"
+    ],
+    "companies_common": [
+      "Meta",
+      "Amazon"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -129,17 +290,47 @@
       ],
       "sample_answer": "A controlled component has its value fully owned by React state — the input's `value` prop reflects state, and an `onChange` handler updates that state on every keystroke, so React re-renders and the input always reflects the current state value. An uncontrolled component instead lets the DOM manage its own value internally, and you read the current value only when needed, typically via a ref — like grabbing form values only when the user clicks submit. Controlled components give precise control, such as validating and disabling the submit button in real time as the user types, at the cost of a re-render per keystroke; uncontrolled components are simpler and can be more efficient for large, simple forms where per-keystroke reactivity isn't needed."
     },
-    "follow_up_hint": "Ask them why mixing controlled and uncontrolled behavior for the same input (e.g. starting undefined, then defined) causes a React warning."
+    "follow_up_hint": "Ask them why mixing controlled and uncontrolled behavior for the same input (e.g. starting undefined, then defined) causes a React warning.",
+    "concept": "React Forms",
+    "sub_concept": "Controlled vs Uncontrolled Components",
+    "expected_reasoning": "A strong candidate begins by defining where the source of truth for the input value resides in each pattern. They trace the data flow for both approaches, contrasting state-driven synchronization on every keystroke against DOM-managed values accessed via refs. Next, they weigh the architectural trade-offs, balancing immediate validation and programmatic control against re-render overhead and code verbosity. Finally, they ground their explanation with concrete use cases, illustrating when each paradigm is appropriate.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as simply saying 'controlled is good and uncontrolled is bad'.",
+      "Confuses refs with state, claiming uncontrolled components use state managed by React.",
+      "Claims controlled components have better performance for large forms without recognizing the re-render cost.",
+      "Fails to mention how the DOM interacts with uncontrolled components.",
+      "Provides definitions without contrasting use cases or trade-offs."
+    ],
+    "progressive_hints": [
+      "Consider where the actual value of an input element is stored and updated during user interaction in each approach.",
+      "Think about who owns the data source of truth for the input field—React's state tree or the underlying DOM node.",
+      "Examine how each approach handles real-time validation versus reading values only when a submit action occurs."
+    ],
+    "learning_objective": "Understand the architectural trade-offs between managing form input state within React versus relying on the DOM."
   },
   {
     "id": "frontend-0007",
     "question": "Explain what React hooks are, and why the 'Rules of Hooks' (only call at the top level, only from React functions) exist.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["frontend", "fullstack"],
-    "topics": ["react", "hooks"],
-    "tech_keywords": ["react", "javascript", "hooks"],
-    "companies_common": ["Meta", "Amazon", "Netflix"],
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "react",
+      "hooks"
+    ],
+    "tech_keywords": [
+      "react",
+      "javascript",
+      "hooks"
+    ],
+    "companies_common": [
+      "Meta",
+      "Amazon",
+      "Netflix"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -151,17 +342,45 @@
       ],
       "sample_answer": "Hooks let function components use state, effects, and other React features without needing to be written as classes. React internally keeps each component's hook state in a plain array-like list, matched up purely by the ORDER hooks are called in — not by name or any other identifier. If you call a hook conditionally, e.g. inside an if statement or after an early return, the call order can differ between renders, causing React to mismatch state between hook calls in a way it can't detect. That's exactly why hooks must always be called unconditionally, at the top level of the component, in the same order every single render — and only from actual React function components or custom hooks, where that per-component hook bookkeeping actually exists."
     },
-    "follow_up_hint": "Ask them to trace through, call by call, what state gets misassociated with what if a useState call is placed inside an if statement."
+    "follow_up_hint": "Ask them to trace through, call by call, what state gets misassociated with what if a useState call is placed inside an if statement.",
+    "concept": "React Hooks",
+    "sub_concept": "Internal state tracking and call order rules",
+    "expected_reasoning": "A strong candidate begins by defining hooks as state and lifecycle primitives for function components, moving away from classes. They then investigate how React manages multiple state calls within a single component instance without variable names. By deducing that React relies on a persistent internal linked list or array of hook states, they realize position determines identity. Finally, they weigh what happens when execution paths diverge across renders, leading directly to the necessity of the top-level unconditional call rule.",
+    "common_mistakes": [
+      "States that the rules exist 'because React said so' or 'for performance' without mentioning internal state tracking",
+      "Believes React tracks hooks by their variable names or object keys rather than call order",
+      "Thinks conditional hooks are problematic because they break JavaScript syntax rather than React's state mapping",
+      "Gives a hand-wavy explanation about 'scoping' without explaining the mechanics of multiple renders",
+      "Fails to address why hooks can only be called from React functions specifically"
+    ],
+    "progressive_hints": [
+      "Think about how a function component runs multiple times over its lifecycle. How does React know which `useState` call corresponds to which state variable on the second render?",
+      "If React doesn't use variable names to track state, what data structure or sequence could it possibly be relying on between consecutive renders?",
+      "Imagine an array of states where index 0 is your first hook and index 1 is your second. What happens to that indexing if an `if` statement causes the second hook to be skipped on a re-render?"
+    ],
+    "learning_objective": "Understand that React hooks rely entirely on a stable, predictable call order across every render to correctly map internal state to the right hook invocation."
   },
   {
     "id": "frontend-0008",
     "question": "Explain the difference between `useEffect` and `useLayoutEffect` in React, and give a scenario where the difference actually matters.",
     "type": "theory",
     "difficulty": 3,
-    "roles": ["frontend", "fullstack"],
-    "topics": ["react", "hooks"],
-    "tech_keywords": ["react", "hooks"],
-    "companies_common": ["Meta", "Amazon"],
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "react",
+      "hooks"
+    ],
+    "tech_keywords": [
+      "react",
+      "hooks"
+    ],
+    "companies_common": [
+      "Meta",
+      "Amazon"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -173,17 +392,46 @@
       ],
       "sample_answer": "useEffect runs its callback asynchronously, after React has updated the DOM AND the browser has already painted that update to the screen. useLayoutEffect runs synchronously, right after DOM mutations but before the browser paints — blocking the paint until it completes. This matters concretely for something like a tooltip that needs to measure its own rendered size and reposition itself to avoid going off-screen: doing that measurement-and-adjustment in useEffect can cause a visible flicker, since the user briefly sees the tooltip in its wrong initial position before the correction is painted; useLayoutEffect avoids that flicker entirely by finishing the adjustment before anything is shown. Because it blocks painting, useLayoutEffect should be used sparingly — only when you genuinely need to prevent a visual flash from a DOM measurement/adjustment."
     },
-    "follow_up_hint": "Ask them for another concrete example beyond tooltip positioning where useLayoutEffect's synchronous timing is actually necessary."
+    "follow_up_hint": "Ask them for another concrete example beyond tooltip positioning where useLayoutEffect's synchronous timing is actually necessary.",
+    "concept": "React Hooks",
+    "sub_concept": "DOM Paint Timing and Synchronization",
+    "expected_reasoning": "A strong candidate begins by clarifying when React components render and when the browser actually updates the visual display. They trace the execution timeline from DOM mutation to browser paint, recognizing where asynchronous effects fit versus synchronous operations. Next, they contrast the lifecycle execution order, noting when each hook fires relative to the paint phase. Finally, they weigh the performance implications of blocking the main thread with synchronous execution against the visual cost of deferred asynchronous updates.",
+    "common_mistakes": [
+      "States that useLayoutEffect is always better because it runs faster without justification.",
+      "Claims useEffect blocks the browser paint, confusing it with useLayoutEffect.",
+      "Gives a textbook definition without explaining the visual implications or providing a concrete scenario.",
+      "Assumes useLayoutEffect runs before DOM mutations happen, rather than after mutations but before paint.",
+      "Treats the two hooks as interchangeable and claims the choice makes no noticeable difference in modern React."
+    ],
+    "progressive_hints": [
+      "Think about what happens visually between the moment React finishes updating the DOM and the moment the user actually sees those changes on their screen.",
+      "Consider the exact moment in the rendering pipeline when the browser performs a paint, and where each hook fits relative to that milestone.",
+      "If you calculate and update an element's position inside useEffect after a render, what might the user briefly see on their screen before the correction applies?"
+    ],
+    "learning_objective": "Understand how the browser paint lifecycle dictates the choice between asynchronous and synchronous DOM effects to prevent visual flicker."
   },
   {
     "id": "frontend-0009",
     "question": "What is web accessibility (a11y), and name at least three concrete practices for making a web page accessible to screen reader users.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["frontend", "fullstack"],
-    "topics": ["accessibility"],
-    "tech_keywords": ["html", "accessibility", "aria"],
-    "companies_common": ["Amazon", "Microsoft", "Meta"],
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "accessibility"
+    ],
+    "tech_keywords": [
+      "html",
+      "accessibility",
+      "aria"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Microsoft",
+      "Meta"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -195,17 +443,48 @@
       ],
       "sample_answer": "Web accessibility means the site is usable by people with disabilities, often via assistive technology like screen readers or keyboard-only navigation. Concrete practices: use semantic HTML — a real <button> instead of a <div onClick=...> — since screen readers rely on an element's semantic role to announce what it is and how it can be used; provide meaningful alt text on images, and appropriate ARIA attributes for custom widgets (like a custom dropdown) that don't have native semantics; and ensure every interactive element is reachable and operable via keyboard alone, with a clearly visible focus indicator, since not every user can use a mouse. Sufficient color contrast, and not relying on color alone to convey meaning (e.g. error states), are also essential."
     },
-    "follow_up_hint": "Ask them why a <div onClick=...> styled to look like a button is inaccessible even if it's visually indistinguishable from a real button."
+    "follow_up_hint": "Ask them why a <div onClick=...> styled to look like a button is inaccessible even if it's visually indistinguishable from a real button.",
+    "concept": "Web Accessibility",
+    "sub_concept": "Screen Reader Compatibility and Semantic HTML",
+    "expected_reasoning": "A strong candidate starts by broadly defining accessibility as inclusive design for users with diverse physical and cognitive disabilities, moving beyond just visual impairments. They then explain how assistive technologies like screen readers interpret a page, recognizing that these tools depend on underlying structure rather than visual presentation. To ground this, they transition to concrete implementation practices, connecting each practice directly to how a screen reader or keyboard-only user experiences the DOM. They logically group these practices around semantics, alternative text, and keyboard navigation.",
+    "common_mistakes": [
+      "States the conclusion with no justification, simply listing practices like 'use alt text' without explaining why screen readers need it.",
+      "Conflates accessibility solely with visual impairments or color blindness, ignoring motor, auditory, and cognitive needs.",
+      "Relies entirely on generic div tags with onclick handlers and ARIA hacks instead of native semantic HTML elements.",
+      "Mentions alt text but fails to distinguish between decorative images (which need empty alt attributes) and informative ones.",
+      "Overlooks keyboard navigability, focusing exclusively on auditory or screen reader output."
+    ],
+    "progressive_hints": [
+      "Think about what information a screen reader receives when a user visits a page that is built entirely out of generic 'div' and 'span' elements.",
+      "Consider how assistive technology knows the difference between a clickable container and a standard block of text, and what attributes or elements bridge that gap.",
+      "Focus on the structural layer of your HTML: which native tags give built-in meaning and keyboard behavior, and what properties must be added when custom components are used instead?"
+    ],
+    "learning_objective": "Understand that web accessibility requires structuring web content with semantic HTML and appropriate metadata so assistive technologies can accurately interpret and navigate the experience for users with disabilities."
   },
   {
     "id": "frontend-0010",
     "question": "Explain code splitting and lazy loading in a modern JavaScript frontend bundle, and why they improve initial load time.",
     "type": "theory",
     "difficulty": 2,
-    "roles": ["frontend", "fullstack"],
-    "topics": ["performance", "bundling"],
-    "tech_keywords": ["javascript", "webpack", "performance", "bundling"],
-    "companies_common": ["Amazon", "Meta", "Google"],
+    "roles": [
+      "frontend",
+      "fullstack"
+    ],
+    "topics": [
+      "performance",
+      "bundling"
+    ],
+    "tech_keywords": [
+      "javascript",
+      "webpack",
+      "performance",
+      "bundling"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Meta",
+      "Google"
+    ],
     "source_style": "common-interview",
     "reference_solution": {
       "key_points": [
@@ -217,6 +496,22 @@
       ],
       "sample_answer": "By default, a bundler can produce one giant JavaScript file containing the whole application, which the browser must download and parse before anything can run — hurting initial load time as the app grows. Code splitting breaks this into smaller chunks, often one per route or feature, and lazy loading means a given chunk is only fetched when it's actually needed — for example, a settings page's code isn't downloaded until the user actually navigates there. In practice this is done via dynamic `import()` syntax, which signals bundlers like webpack or Vite to split that import point into its own chunk automatically. The trade-off is that splitting too finely creates many small network requests with their own overhead, so chunk granularity needs to be tuned rather than maximized blindly."
     },
-    "follow_up_hint": "Ask them how they'd decide what to split by, e.g. route-based versus component-based code splitting, for a large app."
+    "follow_up_hint": "Ask them how they'd decide what to split by, e.g. route-based versus component-based code splitting, for a large app.",
+    "concept": "Code Splitting",
+    "sub_concept": "Lazy Loading and Bundle Granularity",
+    "expected_reasoning": "A strong candidate begins by analyzing how a monolithic JavaScript bundle affects the critical rendering path, noting that the browser must download, parse, and execute all code before rendering anything. They then explain how splitting the application into logical segments allows the bundler to emit separate chunks. Next, they connect this mechanism to dynamic import statements, which act as boundaries for asynchronous loading. Finally, they weigh the performance benefits of a smaller initial payload against the network and execution overhead of requesting numerous micro-chunks.",
+    "common_mistakes": [
+      "Confusing code splitting with server-side rendering or tree shaking",
+      "Stating that it eliminates all loading time without mentioning that requests are merely deferred",
+      "Failing to mention the dynamic import syntax or how bundlers recognize split points",
+      "Ignoring the network trade-off of having too many tiny chunks",
+      "Claiming it reduces the total amount of JavaScript executed over the lifetime of the session"
+    ],
+    "progressive_hints": [
+      "What happens to the browser's main thread when it receives a massive single-page application bundle on initial load?",
+      "You are splitting the code into chunks, but how does the browser know to fetch a specific chunk only when a user visits a new route?",
+      "If every single component was split into its own independent file and fetched dynamically, what new bottleneck might you introduce over the network?"
+    ],
+    "learning_objective": "Understand how breaking down a monolithic bundle into dynamically loaded chunks improves initial load performance while balancing network request overhead."
   }
 ]

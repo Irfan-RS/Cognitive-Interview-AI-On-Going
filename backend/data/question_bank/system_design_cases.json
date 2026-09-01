@@ -1,5 +1,147 @@
 [
-  {"id":"sdc-0001","question":"Design a URL shortening service like bit.ly. Walk through your high-level approach.","type":"system_design","difficulty":4,"roles":["backend","system_design"],"topics":["system-design"],"tech_keywords":["url-shortener"],"companies_common":["Amazon","Google","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["Core requirement: given a long URL, generate a short unique code; given the short code, redirect to the original URL (a 301/302 redirect)","Generating the short code: either a base62-encoded auto-incrementing ID (guarantees uniqueness, simple), or a hash of the URL with collision handling — auto-increment ID approach is usually simpler and preferred","Storage: a simple key-value mapping (short code -> long URL) fits well in a key-value store or a simple relational table indexed on the short code, given the access pattern is a fast point lookup","At scale: heavy read traffic (redirects vastly outnumber creates) means a caching layer (Redis) in front of the database is valuable, and the redirect service itself should be a thin, horizontally-scalable stateless layer","Should ask clarifying questions: expected scale (reads/writes per second), whether custom aliases are needed, whether links expire, whether click analytics are required"],"sample_answer":"First I'd clarify scale and requirements: how many URLs created per day, read-to-write ratio, whether custom short codes and expiration are needed, and whether click analytics matter. For the core design, I'd generate short codes using a base62-encoded auto-incrementing ID from a counter service, which guarantees uniqueness without needing collision detection, unlike hashing the URL, which would need collision handling if two URLs hash to the same short code. I'd store the mapping from short code to original URL in a key-value store or a simple indexed table, since the primary access pattern is a fast point lookup by short code. Given that redirects almost always vastly outnumber URL creations, I'd put a caching layer like Redis in front of the database for the hottest short codes, and make the redirect-serving layer itself stateless and horizontally scalable behind a load balancer, since it's a simple read-heavy, latency-sensitive path. I'd also consider whether the counter service generating IDs needs to be distributed to avoid becoming a bottleneck or single point of failure at very high creation rates."},"follow_up_hint":"Ask them how they'd generate unique IDs at scale without the ID-generation service becoming a single point of failure or bottleneck."},
-  {"id":"sdc-0002","question":"Design a rate limiter that can be used as a shared library across multiple microservices. What would your API look like and how would you implement it?","type":"system_design","difficulty":4,"roles":["backend","system_design"],"topics":["system-design"],"tech_keywords":["rate-limiting"],"companies_common":["Amazon","Stripe"],"source_style":"faang-common","reference_solution":{"key_points":["API design: a simple `allow(key) -> bool` interface, where 'key' identifies the entity being limited (user ID, IP, API key)","Algorithm choice: token bucket is often preferred for its ability to allow controlled bursts while enforcing a steady average rate","Storage backend: an in-memory implementation works for single-instance use, but a shared Redis backend is needed for consistent limits across multiple service instances","Design considerations: configurable limits per key/tier (different rate limits for free vs paid users), graceful behavior when the storage backend itself is unavailable (fail open vs fail closed), and returning informative response headers (remaining quota, reset time) to callers"],"sample_answer":"I'd expose a simple interface like `allow(key: string) -> bool`, where the key identifies whatever's being rate-limited — a user ID, an IP address, or an API key — keeping the rate limiting logic decoupled from any specific service's business logic. For the algorithm, I'd implement token bucket, since it naturally allows a controlled burst of requests up to the bucket's capacity while still enforcing a steady average rate over time, which tends to match real usage patterns better than a strict fixed window. For the storage backend, an in-memory implementation would work if a service only ever ran as a single instance, but since we're talking about a library shared across multiple microservice instances behind a load balancer, I'd back it with a shared Redis instance using atomic operations, so all instances checking the same key see a consistent, correct count. I'd also make limits configurable per key/tier, so a paid customer could have a higher limit than a free one, decide explicit behavior for when Redis itself is temporarily unavailable — likely failing open for a low-risk API but failing closed for something sensitive — and return standard response headers indicating remaining quota and reset time so callers can behave well and back off proactively."},"follow_up_hint":"Ask them to compare the token bucket approach to a sliding window log in terms of memory usage at very high request volumes."},
-  {"id":"sdc-0003","question":"Design a simplified version of a news feed system, like a Twitter/X timeline. How would you handle generating each user's feed efficiently?","type":"system_design","difficulty":5,"roles":["backend","system_design"],"topics":["system-design"],"tech_keywords":["feed-generation","fan-out"],"companies_common":["Meta","Twitter","Uber"],"source_style":"faang-common","reference_solution":{"key_points":["Fan-out on write (push model): when a user posts, immediately push that post into the precomputed feed/inbox of all their followers — makes reading a feed very fast (just fetch the precomputed list), but expensive for users with millions of followers (a single post triggers millions of writes)","Fan-out on read (pull model): a user's feed is computed on demand at read time by fetching recent posts from everyone they follow and merging/sorting them — cheaper on write, but slower/more expensive on each read, especially for users following many people","Hybrid approach: push model for most users, but pull model (or a special-cased path) for celebrities/very-high-follower accounts to avoid the fan-out explosion on write — most large-scale systems use this hybrid","Should also discuss ranking (chronological vs algorithmic relevance-based ordering) and caching precomputed feeds"],"sample_answer":"There are two core strategies. Fan-out on write pushes a new post immediately into every follower's precomputed feed inbox as soon as it's created, so reading a feed is very fast — you're just fetching an already-built list. The problem is a user with millions of followers triggers millions of writes for a single post, which doesn't scale well. Fan-out on read instead computes a user's feed at request time, by fetching recent posts from everyone they follow and merging and sorting them on the fly, which is cheap on the write side but can be slow on reads, especially for a user following a very large number of accounts. In practice, most large-scale systems use a hybrid: fan-out on write for the vast majority of users, since most people have a manageable follower count, but switch to a pull-based or specially-handled path for celebrity accounts with huge follower counts, avoiding the fan-out explosion for just those cases. I'd also cache each user's precomputed feed and consider whether the feed should just be reverse-chronological or ranked by an algorithmic relevance score, which adds significant additional complexity around ranking model serving."},"follow_up_hint":"Ask them how they'd handle a user unfollowing someone whose posts are already sitting in their precomputed feed."}
+  {
+    "id": "sdc-0001",
+    "question": "Design a URL shortening service like bit.ly. Walk through your high-level approach.",
+    "type": "system_design",
+    "difficulty": 4,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "system-design"
+    ],
+    "tech_keywords": [
+      "url-shortener"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Google",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Core requirement: given a long URL, generate a short unique code; given the short code, redirect to the original URL (a 301/302 redirect)",
+        "Generating the short code: either a base62-encoded auto-incrementing ID (guarantees uniqueness, simple), or a hash of the URL with collision handling — auto-increment ID approach is usually simpler and preferred",
+        "Storage: a simple key-value mapping (short code -> long URL) fits well in a key-value store or a simple relational table indexed on the short code, given the access pattern is a fast point lookup",
+        "At scale: heavy read traffic (redirects vastly outnumber creates) means a caching layer (Redis) in front of the database is valuable, and the redirect service itself should be a thin, horizontally-scalable stateless layer",
+        "Should ask clarifying questions: expected scale (reads/writes per second), whether custom aliases are needed, whether links expire, whether click analytics are required"
+      ],
+      "sample_answer": "First I'd clarify scale and requirements: how many URLs created per day, read-to-write ratio, whether custom short codes and expiration are needed, and whether click analytics matter. For the core design, I'd generate short codes using a base62-encoded auto-incrementing ID from a counter service, which guarantees uniqueness without needing collision detection, unlike hashing the URL, which would need collision handling if two URLs hash to the same short code. I'd store the mapping from short code to original URL in a key-value store or a simple indexed table, since the primary access pattern is a fast point lookup by short code. Given that redirects almost always vastly outnumber URL creations, I'd put a caching layer like Redis in front of the database for the hottest short codes, and make the redirect-serving layer itself stateless and horizontally scalable behind a load balancer, since it's a simple read-heavy, latency-sensitive path. I'd also consider whether the counter service generating IDs needs to be distributed to avoid becoming a bottleneck or single point of failure at very high creation rates."
+    },
+    "follow_up_hint": "Ask them how they'd generate unique IDs at scale without the ID-generation service becoming a single point of failure or bottleneck.",
+    "concept": "System Design",
+    "sub_concept": "URL Shortener Service Architecture",
+    "expected_reasoning": "A strong candidate begins by clarifying scale requirements, read-to-write ratios, and edge cases like link expiration and custom aliases before diving into design. They then establish the core APIs and analyze how to generate unique identifiers, contrasting stateless hashing against coordinated auto-incrementing counters. Next, they design the data storage layer to optimize for ultra-low-latency point lookups, recognizing the massive read-heavy asymmetry typical of redirects. Finally, they introduce horizontal scaling strategies and a caching layer to handle peak traffic without overwhelming the primary database.",
+    "common_mistakes": [
+      "Jumping straight into drawing boxes without asking any clarifying questions about scale or traffic volume.",
+      "Proposing MD5 or SHA-256 hashing of the URL and truncating it as a foolproof strategy without addressing or solving collision handling.",
+      "Failing to account for the read-heavy nature of the service, omitting a caching tier and sending all redirect traffic directly to the database.",
+      "Using a monolithic service design that couples the write-heavy shortening API with the read-heavy redirection service.",
+      "Over-engineering the database choice with complex distributed graph or document stores when a simple key-value store or indexed relational table suffices."
+    ],
+    "progressive_hints": [
+      "What are the primary traffic characteristics of this system, and how do the read and write volumes differ?",
+      "You need a way to map a short identifier to a long URL. How would you generate a unique short string efficiently at scale without collisions?",
+      "Given that redirect requests will vastly outnumber URL creation requests and require sub-millisecond latency, how would you protect your primary database from being overwhelmed?"
+    ],
+    "learning_objective": "Candidates should understand how to design a highly scalable, read-heavy distributed system by separating read and write paths, utilizing efficient ID generation strategies, and strategically applying caching."
+  },
+  {
+    "id": "sdc-0002",
+    "question": "Design a rate limiter that can be used as a shared library across multiple microservices. What would your API look like and how would you implement it?",
+    "type": "system_design",
+    "difficulty": 4,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "system-design"
+    ],
+    "tech_keywords": [
+      "rate-limiting"
+    ],
+    "companies_common": [
+      "Amazon",
+      "Stripe"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "API design: a simple `allow(key) -> bool` interface, where 'key' identifies the entity being limited (user ID, IP, API key)",
+        "Algorithm choice: token bucket is often preferred for its ability to allow controlled bursts while enforcing a steady average rate",
+        "Storage backend: an in-memory implementation works for single-instance use, but a shared Redis backend is needed for consistent limits across multiple service instances",
+        "Design considerations: configurable limits per key/tier (different rate limits for free vs paid users), graceful behavior when the storage backend itself is unavailable (fail open vs fail closed), and returning informative response headers (remaining quota, reset time) to callers"
+      ],
+      "sample_answer": "I'd expose a simple interface like `allow(key: string) -> bool`, where the key identifies whatever's being rate-limited — a user ID, an IP address, or an API key — keeping the rate limiting logic decoupled from any specific service's business logic. For the algorithm, I'd implement token bucket, since it naturally allows a controlled burst of requests up to the bucket's capacity while still enforcing a steady average rate over time, which tends to match real usage patterns better than a strict fixed window. For the storage backend, an in-memory implementation would work if a service only ever ran as a single instance, but since we're talking about a library shared across multiple microservice instances behind a load balancer, I'd back it with a shared Redis instance using atomic operations, so all instances checking the same key see a consistent, correct count. I'd also make limits configurable per key/tier, so a paid customer could have a higher limit than a free one, decide explicit behavior for when Redis itself is temporarily unavailable — likely failing open for a low-risk API but failing closed for something sensitive — and return standard response headers indicating remaining quota and reset time so callers can behave well and back off proactively."
+    },
+    "follow_up_hint": "Ask them to compare the token bucket approach to a sliding window log in terms of memory usage at very high request volumes.",
+    "concept": "Distributed Rate Limiting",
+    "sub_concept": "Cross-Service Shared Library Design",
+    "expected_reasoning": "A strong candidate starts by clarifying the execution context of the shared library, determining whether it needs a centralized state or if each microservice instance operates independently. They weigh state management approaches, considering network latency tradeoffs of a remote store versus the inconsistency of local tracking. They select an appropriate rate-limiting algorithm that balances burst allowance with steady-state enforcement. Finally, they design a clean client-facing API that handles failure modes gracefully so that rate-limiter outages do not cascade into core service failures.",
+    "common_mistakes": [
+      "States the conclusion with no justification, such as blindly choosing Redis and token bucket without analyzing concurrency or burst requirements.",
+      "Proposes an in-memory library approach without realizing that multiple microservice instances will have isolated states, completely breaking global limits.",
+      "Ignores failure modes and fail-open vs fail-closed considerations when the remote state store goes down.",
+      "Designs an overly complex API that forces the calling service to manage bucket math instead of a simple boolean check.",
+      "Forgets to account for atomic operations in the backend store, introducing race conditions under high concurrency."
+    ],
+    "progressive_hints": [
+      "How does a shared library running inside multiple independent microservice instances coordinate to enforce a single global limit for a user?",
+      "Think about what happens to your state synchronization if you use local memory, and evaluate what atomic operations or data structures you might need in a shared data store to prevent race conditions.",
+      "Consider using a centralized atomic counter or token bucket store like Redis with Lua scripts, and explicitly decide whether your service should fail open or closed if Redis drops connection."
+    ],
+    "learning_objective": "The candidate should understand how to design a fault-tolerant, shared rate-limiting abstraction that balances strict consistency across microservices with high availability and low latency."
+  },
+  {
+    "id": "sdc-0003",
+    "question": "Design a simplified version of a news feed system, like a Twitter/X timeline. How would you handle generating each user's feed efficiently?",
+    "type": "system_design",
+    "difficulty": 5,
+    "roles": [
+      "backend",
+      "system_design"
+    ],
+    "topics": [
+      "system-design"
+    ],
+    "tech_keywords": [
+      "feed-generation",
+      "fan-out"
+    ],
+    "companies_common": [
+      "Meta",
+      "Twitter",
+      "Uber"
+    ],
+    "source_style": "faang-common",
+    "reference_solution": {
+      "key_points": [
+        "Fan-out on write (push model): when a user posts, immediately push that post into the precomputed feed/inbox of all their followers — makes reading a feed very fast (just fetch the precomputed list), but expensive for users with millions of followers (a single post triggers millions of writes)",
+        "Fan-out on read (pull model): a user's feed is computed on demand at read time by fetching recent posts from everyone they follow and merging/sorting them — cheaper on write, but slower/more expensive on each read, especially for users following many people",
+        "Hybrid approach: push model for most users, but pull model (or a special-cased path) for celebrities/very-high-follower accounts to avoid the fan-out explosion on write — most large-scale systems use this hybrid",
+        "Should also discuss ranking (chronological vs algorithmic relevance-based ordering) and caching precomputed feeds"
+      ],
+      "sample_answer": "There are two core strategies. Fan-out on write pushes a new post immediately into every follower's precomputed feed inbox as soon as it's created, so reading a feed is very fast — you're just fetching an already-built list. The problem is a user with millions of followers triggers millions of writes for a single post, which doesn't scale well. Fan-out on read instead computes a user's feed at request time, by fetching recent posts from everyone they follow and merging and sorting them on the fly, which is cheap on the write side but can be slow on reads, especially for a user following a very large number of accounts. In practice, most large-scale systems use a hybrid: fan-out on write for the vast majority of users, since most people have a manageable follower count, but switch to a pull-based or specially-handled path for celebrity accounts with huge follower counts, avoiding the fan-out explosion for just those cases. I'd also cache each user's precomputed feed and consider whether the feed should just be reverse-chronological or ranked by an algorithmic relevance score, which adds significant additional complexity around ranking model serving."
+    },
+    "follow_up_hint": "Ask them how they'd handle a user unfollowing someone whose posts are already sitting in their precomputed feed.",
+    "concept": "Fan-Out Architectures",
+    "sub_concept": "Push versus Pull Models in Social Feeds",
+    "expected_reasoning": "A strong candidate begins by breaking down the core operations into reads and writes, quantifying the inherent trade-offs between computational cost at write-time versus read-time. They explore the push model (fan-out on write), analyzing how it optimizes read latency at the expense of massive write amplification for accounts with millions of followers. Recognizing this bottleneck, they pivot to the pull model (fan-out on read) to understand its inverse properties—low write overhead but heavy compute costs during feed generation. Finally, they synthesize these insights into a hybrid architecture, applying push for standard users and pull (or asynchronous caching) for celebrities, while factoring in ranking and storage scaling.",
+    "common_mistakes": [
+      "States the conclusion to use a hybrid model without analyzing the underlying scale or write amplification problem first.",
+      "Proposes querying a relational database directly with complex joins for every feed read at scale.",
+      "Ignores the celebrity/influencer problem completely, assuming push-on-write works uniformly for all user types.",
+      "Confuses chronological feed generation with algorithmic ranking and treats them as the same engineering challenge.",
+      "Fails to specify where precomputed feeds are stored (e.g., Redis/in-memory caches) and how pagination is handled."
+    ],
+    "progressive_hints": [
+      "Think about the lifecycle of a post: what needs to happen to make that post visible to others, and when should that work take place?",
+      "Consider what happens when a user with ten million followers publishes a single post if you update every follower's inbox immediately.",
+      "How could you combine two different strategies—one optimized for regular users and another for extreme high-follower accounts—to solve the scaling bottleneck?"
+    ],
+    "learning_objective": "Candidates should understand how to analyze high-throughput read-versus-write trade-offs and design hybrid fan-out systems to handle extreme distribution skews."
+  }
 ]
