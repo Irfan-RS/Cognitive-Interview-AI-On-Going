@@ -16,6 +16,7 @@ def get_stt_provider() -> STTProvider:
             model_size=settings.stt_local_model_size,
             device=settings.stt_local_device,
             compute_type=settings.stt_local_compute_type,
+            language=settings.stt_language,
         )
 
     raise ValueError(f"Unknown STT_PROVIDER '{settings.stt_provider}' — expected 'local'")

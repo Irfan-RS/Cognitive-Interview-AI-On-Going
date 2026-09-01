@@ -18,17 +18,27 @@ class LocalWhisperProvider(STTProvider):
     offline on CPU. "base" is a reasonable default for 8GB RAM; "tiny" if
     you need it faster/lighter, "small" if you have RAM to spare."""
 
-    def __init__(self, model_size: str, device: str, compute_type: str):
+    def __init__(self, model_size: str, device: str, compute_type: str, language: str = "en"):
         self.model_size = model_size
         self.device = device
         self.compute_type = compute_type
+        self.language = language
 
     async def transcribe(self, audio_path: str) -> TranscriptionResult:
         return await asyncio.to_thread(self._transcribe_sync, audio_path)
 
     def _transcribe_sync(self, audio_path: str) -> TranscriptionResult:
         model = _load_model(self.model_size, self.device, self.compute_type)
-        segments_iter, _info = model.transcribe(audio_path, vad_filter=True)
+        # Pinning the language matters: with auto-detect, Whisper infers it from
+        # the first seconds of audio and a short or accented answer is regularly
+        # misdetected — an English answer came back as Turkish gibberish, which
+        # then scored zero because the analysis had nothing real to grade.
+        # Setting STT_LANGUAGE="" restores auto-detection for multilingual use.
+        segments_iter, _info = model.transcribe(
+            audio_path,
+            vad_filter=True,
+            language=self.language or None,
+        )
 
         segments = [TranscriptSegment(text=s.text.strip(), start=s.start, end=s.end) for s in segments_iter]
         full_text = " ".join(s.text for s in segments).strip()

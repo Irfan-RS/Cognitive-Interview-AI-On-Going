@@ -71,13 +71,13 @@ DIMENSIONS:
 Return a JSON object with exactly these fields, IN THIS ORDER:
 {{
   "dimension_evidence": {{
-    "technical_correctness": "the specific thing in THIS answer that evidences this dimension, or what was absent",
-    "problem_understanding": "...",
-    "reasoning": "...",
-    "problem_solving": "...",
-    "communication": "...",
-    "depth_of_knowledge": "...",
-    "adaptability": "..."
+    "technical_correctness": "max 10 words: what evidences this, or what was absent",
+    "problem_understanding": "max 10 words",
+    "reasoning": "max 10 words",
+    "problem_solving": "max 10 words",
+    "communication": "max 10 words",
+    "depth_of_knowledge": "max 10 words",
+    "adaptability": "max 10 words"
   }},
   "technical_correctness": <0-100>,
   "problem_understanding": <0-100>,
@@ -102,8 +102,7 @@ Return a JSON object with exactly these fields, IN THIS ORDER:
   "relevance_score": <0-100, how directly this addressed the question actually asked>,
   "grammar_issues": ["notable grammatical problems, empty list if none"],
   "covered_key_points": ["reference key points this answer covered"],
-  "missed_key_points": ["reference key points this answer did NOT cover"],
-  "model_solution": "a concise model answer (2-6 sentences) usable as a study reference"
+  "missed_key_points": ["reference key points this answer did NOT cover"]{model_solution_field}
 }}
 
 Write dimension_evidence FIRST and let each score follow from its own evidence — that is what
@@ -211,6 +210,7 @@ async def analyze_answer(
     sub_concept: str | None = None,
     expected_reasoning: str | None = None,
     common_mistakes: list[str] | None = None,
+    sample_answer: str | None = None,
     previous_question: str | None = None,
     previous_answer_transcript: str | None = None,
 ) -> dict:
@@ -231,7 +231,18 @@ async def analyze_answer(
     total_fillers = sum(filler_words.values())
     delivery = f"{total_fillers} filler word(s), {pause_count} long pause(s)"
 
+    # Bank questions already ship an authored reference answer — regenerating one
+    # per submission is the single most expensive part of the response and adds
+    # nothing. Only ask for it when there genuinely isn't one (generated follow-ups).
+    needs_model_solution = not (sample_answer or "").strip()
+    model_solution_field = (
+        ',\n  "model_solution": "a concise model answer (2-6 sentences) usable as a study reference"'
+        if needs_model_solution
+        else ""
+    )
+
     user_prompt = _USER_TEMPLATE.format(
+        model_solution_field=model_solution_field,
         question=question_text,
         cognitive_context=_build_cognitive_context(concept, sub_concept, expected_reasoning, common_mistakes),
         adaptability_context=adaptability_context,
@@ -289,6 +300,6 @@ async def analyze_answer(
         "grammar_issues": _clean_str_list(parsed.get("grammar_issues")),
         "covered_key_points": _clean_str_list(parsed.get("covered_key_points")),
         "missed_key_points": _clean_str_list(parsed.get("missed_key_points")),
-        "llm_model_solution": str(parsed.get("model_solution", "")).strip(),
+        "llm_model_solution": (sample_answer or "").strip() or str(parsed.get("model_solution", "")).strip(),
         "eye_contact_ratio": eye_contact_ratio,
     }

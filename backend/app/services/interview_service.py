@@ -129,6 +129,7 @@ async def submit_answer(
         sub_concept=bank_question.sub_concept if bank_question else None,
         expected_reasoning=bank_question.expected_reasoning if bank_question else None,
         common_mistakes=bank_question.common_mistakes if bank_question else None,
+        sample_answer=bank_question.sample_answer if bank_question else None,
         previous_question=previous_question,
         previous_answer_transcript=previous_answer_transcript,
     )

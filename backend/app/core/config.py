@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     stt_local_model_size: str = "base"
     stt_local_device: str = "cpu"
     stt_local_compute_type: str = "int8"
+    # Pinned so short/accented answers aren't misdetected as another language.
+    # Set to "" to restore Whisper's auto-detection.
+    stt_language: str = "en"
 
     tts_provider: str = "google_cloud"  # "google_cloud" | "local_stub"
     google_application_credentials: str = ""
