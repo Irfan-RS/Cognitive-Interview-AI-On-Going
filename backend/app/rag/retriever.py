@@ -14,7 +14,12 @@ SEMANTIC_POOL_SIZE = 100
 # scoring the full 100-candidate pool would let difficulty-fit alone promote
 # something semantically unrelated.
 SEMANTIC_FALLBACK_TOP_K = 10
-TOP_K_CHOICES = 3  # pick randomly among the top-K scored candidates, for variety across sessions
+
+# Sample from a wide band of good candidates rather than the strict top few.
+# The query text for a given track is IDENTICAL every session and the starting
+# difficulty is always the same, so scoring is deterministic — picking from a
+# narrow top-K meant a handful of questions were the only ones ever asked.
+TOP_K_CHOICES = 15
 MIN_PARTIAL_MATCH_LEN = 3  # below this, substring matching false-positives too easily (e.g. "ml" inside "html")
 
 # Ranking weights, applied WITHIN whichever pool is active (see select_question):
@@ -23,11 +28,15 @@ MIN_PARTIAL_MATCH_LEN = 3  # below this, substring matching false-positives too 
 # hard-filtered to tag-matching candidates whenever any exist, it mostly acts
 # as a tie-breaker there — its real job is ranking the ungated fallback pool
 # when no candidate matches the tag at all.
-W_SEMANTIC = 0.40
+W_SEMANTIC = 0.35
 W_ROLE = 0.20
 W_TOPIC = 0.20
 W_SKILL = 0.10
 W_DIFFICULTY = 0.10
+# Novelty is what stops the bank collapsing to the same few questions across
+# sessions: usage_count persists, so a question already asked is scored down
+# and the long tail of the bank actually gets reached.
+W_NOVELTY = 0.25
 
 
 def _track_query_text(track: str, role: str | None, resume_keywords: list[str], topic: str | None) -> str:
@@ -115,6 +124,13 @@ def _difficulty_relevance(q: Question, target_difficulty: int) -> float:
     return 1.0 - abs(q.difficulty - target_difficulty) / span
 
 
+def _novelty(q: Question) -> float:
+    """Decays as a question gets asked: 1.0 unasked, 0.5 after one ask, 0.33
+    after two. Persisted via usage_count, so this works ACROSS sessions — the
+    point is that starting a fresh interview doesn't replay the same question."""
+    return 1.0 / (1.0 + max(0, q.usage_count or 0))
+
+
 def _score_candidate(
     q: Question,
     *,
@@ -132,9 +148,25 @@ def _score_candidate(
     if track_weight:
         signals.append((track_weight, _track_relevance(q, track, role, resume_keywords, topic)))
     signals.append((W_DIFFICULTY, _difficulty_relevance(q, target_difficulty)))
+    signals.append((W_NOVELTY, _novelty(q)))
 
     total_weight = sum(w for w, _ in signals) or 1.0
     return sum(w * s for w, s in signals) / total_weight
+
+
+def _weighted_pick(scored: list[tuple[float, Question]]) -> Question:
+    """Sample from the top band, weighted by score. A flat random.choice over a
+    wide band would too often surface a weak match; weighting keeps the best
+    candidates most likely while still reaching the rest of the bank."""
+    scored.sort(key=lambda pair: pair[0], reverse=True)
+    top = scored[:TOP_K_CHOICES]
+
+    # Shift so the weakest candidate in the band still has a small chance,
+    # rather than a zero weight (which random.choices rejects outright if all
+    # weights end up zero).
+    floor = min(s for s, _ in top)
+    weights = [(s - floor) + 0.05 for s, _ in top]
+    return random.choices([q for _, q in top], weights=weights, k=1)[0]
 
 
 def _score_and_pick(candidates_with_distance, *, track, role, resume_keywords, topic, target_difficulty) -> Question:
@@ -157,9 +189,7 @@ def _score_and_pick(candidates_with_distance, *, track, role, resume_keywords, t
         )
         for q, dist in candidates_with_distance
     ]
-    scored.sort(key=lambda pair: pair[0], reverse=True)
-    top = scored[:TOP_K_CHOICES]
-    return random.choice(top)[1]
+    return _weighted_pick(scored)
 
 
 def select_question(
@@ -230,9 +260,7 @@ def _pick_from_sql_fallback(db, track, role, resume_keywords, topic, target_diff
         )
         for q in pool
     ]
-    scored.sort(key=lambda pair: pair[0], reverse=True)
-    top = scored[:TOP_K_CHOICES]
-    return random.choice(top)[1]
+    return _weighted_pick(scored)
 
 
 def retrieve_related_context(db: Session, transcript: str, *, exclude_id: str | None = None, n: int = 3) -> list[Question]:
