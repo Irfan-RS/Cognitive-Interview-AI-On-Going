@@ -12,6 +12,15 @@ from app.services.llm_json import parse_llm_json
 
 FILLER_WORDS = ["umm", "um", "uh", "uhh", "ah", "like", "you know", "i mean", "basically", "actually", "so yeah"]
 
+ANSWER_FRAMEWORK_DIMENSIONS = [
+    "problem_understanding",
+    "approach",
+    "reasoning",
+    "trade_offs",
+    "adaptability",
+    "communication",
+]
+
 _SYSTEM_PROMPT = """You are a cognitive interview evaluator. Your job is to judge HOW the
 candidate arrived at their answer, not only whether it happens to be correct — score their
 reasoning, justification, and trade-off thinking as their own dimensions, separate from raw
@@ -26,8 +35,15 @@ actual reasoning AND a trade-off against an alternative. Grade every dimension w
 justification and awareness of alternatives matter as much as the surface-level answer.
 
 Grading against reference key points is FLEXIBLE — any phrasing that covers a key point
-counts, exact wording doesn't matter. Respond with ONLY a JSON object, no markdown fences, no
-extra prose."""
+counts, exact wording doesn't matter.
+
+You also teach the candidate HOW to think through this specific question — not generic
+interview advice, but concretely tied to what THIS question actually demands (e.g. for "How
+would you design a URL shortener?", problem_understanding means clarifying expected requests
+per day and read:write ratio, not a generic "clarify requirements"). And for whichever of the
+candidate's dimensions came out weak, give one specific, actionable tip on how they could have
+answered that part better, referencing what they actually said. Respond with ONLY a JSON
+object, no markdown fences, no extra prose."""
 
 _USER_TEMPLATE = """QUESTION:
 {question}
@@ -68,8 +84,22 @@ Return a JSON object with exactly these fields:
   "relevance_score": <integer 0-100, how directly this answers the actual question>,
   "covered_key_points": [ "the key points from the reference list that this answer covers" ],
   "missed_key_points": [ "the key points from the reference list that this answer does NOT cover" ],
-  "model_solution": "a concise, well-formed model answer to this question (2-6 sentences), usable as a study reference"
-}}"""
+  "model_solution": "a concise, well-formed model answer to this question (2-6 sentences), usable as a study reference",
+  "answer_framework": {{
+    "problem_understanding": "one sentence: what THIS question needs clarified upfront (requirements, scale, users, etc.) before answering",
+    "approach": "one sentence: how to break THIS question into components and in what order",
+    "reasoning": "one sentence: what justification a strong answer to THIS question must give, not just what to conclude",
+    "trade_offs": "one sentence: the specific alternatives/trade-offs THIS question's answer should weigh",
+    "adaptability": "one sentence: a plausible way the interviewer could change THIS question's requirements, and what should shift in response",
+    "communication": "one sentence: how to structure the delivery of an answer to THIS specific question"
+  }},
+  "improvement_tips": [
+    {{"dimension": "<dimension key from dimension_scores that scored weak>", "tip": "one specific, actionable sentence on how this exact answer could improve on that dimension"}}
+  ]
+}}
+Only include entries in improvement_tips for dimensions that actually scored weak (roughly
+below 6/10) — omit dimensions the candidate already did well on, and include at most 4
+entries."""
 
 _FALLBACK = {
     "dimension_scores": {},
@@ -78,6 +108,8 @@ _FALLBACK = {
     "covered_key_points": [],
     "missed_key_points": [],
     "model_solution": "",
+    "answer_framework": {},
+    "improvement_tips": [],
 }
 
 
@@ -156,6 +188,18 @@ async def analyze_answer(
     overall_score = compute_overall_score(dimension_scores)
     category_scores = compute_category_scores(dimension_scores)
 
+    raw_framework = parsed.get("answer_framework") or {}
+    answer_framework = {
+        key: str(raw_framework.get(key, "")) for key in ANSWER_FRAMEWORK_DIMENSIONS
+    }
+
+    raw_tips = parsed.get("improvement_tips") or []
+    improvement_tips = [
+        {"dimension": str(t.get("dimension", "")), "tip": str(t.get("tip", ""))}
+        for t in raw_tips
+        if isinstance(t, dict) and t.get("dimension") and t.get("tip")
+    ][:4]
+
     return {
         "transcript": transcription.text,
         "grammar_issues": parsed.get("grammar_issues", []),
@@ -168,5 +212,7 @@ async def analyze_answer(
         "covered_key_points": parsed.get("covered_key_points", []),
         "missed_key_points": parsed.get("missed_key_points", []),
         "llm_model_solution": parsed.get("model_solution", ""),
+        "answer_framework": answer_framework,
+        "improvement_tips": improvement_tips,
         "eye_contact_ratio": eye_contact_ratio,
     }

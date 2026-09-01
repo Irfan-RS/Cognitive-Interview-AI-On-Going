@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Circle,
+  Compass,
   Eye,
   Gauge,
   ListChecks,
@@ -22,6 +24,26 @@ const TABS = [
   { key: "questions", label: "Question-wise feedback", icon: MessageCircleQuestion },
   { key: "actions", label: "Action items", icon: ListChecks },
 ];
+
+const FRAMEWORK_LABELS = {
+  problem_understanding: "Problem understanding",
+  approach: "Approach",
+  reasoning: "Reasoning",
+  trade_offs: "Trade-offs",
+  adaptability: "Adaptability",
+  communication: "Communication",
+};
+
+const DIMENSION_LABELS = {
+  technical_correctness: "Technical correctness",
+  problem_solving_reasoning: "Reasoning",
+  depth_of_understanding: "Depth of understanding",
+  communication: "Communication",
+  problem_approach: "Approach",
+  adaptability: "Adaptability",
+  trade_off_analysis: "Trade-off analysis",
+  delivery_clarity: "Delivery clarity",
+};
 
 function ReadinessRing({ value, passed }) {
   const radius = 46;
@@ -158,6 +180,25 @@ function QuestionFeedback({ report }) {
               Eye contact (not part of the score) · {Math.round(a.eye_contact_ratio * 100)}% on screen · relevance {a.relevance_score}%
             </p>
 
+            {a.improvement_tips?.length > 0 && (
+              <div className="mt-4 rounded-lg border border-amber-400/20 bg-amber-400/5 p-3">
+                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-amber-400">
+                  <AlertTriangle size={12} />
+                  Where to improve
+                </p>
+                <ul className="mt-2 flex flex-col gap-2">
+                  {a.improvement_tips.map((t, k) => (
+                    <li key={k} className="text-xs text-mist-300">
+                      <span className="font-semibold text-mist-100">
+                        {DIMENSION_LABELS[t.dimension] || t.dimension}:
+                      </span>{" "}
+                      {t.tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {a.grammar_issues?.length > 0 && (
               <p className="mt-3 text-xs text-mist-400">
                 <span className="font-medium text-mist-300">Grammar:</span> {a.grammar_issues.join("; ")}
@@ -193,6 +234,25 @@ function QuestionFeedback({ report }) {
                     </ul>
                   </div>
                 )}
+              </div>
+            )}
+
+            {a.answer_framework && Object.values(a.answer_framework).some(Boolean) && (
+              <div className="mt-4 rounded-lg border border-brand-500/20 bg-brand-500/5 p-3">
+                <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-brand-300">
+                  <Compass size={12} />
+                  How to think through this question
+                </p>
+                <ul className="mt-2 flex flex-col gap-1.5">
+                  {Object.entries(FRAMEWORK_LABELS).map(
+                    ([key, label]) =>
+                      a.answer_framework[key] && (
+                        <li key={key} className="text-xs text-mist-300">
+                          <span className="font-semibold text-mist-100">{label}:</span> {a.answer_framework[key]}
+                        </li>
+                      )
+                  )}
+                </ul>
               </div>
             )}
 

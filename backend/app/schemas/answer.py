@@ -20,6 +20,8 @@ class AnswerAnalysisOut(BaseModel):
     missed_key_points: list[str]
     eye_contact_ratio: float
     llm_model_solution: str
+    answer_framework: dict[str, str]
+    improvement_tips: list[dict[str, str]]
     next_difficulty: int
     submitted_at: datetime
 

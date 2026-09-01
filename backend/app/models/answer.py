@@ -42,6 +42,8 @@ class Answer(Base):
     eye_contact_ratio: Mapped[float] = mapped_column(Float, default=1.0)  # 0-1, from monitoring events
 
     llm_model_solution: Mapped[str] = mapped_column(Text, default="")
+    answer_framework: Mapped[dict] = mapped_column(JSON, default=dict)  # {problem_understanding, approach, reasoning, trade_offs, adaptability, communication} -> how to approach THIS question
+    improvement_tips: Mapped[list] = mapped_column(JSON, default=list)  # [{dimension, tip}] for whichever dimensions scored weak
     next_difficulty: Mapped[int] = mapped_column(Integer, default=2)
 
     submitted_at: Mapped[datetime] = mapped_column(UTCDateTime, default=lambda: datetime.now(timezone.utc))

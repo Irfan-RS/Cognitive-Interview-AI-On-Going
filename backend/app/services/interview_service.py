@@ -148,6 +148,8 @@ async def submit_answer(
         missed_key_points=analysis["missed_key_points"],
         eye_contact_ratio=analysis["eye_contact_ratio"],
         llm_model_solution=analysis["llm_model_solution"],
+        answer_framework=analysis["answer_framework"],
+        improvement_tips=analysis["improvement_tips"],
         next_difficulty=next_difficulty,
     )
     db.commit()

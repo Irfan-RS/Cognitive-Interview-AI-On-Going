@@ -27,6 +27,8 @@ NEW_COLUMNS = {
     "dimension_scores": "JSON",
     "overall_score": "FLOAT DEFAULT 0.0",
     "category_scores": "JSON",
+    "answer_framework": "JSON",
+    "improvement_tips": "JSON",
 }
 DROPPED_COLUMNS = ["rubric_score", "confidence_score"]
 
