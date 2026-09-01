@@ -28,6 +28,10 @@ async function request(path, { method = "GET", body, isForm = false } = {}) {
     throw new ApiError(res.status, detail);
   }
 
+  // A 204 carries no body, but the server still sends a JSON content-type —
+  // parsing it would throw "Unexpected end of JSON input" on an empty string.
+  if (res.status === 204) return null;
+
   const contentType = res.headers.get("content-type") || "";
   if (contentType.includes("application/json")) return res.json();
   return res;
@@ -39,6 +43,7 @@ export const api = {
   getSession: (sessionId) => request(`/sessions/${sessionId}`),
   getReport: (sessionId) => request(`/sessions/${sessionId}/report`),
   completeSession: (sessionId) => request(`/sessions/${sessionId}/complete`, { method: "POST" }),
+  deleteSession: (sessionId) => request(`/sessions/${sessionId}`, { method: "DELETE" }),
   getHint: (sessionQuestionId) => request(`/sessions/questions/${sessionQuestionId}/hint`, { method: "POST" }),
 
   submitAnswer: (sessionQuestionId, audioBlob, filename) => {

@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -241,6 +242,26 @@ def request_next_question(db: Session, *, session_question_id: str) -> tuple[Int
     db.refresh(session)
     db.refresh(new_turn)
     return session, new_turn
+
+
+def delete_session(db: Session, session_id: str) -> None:
+    """Deletes a session, its turns/answers/monitoring events, and the audio
+    recordings on disk — leaving orphaned recordings behind would quietly grow
+    storage/ forever, since nothing else references them once the rows are gone."""
+    session = session_repo.get_session(db, session_id)
+    if session is None:
+        raise ValueError(f"No such session: {session_id}")
+
+    settings = get_settings()
+    recordings_dir = settings.resolve(settings.recordings_dir) / session.id
+
+    session_repo.delete_session(db, session)
+    db.commit()
+
+    # Only after the DB commit succeeds — deleting files first would leave the
+    # rows pointing at recordings that no longer exist if the commit failed.
+    if recordings_dir.is_dir():
+        shutil.rmtree(recordings_dir, ignore_errors=True)
 
 
 def complete_session_now(db: Session, session_id: str) -> InterviewSession:

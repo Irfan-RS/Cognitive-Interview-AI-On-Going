@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
+from app.models.monitoring import MonitoringEvent
 from app.models.session import InterviewSession, SessionQuestion
 
 
@@ -77,4 +78,15 @@ def asked_question_ids(session: InterviewSession) -> set[str]:
 def complete_session(db: Session, session: InterviewSession) -> None:
     session.status = "completed"
     session.completed_at = datetime.now(timezone.utc)
+    db.flush()
+
+
+def delete_session(db: Session, session: InterviewSession) -> None:
+    """Removes a session and everything hanging off it. Turns (and their
+    answers) cascade via the ORM relationships, but monitoring events are
+    plain FK rows with no relationship mapped, so they're cleared explicitly —
+    otherwise they'd be orphaned rows pointing at a session that no longer
+    exists."""
+    db.query(MonitoringEvent).filter(MonitoringEvent.session_id == session.id).delete(synchronize_session=False)
+    db.delete(session)
     db.flush()

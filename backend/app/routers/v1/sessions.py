@@ -60,6 +60,14 @@ def get_session(session_id: str, db: Session = Depends(get_db)):
     return _session_out(session, current_turn)
 
 
+@router.delete("/{session_id}", status_code=204)
+def delete_session(session_id: str, db: Session = Depends(get_db)):
+    try:
+        interview_service.delete_session(db, session_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
 @router.post("/{session_id}/complete", response_model=SessionOut)
 def complete_session(session_id: str, db: Session = Depends(get_db)):
     try:

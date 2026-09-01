@@ -60,4 +60,8 @@ class SessionQuestion(Base):
     asked_at: Mapped[datetime] = mapped_column(UTCDateTime, default=lambda: datetime.now(timezone.utc))
 
     session: Mapped[InterviewSession] = relationship(back_populates="turns")
-    answer: Mapped["Answer | None"] = relationship(back_populates="session_question", uselist=False)
+    # delete-orphan matters here: Answer.session_question_id is NOT NULL, so
+    # without a cascade, deleting a turn would try to null it out and fail.
+    answer: Mapped["Answer | None"] = relationship(
+        back_populates="session_question", uselist=False, cascade="all, delete-orphan"
+    )

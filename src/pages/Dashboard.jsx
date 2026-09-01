@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, CalendarClock, ListChecks, Plus, Swords, Target } from "lucide-react";
+import { ArrowRight, CalendarClock, ListChecks, Loader2, Plus, Swords, Target, Trash2 } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { api } from "../lib/api";
@@ -19,6 +19,8 @@ function StatusBadge({ status }) {
 export default function Dashboard() {
   const [sessions, setSessions] = useState(null);
   const [error, setError] = useState(null);
+  const [confirmingId, setConfirmingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     api
@@ -26,6 +28,28 @@ export default function Dashboard() {
       .then(setSessions)
       .catch((err) => setError(err.message));
   }, []);
+
+  // The row is a <Link>, so every control inside it has to stop the click from
+  // navigating to the report before it can do its own job.
+  const swallowClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDelete = async (e, sessionId) => {
+    swallowClick(e);
+    setDeletingId(sessionId);
+    setError(null);
+    try {
+      await api.deleteSession(sessionId);
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      setConfirmingId(null);
+    } catch (err) {
+      setError(`Couldn't delete that session — ${err.message}`);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <div className="relative min-h-screen bg-ink-950">
@@ -104,12 +128,48 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <StatusBadge status={s.status} />
-                  {s.average_overall_score != null && (
-                    <span className="text-sm font-semibold text-brand-300">{s.average_overall_score}/100</span>
+                <div className="flex items-center gap-3">
+                  {confirmingId === s.id ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-mist-400">Delete permanently?</span>
+                      <button
+                        onClick={(e) => handleDelete(e, s.id)}
+                        disabled={deletingId === s.id}
+                        className="flex items-center gap-1.5 rounded-full bg-mock-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-mock-500/85 disabled:opacity-60"
+                      >
+                        {deletingId === s.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                        {deletingId === s.id ? "Deleting…" : "Delete"}
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          swallowClick(e);
+                          setConfirmingId(null);
+                        }}
+                        className="rounded-full border border-ink-600 px-3 py-1.5 text-xs font-medium text-mist-300 transition-colors hover:text-white"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <StatusBadge status={s.status} />
+                      {s.average_overall_score != null && (
+                        <span className="text-sm font-semibold text-brand-300">{s.average_overall_score}/100</span>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          swallowClick(e);
+                          setConfirmingId(s.id);
+                        }}
+                        aria-label="Delete this interview"
+                        title="Delete this interview"
+                        className="rounded-lg p-1.5 text-mist-500 transition-colors hover:bg-mock-500/10 hover:text-mock-500"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                      <ArrowRight size={16} className="text-mist-500" />
+                    </>
                   )}
-                  <ArrowRight size={16} className="text-mist-500" />
                 </div>
               </Card>
             </Link>
