@@ -1,6 +1,7 @@
-import { ArrowRight, Eye, MousePointerClick, Scan, X } from "lucide-react";
+import { AlertTriangle, ArrowRight, Eye, MousePointerClick, Scan, X } from "lucide-react";
 import Button from "../components/ui/Button";
 import useCalibration, { CALIBRATION_POINTS } from "../hooks/useCalibration";
+import useFacePresence from "../hooks/useFacePresence";
 
 // Visual inset from the true viewport edge so corner dots stay comfortably
 // on-screen and clickable-looking, while the calibration target coordinates
@@ -17,6 +18,11 @@ function dotStyle(point) {
 export default function CalibrationScreen({ videoRef, videoRefCallback, onCalibrated, onExit }) {
   const { start, confirmCurrentPoint, pointIndex, capturing, done, mapper, captureError, activePoint } =
     useCalibration(videoRef);
+  // Live camera feedback, independent of calibration's own point-by-point capture
+  // check — this runs continuously so a candidate who drifts out of frame between
+  // dots (or before ever clicking Start) sees it immediately, not only after a
+  // failed capture.
+  const faceDetected = useFacePresence(videoRef, !done);
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-ink-950">
@@ -32,6 +38,15 @@ export default function CalibrationScreen({ videoRef, videoRefCallback, onCalibr
         <X size={13} />
         Exit
       </button>
+
+      {!faceDetected && (
+        <div className="fixed left-1/2 top-16 z-30 -translate-x-1/2 animate-rise-in">
+          <div className="glass-panel flex items-center gap-2 border-mock-500/40 px-4 py-2 text-sm font-medium text-mock-500 shadow-[0_10px_40px_-10px_rgba(255,107,107,0.5)]">
+            <AlertTriangle size={16} className="shrink-0" />
+            Face not detected — move into frame and make sure you're well lit
+          </div>
+        </div>
+      )}
 
       {/* Dots sit at z-20 — deliberately ABOVE the instructional panel and self-view video,
           both of which visually reach toward the center/corners too. Without this, the

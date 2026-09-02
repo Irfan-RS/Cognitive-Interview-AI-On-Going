@@ -228,7 +228,9 @@ export default function InterviewScreen({
           <div className="glass-panel animate-rise-in flex items-center gap-3 border-mock-500/40 px-6 py-4 shadow-[0_20px_60px_-15px_rgba(255,107,107,0.5)]">
             <AlertTriangle size={20} className="shrink-0 text-mock-500" />
             <p className="text-sm font-medium text-white text-balance">
-              Eye contact shows confidence — look back at the screen
+              {gaze.faceDetected
+                ? "Eye contact shows confidence — look back at the screen"
+                : "We can't see your face — make sure you're centered in the camera"}
             </p>
           </div>
         </div>
@@ -311,7 +313,7 @@ export default function InterviewScreen({
               }`}
             >
               {gaze.inBounds ? <Eye size={12} /> : <EyeOff size={12} />}
-              {gaze.inBounds ? "On screen" : "Looking away"}
+              {!gaze.faceDetected ? "Face not detected" : gaze.inBounds ? "On screen" : "Looking away"}
             </div>
           )}
 
