@@ -34,6 +34,14 @@ const FACE_TOP = 10;
 const FACE_BOTTOM = 152;
 const NOSE_TIP = 1;
 
+/** Kicks off loading the WASM runtime + face model ahead of time (cached, so a
+ * later sampleAttentionVector call reuses it) — call this as soon as a screen
+ * that will need face tracking mounts, rather than paying the multi-second
+ * cold-load cost silently on the user's first calibration click. */
+export function preloadFaceTracking() {
+  return getLandmarker();
+}
+
 async function createLandmarker(vision, delegate) {
   const { FaceLandmarker } = await import("@mediapipe/tasks-vision");
   return FaceLandmarker.createFromOptions(vision, {

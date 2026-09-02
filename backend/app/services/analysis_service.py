@@ -199,6 +199,37 @@ def _build_cognitive_context(
     return ("\n" + "\n\n".join(parts) + "\n") if parts else ""
 
 
+def _build_unanswered_result(key_points: list[str], eye_contact_ratio: float) -> dict:
+    """A silent/empty recording is not worth an LLM round-trip: the outcome is
+    always the same (score near zero, "you didn't answer"), so skip straight to
+    it instead of waiting 5-90s on a call whose answer we already know."""
+    dimension_scores = {dim: 0.0 for dim in DIMENSION_WEIGHTS}
+    return {
+        "transcript": "",
+        "filler_words": {},
+        "pause_count": 0,
+        "relevance_score": 0.0,
+        "dimension_scores": dimension_scores,
+        "overall_score": 0.0,
+        "category_scores": compute_category_scores(dimension_scores),
+        "concepts_demonstrated": [],
+        "strengths": [],
+        "weaknesses": ["No answer was recorded for this question."],
+        "reasoning_analysis": _normalize_reasoning_analysis({}),
+        "mistakes": [],
+        "hint_required": True,
+        "follow_up_required": False,
+        "suggested_follow_up": "",
+        "improvement_feedback": "You didn't record an answer — start recording and speak your response before submitting.",
+        "recommended_next_action": "Re-record and answer the question before moving on.",
+        "grammar_issues": [],
+        "covered_key_points": [],
+        "missed_key_points": list(key_points),
+        "llm_model_solution": "",
+        "eye_contact_ratio": eye_contact_ratio,
+    }
+
+
 async def analyze_answer(
     llm: LLMProvider,
     *,
@@ -214,6 +245,9 @@ async def analyze_answer(
     previous_question: str | None = None,
     previous_answer_transcript: str | None = None,
 ) -> dict:
+    if not transcription.text.strip():
+        return _build_unanswered_result(key_points, eye_contact_ratio)
+
     filler_words = count_filler_words(transcription.text)
     pause_count = transcription.count_gaps() if transcription.segments else 0
 

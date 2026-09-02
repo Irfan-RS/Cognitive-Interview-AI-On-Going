@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowRight, Eye, MousePointerClick, Scan, X } from "lucide-react";
 import Button from "../components/ui/Button";
 import useCalibration, { CALIBRATION_POINTS } from "../hooks/useCalibration";
 import useFacePresence from "../hooks/useFacePresence";
+import { preloadFaceTracking } from "../lib/gaze";
 
 // Visual inset from the true viewport edge so corner dots stay comfortably
 // on-screen and clickable-looking, while the calibration target coordinates
@@ -23,6 +25,29 @@ export default function CalibrationScreen({ videoRef, videoRefCallback, onCalibr
   // dots (or before ever clicking Start) sees it immediately, not only after a
   // failed capture.
   const faceDetected = useFacePresence(videoRef, !done);
+
+  // The face model is a multi-MB WASM + weights download loaded lazily on first
+  // use — without this, that cold load happened silently inside the first dot
+  // click, making calibration feel frozen for several seconds with no feedback.
+  const [modelReady, setModelReady] = useState(false);
+  const [modelError, setModelError] = useState(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const retryLoad = () => setLoadAttempt((n) => n + 1);
+
+  useEffect(() => {
+    let cancelled = false;
+    setModelError(null);
+    preloadFaceTracking()
+      .then(() => {
+        if (!cancelled) setModelReady(true);
+      })
+      .catch((err) => {
+        if (!cancelled) setModelError(err.message || "Couldn't load face tracking.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [loadAttempt]);
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-ink-950">
@@ -103,11 +128,22 @@ export default function CalibrationScreen({ videoRef, videoRefCallback, onCalibr
           </div>
         </div>
 
-        {pointIndex === -1 && !done && (
-          <Button variant="primary" onClick={start} className="animate-rise-in">
+        {pointIndex === -1 && !done && !modelError && (
+          <Button variant="primary" onClick={start} className="animate-rise-in" disabled={!modelReady}>
             <Eye size={16} />
-            Start calibration
+            {modelReady ? "Start calibration" : "Loading face tracking…"}
           </Button>
+        )}
+
+        {modelError && (
+          <div className="glass-panel animate-rise-in max-w-md px-5 py-4 text-sm text-mock-500">
+            {modelError}
+            <div className="mt-3">
+              <Button variant="ghost" onClick={retryLoad}>
+                Retry
+              </Button>
+            </div>
+          </div>
         )}
 
         {activePoint && (
