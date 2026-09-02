@@ -1,9 +1,14 @@
 import asyncio
 import random
+import re
 
 import httpx
 
 from app.providers.llm.base import LLMProvider
+
+# Matches "7.66s", "6m0s", "1h2m3s" — the compound-duration format Groq's
+# x-ratelimit-reset-* headers actually use, not just a bare seconds value.
+_DURATION_RE = re.compile(r"^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+(?:\.\d+)?)s)?$")
 
 # Hosted providers rate-limit per minute (Groq's free tier caps tokens/min, and
 # one analysis prompt is large), and transiently return 5xx under load. A single
@@ -76,8 +81,19 @@ class CloudLLMProvider(LLMProvider):
             raw = resp.headers.get(header)
             if not raw:
                 continue
-            try:
-                return min(float(raw.rstrip("s")), 30.0)
-            except ValueError:
-                continue
+            parsed = self._parse_duration_seconds(raw.strip())
+            if parsed is not None:
+                return min(parsed, 30.0)
         return self._backoff(attempt)
+
+    @staticmethod
+    def _parse_duration_seconds(raw: str) -> float | None:
+        match = _DURATION_RE.match(raw)
+        if match and any(match.groups()):
+            hours, minutes, seconds = match.groups()
+            return int(hours or 0) * 3600 + int(minutes or 0) * 60 + float(seconds or 0)
+        try:
+            # Plain seconds, no unit (the standard Retry-After: delta-seconds form).
+            return float(raw)
+        except ValueError:
+            return None

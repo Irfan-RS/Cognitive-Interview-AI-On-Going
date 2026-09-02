@@ -60,6 +60,12 @@ export default function useGazeMonitor({ videoRef, mapper, active, sessionId, se
     return () => {
       cancelled = true;
       clearTimeout(timer);
+      // Otherwise a stale timestamp survives to the next question/session: if the
+      // candidate was out-of-bounds the instant this effect stopped, the next
+      // activation sees an ancient outOfBoundsSinceRef and fires the nudge instantly
+      // instead of after a genuine NUDGE_AFTER_MS of continuous looking-away.
+      outOfBoundsSinceRef.current = null;
+      lastReportRef.current = 0;
     };
   }, [active, mapper, videoRef, sessionId, sessionQuestionId]);
 

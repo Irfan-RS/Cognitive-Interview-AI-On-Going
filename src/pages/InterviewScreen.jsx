@@ -18,6 +18,15 @@ import useGazeMonitor from "../hooks/useGazeMonitor";
 import useRecorder from "../hooks/useRecorder";
 import { api } from "../lib/api";
 
+function extensionForMimeType(mimeType) {
+  // The recorder picks whatever MediaRecorder codec the browser supports
+  // (webm/opus on Chrome/Firefox, but Safari falls back to its own default,
+  // typically mp4) — sending a filename that doesn't match the real container
+  // is misleading at best and a decode mismatch at worst.
+  const subtype = mimeType?.split("/")[1]?.split(";")[0];
+  return subtype || "webm";
+}
+
 function playAudio(blob) {
   const url = URL.createObjectURL(blob);
   const audio = new Audio(url);
@@ -109,18 +118,24 @@ export default function InterviewScreen({
   }, [turn.session_question_id]);
 
   const handleStop = async () => {
-    const blob = await recorder.stop();
-    if (!blob) {
-      setError(recorder.recordError || "No audio was captured — check your microphone and try again.");
-      setPhase("asking");
-      return;
+    if (busy) return;
+    setBusy(true);
+    try {
+      const blob = await recorder.stop();
+      if (!blob) {
+        setError(recorder.recordError || "No audio was captured — check your microphone and try again.");
+        setPhase("asking");
+        return;
+      }
+      setRecordedUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(blob);
+      });
+      setRecordedBlob(blob);
+      setPhase("recorded");
+    } finally {
+      setBusy(false);
     }
-    setRecordedUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return URL.createObjectURL(blob);
-    });
-    setRecordedBlob(blob);
-    setPhase("recorded");
   };
 
   const handleReRecord = () => {
@@ -139,7 +154,8 @@ export default function InterviewScreen({
     setBusy(true);
     setError(null);
     try {
-      const res = await api.submitAnswer(turn.session_question_id, recordedBlob, "answer.webm");
+      const filename = `answer.${extensionForMimeType(recordedBlob.type)}`;
+      const res = await api.submitAnswer(turn.session_question_id, recordedBlob, filename);
       setAnalysis(res.analysis);
       setPhase("submitted");
     } catch (err) {
@@ -318,7 +334,7 @@ export default function InterviewScreen({
                 Start recording
               </Button>
             ) : (
-              <Button variant="primary" onClick={handleStop}>
+              <Button variant="primary" onClick={handleStop} disabled={busy}>
                 <Square size={16} />
                 Stop recording
               </Button>

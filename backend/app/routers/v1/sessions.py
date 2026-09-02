@@ -96,6 +96,8 @@ async def get_hint(
     if turn is None:
         raise HTTPException(status_code=404, detail="Question turn not found")
     session = session_repo.get_session(db, turn.session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
     if session.mode != "practice":
         raise HTTPException(status_code=403, detail="Hints are only available in practice mode")
 

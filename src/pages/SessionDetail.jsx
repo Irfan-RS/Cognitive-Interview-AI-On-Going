@@ -359,10 +359,18 @@ export default function SessionDetail() {
   const [tab, setTab] = useState("summary");
 
   useEffect(() => {
+    let cancelled = false;
     api
       .getReport(sessionId)
-      .then(setReport)
-      .catch((err) => setError(err.message));
+      .then((data) => {
+        if (!cancelled) setReport(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [sessionId]);
 
   return (

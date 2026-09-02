@@ -1,3 +1,4 @@
+import asyncio
 import shutil
 from pathlib import Path
 
@@ -80,13 +81,16 @@ def start_session(db: Session, req: CreateSessionRequest) -> tuple[InterviewSess
     return session, turn
 
 
-def _save_recording(session_id: str, session_question_id: str, filename: str, audio_bytes: bytes) -> str:
+async def _save_recording(session_id: str, session_question_id: str, filename: str, audio_bytes: bytes) -> str:
     settings = get_settings()
     ext = Path(filename).suffix or ".webm"
     directory = settings.resolve(settings.recordings_dir) / session_id
     directory.mkdir(parents=True, exist_ok=True)
     out_path = directory / f"{session_question_id}{ext}"
-    out_path.write_bytes(audio_bytes)
+    # Offloaded to a thread: this runs on the shared asyncio event loop, and a
+    # synchronous write here would stall every other in-flight request (including
+    # the high-frequency monitoring-event endpoint) for the duration of the disk I/O.
+    await asyncio.to_thread(out_path.write_bytes, audio_bytes)
     return str(out_path)
 
 
@@ -106,7 +110,14 @@ async def submit_answer(
     if session is None:
         raise ValueError(f"Turn {session_question_id} has no parent session")
 
-    audio_path = _save_recording(session.id, turn.id, filename, audio_bytes)
+    # Idempotent: a double-click or a client retry after a slow request times out
+    # client-side would otherwise re-run the (expensive) transcription + LLM
+    # analysis and then crash on the session_question_id UNIQUE constraint.
+    existing = answer_repo.get_by_session_question(db, session_question_id)
+    if existing is not None:
+        return existing
+
+    audio_path = await _save_recording(session.id, turn.id, filename, audio_bytes)
     transcription = await stt.transcribe(audio_path)
 
     bank_question = question_repo.get_by_id(db, turn.question_id) if turn.question_id else None
@@ -182,6 +193,8 @@ async def request_follow_up(db: Session, llm: LLMProvider, *, session_question_i
         raise AnswerRequiredError("Submit an answer before requesting a follow-up.")
 
     session = session_repo.get_session(db, turn.session_id)
+    if session is None:
+        raise ValueError(f"Turn {session_question_id} has no parent session")
 
     follow_up_text = await followup_service.generate_follow_up(
         db, llm, question_text=turn.question_text, transcript=answer.transcript, exclude_question_id=turn.question_id
@@ -209,6 +222,8 @@ def request_next_question(db: Session, *, session_question_id: str) -> tuple[Int
     if turn is None:
         raise ValueError(f"No such question turn: {session_question_id}")
     session = session_repo.get_session(db, turn.session_id)
+    if session is None:
+        raise ValueError(f"Turn {session_question_id} has no parent session")
 
     exclude_ids = session_repo.asked_question_ids(session)
     question = select_question(

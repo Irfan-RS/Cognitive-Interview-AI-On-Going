@@ -1,6 +1,16 @@
 import asyncio
+from functools import lru_cache
 
 from app.providers.tts.base import TTSProvider
+
+
+@lru_cache
+def _get_client():
+    # Cached process-wide: each call otherwise opened a fresh gRPC channel
+    # that was never closed, leaking sockets/threads under sustained use.
+    from google.cloud import texttospeech
+
+    return texttospeech.TextToSpeechClient()
 
 
 class GoogleCloudTTSProvider(TTSProvider):
@@ -21,7 +31,7 @@ class GoogleCloudTTSProvider(TTSProvider):
         # the google-cloud-texttospeech package being configured.
         from google.cloud import texttospeech
 
-        client = texttospeech.TextToSpeechClient()
+        client = _get_client()
         synthesis_input = texttospeech.SynthesisInput(text=text)
         voice = texttospeech.VoiceSelectionParams(
             language_code=self.language_code,
