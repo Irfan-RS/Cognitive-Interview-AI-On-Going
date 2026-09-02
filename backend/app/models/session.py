@@ -21,6 +21,9 @@ class InterviewSession(Base):
 
     role: Mapped[str | None] = mapped_column(String, nullable=True)
     resume_keywords: Mapped[list[str]] = mapped_column(JSON, default=list)
+    # {title, description} per project, parsed from the resume's Projects section —
+    # used to ask a dedicated question per project instead of only bank-matched ones.
+    resume_projects: Mapped[list[dict]] = mapped_column(JSON, default=list)
     topic: Mapped[str | None] = mapped_column(String, nullable=True)
 
     status: Mapped[str] = mapped_column(String, default="active")  # active | completed
@@ -56,6 +59,11 @@ class SessionQuestion(Base):
     # from the question it's following up on, so every turn stays taggable.
     topics: Mapped[list[str]] = mapped_column(JSON, default=list)
     roles: Mapped[list[str]] = mapped_column(JSON, default=list)
+
+    # Set when this turn is a resume-project question (the overview question
+    # itself, or a follow-up grounded in it) — {title, description} of the
+    # project it's about, so follow-up generation stays grounded in it too.
+    source_project: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     asked_at: Mapped[datetime] = mapped_column(UTCDateTime, default=lambda: datetime.now(timezone.utc))
 

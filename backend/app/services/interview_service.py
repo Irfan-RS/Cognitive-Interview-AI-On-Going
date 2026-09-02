@@ -35,6 +35,43 @@ def build_turn_out(session: InterviewSession, turn: SessionQuestion) -> Question
         hints_enabled=(session.mode == "practice"),
         topics=turn.topics,
         roles=turn.roles,
+        source_project_title=turn.source_project.get("title") if turn.source_project else None,
+    )
+
+
+def _asked_project_titles(session: InterviewSession) -> set[str]:
+    return {t.source_project["title"] for t in session.turns if t.source_project}
+
+
+def _next_unused_project(session: InterviewSession) -> dict | None:
+    """A static bank can't hold a question about THIS candidate's specific
+    project, so resume-track sessions ask a dedicated question per parsed
+    project before falling back to bank matching."""
+    if session.track != "resume" or not session.resume_projects:
+        return None
+    asked = _asked_project_titles(session)
+    for project in session.resume_projects:
+        if project["title"] not in asked:
+            return project
+    return None
+
+
+def _add_project_overview_turn(db: Session, session: InterviewSession, project: dict) -> SessionQuestion:
+    question_text = (
+        f'Tell me about your project "{project["title"]}". '
+        "What was your specific contribution, and what issues did you face while building it?"
+    )
+    return session_repo.add_turn(
+        db,
+        session=session,
+        question_id=None,
+        question_text=question_text,
+        is_follow_up=False,
+        parent_id=None,
+        difficulty_at_ask=session.current_difficulty,
+        topics=[],
+        roles=[],
+        source_project=project,
     )
 
 
@@ -45,36 +82,41 @@ def start_session(db: Session, req: CreateSessionRequest) -> tuple[InterviewSess
         track=req.track,
         role=req.role,
         resume_keywords=req.resume_keywords,
+        resume_projects=[p.model_dump() for p in req.resume_projects],
         topic=req.topic,
         duration_minutes=req.duration_minutes,
     )
 
-    question = select_question(
-        db,
-        track=req.track,
-        role=req.role,
-        resume_keywords=req.resume_keywords,
-        topic=req.topic,
-        target_difficulty=session.current_difficulty,
-        exclude_ids=set(),
-    )
-    if question is None:
-        raise NoQuestionsAvailableError(
-            "No questions in the bank match this track yet. Run scripts/seed_questions.py first."
+    project = _next_unused_project(session)
+    if project is not None:
+        turn = _add_project_overview_turn(db, session, project)
+    else:
+        question = select_question(
+            db,
+            track=req.track,
+            role=req.role,
+            resume_keywords=req.resume_keywords,
+            topic=req.topic,
+            target_difficulty=session.current_difficulty,
+            exclude_ids=set(),
         )
-    question_repo.increment_usage(db, question.id)
+        if question is None:
+            raise NoQuestionsAvailableError(
+                "No questions in the bank match this track yet. Run scripts/seed_questions.py first."
+            )
+        question_repo.increment_usage(db, question.id)
 
-    turn = session_repo.add_turn(
-        db,
-        session=session,
-        question_id=question.id,
-        question_text=question.question,
-        is_follow_up=False,
-        parent_id=None,
-        difficulty_at_ask=session.current_difficulty,
-        topics=question.topics,
-        roles=question.roles,
-    )
+        turn = session_repo.add_turn(
+            db,
+            session=session,
+            question_id=question.id,
+            question_text=question.question,
+            is_follow_up=False,
+            parent_id=None,
+            difficulty_at_ask=session.current_difficulty,
+            topics=question.topics,
+            roles=question.roles,
+        )
     db.commit()
     db.refresh(session)
     db.refresh(turn)
@@ -197,7 +239,12 @@ async def request_follow_up(db: Session, llm: LLMProvider, *, session_question_i
         raise ValueError(f"Turn {session_question_id} has no parent session")
 
     follow_up_text = await followup_service.generate_follow_up(
-        db, llm, question_text=turn.question_text, transcript=answer.transcript, exclude_question_id=turn.question_id
+        db,
+        llm,
+        question_text=turn.question_text,
+        transcript=answer.transcript,
+        exclude_question_id=turn.question_id,
+        source_project=turn.source_project,
     )
 
     new_turn = session_repo.add_turn(
@@ -210,6 +257,9 @@ async def request_follow_up(db: Session, llm: LLMProvider, *, session_question_i
         difficulty_at_ask=session.current_difficulty,
         topics=turn.topics,
         roles=turn.roles,
+        # Propagated so a second follow-up chained off this one stays grounded
+        # in the same project too, instead of losing context after one hop.
+        source_project=turn.source_project,
     )
     db.commit()
     db.refresh(session)
@@ -225,34 +275,38 @@ def request_next_question(db: Session, *, session_question_id: str) -> tuple[Int
     if session is None:
         raise ValueError(f"Turn {session_question_id} has no parent session")
 
-    exclude_ids = session_repo.asked_question_ids(session)
-    question = select_question(
-        db,
-        track=session.track,
-        role=session.role,
-        resume_keywords=session.resume_keywords,
-        topic=session.topic,
-        target_difficulty=session.current_difficulty,
-        exclude_ids=exclude_ids,
-    )
+    project = _next_unused_project(session)
+    if project is not None:
+        new_turn = _add_project_overview_turn(db, session, project)
+    else:
+        exclude_ids = session_repo.asked_question_ids(session)
+        question = select_question(
+            db,
+            track=session.track,
+            role=session.role,
+            resume_keywords=session.resume_keywords,
+            topic=session.topic,
+            target_difficulty=session.current_difficulty,
+            exclude_ids=exclude_ids,
+        )
 
-    if question is None:
-        session_repo.complete_session(db, session)
-        db.commit()
-        return session, None
-    question_repo.increment_usage(db, question.id)
+        if question is None:
+            session_repo.complete_session(db, session)
+            db.commit()
+            return session, None
+        question_repo.increment_usage(db, question.id)
 
-    new_turn = session_repo.add_turn(
-        db,
-        session=session,
-        question_id=question.id,
-        question_text=question.question,
-        is_follow_up=False,
-        parent_id=None,
-        difficulty_at_ask=session.current_difficulty,
-        topics=question.topics,
-        roles=question.roles,
-    )
+        new_turn = session_repo.add_turn(
+            db,
+            session=session,
+            question_id=question.id,
+            question_text=question.question,
+            is_follow_up=False,
+            parent_id=None,
+            difficulty_at_ask=session.current_difficulty,
+            topics=question.topics,
+            roles=question.roles,
+        )
     db.commit()
     db.refresh(session)
     db.refresh(new_turn)

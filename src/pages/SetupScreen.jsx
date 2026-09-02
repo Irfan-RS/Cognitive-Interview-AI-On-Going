@@ -4,6 +4,7 @@ import {
   Briefcase,
   Camera,
   FileText,
+  FileUp,
   Hash,
   Mic,
   ShieldCheck,
@@ -12,6 +13,7 @@ import {
   Timer,
 } from "lucide-react";
 import Button from "../components/ui/Button";
+import { api } from "../lib/api";
 
 const DURATIONS = [5, 10, 30];
 
@@ -55,7 +57,34 @@ export default function SetupScreen({ mediaStatus, mediaError, onRequestMedia, o
   const [role, setRole] = useState("");
   const [topic, setTopic] = useState("");
   const [resumeKeywords, setResumeKeywords] = useState("");
+  const [resumeProjects, setResumeProjects] = useState([]);
+  const [resumeFileName, setResumeFileName] = useState(null);
+  const [resumeParsing, setResumeParsing] = useState(false);
+  const [resumeParseError, setResumeParseError] = useState(null);
+  const [resumeSections, setResumeSections] = useState([]);
   const [duration, setDuration] = useState(10);
+
+  const handleResumeFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file after an error
+    if (!file) return;
+
+    setResumeFileName(file.name);
+    setResumeParsing(true);
+    setResumeParseError(null);
+    setResumeSections([]);
+    setResumeProjects([]);
+    try {
+      const res = await api.parseResume(file);
+      setResumeKeywords(res.keywords.join(", "));
+      setResumeSections(res.sections_found);
+      setResumeProjects(res.projects || []);
+    } catch (err) {
+      setResumeParseError(err.message);
+    } finally {
+      setResumeParsing(false);
+    }
+  };
 
   const trackFieldFilled =
     (track === "role" && role.trim()) ||
@@ -77,6 +106,7 @@ export default function SetupScreen({ mediaStatus, mediaError, onRequestMedia, o
               .map((k) => k.trim())
               .filter(Boolean)
           : [],
+      resume_projects: track === "resume" ? resumeProjects : [],
       duration_minutes: duration,
     });
   };
@@ -163,12 +193,38 @@ export default function SetupScreen({ mediaStatus, mediaError, onRequestMedia, o
             />
           )}
           {track === "resume" && (
-            <input
-              value={resumeKeywords}
-              onChange={(e) => setResumeKeywords(e.target.value)}
-              placeholder="e.g. React, Kafka, led a team of 4"
-              className="w-full rounded-xl border border-ink-600 bg-ink-900/80 px-4 py-3 text-sm text-white placeholder:text-mist-500 transition-colors focus:border-brand-400 focus:outline-none focus:ring-4 focus:ring-brand-500/15"
-            />
+            <div className="flex flex-col gap-3">
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-ink-600 bg-ink-900/50 px-4 py-6 text-center text-sm text-mist-400 transition-colors hover:border-brand-400 hover:text-mist-200">
+                <FileUp size={16} className="shrink-0" />
+                {resumeParsing
+                  ? "Reading your resume…"
+                  : resumeFileName || "Upload your resume (PDF, DOCX, or TXT) — auto-fills the keywords below"}
+                <input type="file" accept=".pdf,.docx,.txt,.md" className="hidden" onChange={handleResumeFile} />
+              </label>
+
+              {resumeParseError && <p className="text-sm text-mock-500">{resumeParseError}</p>}
+
+              {resumeSections.length > 0 && (
+                <p className="text-xs text-mist-500">
+                  Focused on: {resumeSections.join(", ")} — ignored summary/overview/education
+                </p>
+              )}
+
+              {resumeProjects.length > 0 && (
+                <p className="text-xs text-mist-500">
+                  Will ask about {resumeProjects.length} project{resumeProjects.length > 1 ? "s" : ""} directly:{" "}
+                  {resumeProjects.map((p) => p.title).join(", ")}
+                </p>
+              )}
+
+              <textarea
+                value={resumeKeywords}
+                onChange={(e) => setResumeKeywords(e.target.value)}
+                placeholder="e.g. React, Kafka, led a team of 4 — or upload a resume above to fill this in automatically"
+                rows={3}
+                className="w-full rounded-xl border border-ink-600 bg-ink-900/80 px-4 py-3 text-sm text-white placeholder:text-mist-500 transition-colors focus:border-brand-400 focus:outline-none focus:ring-4 focus:ring-brand-500/15"
+              />
+            </div>
           )}
         </div>
       </div>

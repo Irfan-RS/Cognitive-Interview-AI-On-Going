@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
+  Briefcase,
   Eye,
   EyeOff,
   Lightbulb,
@@ -261,12 +262,20 @@ export default function InterviewScreen({
             </div>
           </div>
         </div>
-        {turn.is_follow_up && (
-          <span className="flex items-center gap-1 rounded-full bg-brand-500/15 px-3 py-1 text-xs font-medium text-brand-300">
-            <MessageCircleQuestion size={12} />
-            Follow-up
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {turn.source_project_title && (
+            <span className="flex items-center gap-1 rounded-full bg-glow-400/15 px-3 py-1 text-xs font-medium text-glow-400">
+              <Briefcase size={12} />
+              {turn.source_project_title}
+            </span>
+          )}
+          {turn.is_follow_up && (
+            <span className="flex items-center gap-1 rounded-full bg-brand-500/15 px-3 py-1 text-xs font-medium text-brand-300">
+              <MessageCircleQuestion size={12} />
+              Follow-up
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
@@ -402,12 +411,20 @@ export default function InterviewScreen({
         <Card className="animate-rise-in">
           <p className="text-xs font-semibold uppercase tracking-wide text-mist-400">Live transcript</p>
           <p className="mt-3 min-h-[4rem] text-sm text-mist-200">
-            {analysis?.transcript || "Your transcribed answer will appear here after you submit."}
+            {analysis
+              ? analysis.transcript || "No speech was detected in your recording."
+              : "Your transcribed answer will appear here after you submit."}
           </p>
         </Card>
 
         {analysis && (
           <Card className="animate-rise-in flex flex-col gap-4">
+            {!analysis.transcript && (
+              <div className="rounded-xl border border-mock-500/40 bg-mock-500/10 px-4 py-3 text-sm text-mock-500">
+                You didn't answer this question — no speech was detected in your recording.
+              </div>
+            )}
+
             <div className="rounded-xl border border-brand-500/20 bg-brand-500/10 py-3 text-center">
               <p className="text-2xl font-semibold text-brand-300">{analysis.overall_score}/100</p>
               <p className="mt-0.5 text-xs text-mist-400">Overall score</p>

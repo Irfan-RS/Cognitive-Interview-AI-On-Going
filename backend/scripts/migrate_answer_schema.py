@@ -46,6 +46,12 @@ NEW_COLUMNS: dict[str, dict[str, str]] = {
         "progressive_hints": "JSON",
         "learning_objective": "TEXT DEFAULT ''",
     },
+    "interview_sessions": {
+        "resume_projects": "JSON",
+    },
+    "session_questions": {
+        "source_project": "JSON",
+    },
 }
 
 DROPPED_COLUMNS: dict[str, list[str]] = {

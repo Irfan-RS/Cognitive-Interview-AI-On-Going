@@ -6,11 +6,17 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 ALLOWED_DURATIONS = {5, 10, 30}
 
 
+class ResumeProjectIn(BaseModel):
+    title: str
+    description: str
+
+
 class CreateSessionRequest(BaseModel):
     mode: str = Field(pattern="^(mock|practice)$")
     track: str = Field(pattern="^(role|resume|topic)$")
     role: str | None = None
     resume_keywords: list[str] = Field(default_factory=list)
+    resume_projects: list[ResumeProjectIn] = Field(default_factory=list)
     topic: str | None = None
     duration_minutes: int = 10
 
@@ -37,6 +43,7 @@ class QuestionTurnOut(BaseModel):
     hints_enabled: bool  # false in mock mode
     topics: list[str] = Field(default_factory=list)
     roles: list[str] = Field(default_factory=list)
+    source_project_title: str | None = None
 
 
 class SessionOut(BaseModel):

@@ -27,10 +27,52 @@ Return a JSON object with exactly this field:
 
 _FALLBACK = {"follow_up_question": "Can you go a bit deeper into the approach you just described?"}
 
+# A generic bank-derived follow-up can only riff on abstract "related concepts" —
+# but a candidate's own project has one specific real design to probe, so it gets
+# a distinct prompt aimed at exactly that: a grounded modification/what-if/edge-case
+# question (custom aliases + collisions for a URL shortener, leaked/revoked tokens
+# for a JWT auth system), the way a real interviewer follows up a project walkthrough.
+_PROJECT_SYSTEM_PROMPT = """You are an interviewer probing a candidate's own project with a
+grounded "what if" or modification/edge-case question — a scaling change, a security/failure
+scenario, or a new requirement that tests whether they understand the trade-offs of what they
+actually built, not generic trivia that could apply to any project. Keep it to one sentence.
+Respond with ONLY a JSON object, no markdown fences, no extra prose."""
+
+_PROJECT_USER_TEMPLATE = """PROJECT: {title}
+PROJECT DESCRIPTION (as the candidate wrote it on their resume): {description}
+
+WHAT THEY JUST SAID ABOUT IT (transcribed answer):
+{transcript}
+
+Generate one grounded follow-up that introduces a realistic modification, edge case, or "what if"
+scenario SPECIFIC to the technology/approach this project actually used — for example, a URL
+shortener gets asked about custom-alias collisions or scaling to heavy traffic; a JWT-based auth
+system gets asked what happens if a token leaks or needs revoking before it expires. Do not ask
+something generic that could apply to any project — ground it in what THIS project actually does.
+
+Return a JSON object with exactly this field:
+{{ "follow_up_question": "the follow-up question, one sentence" }}"""
+
 
 async def generate_follow_up(
-    db: Session, llm: LLMProvider, *, question_text: str, transcript: str, exclude_question_id: str | None
+    db: Session,
+    llm: LLMProvider,
+    *,
+    question_text: str,
+    transcript: str,
+    exclude_question_id: str | None,
+    source_project: dict | None = None,
 ) -> str:
+    if source_project:
+        user_prompt = _PROJECT_USER_TEMPLATE.format(
+            title=source_project.get("title", ""),
+            description=source_project.get("description", ""),
+            transcript=transcript or "(no answer given)",
+        )
+        raw = await llm.chat(_PROJECT_SYSTEM_PROMPT, user_prompt, json_mode=True, temperature=0.6)
+        parsed = parse_llm_json(raw, _FALLBACK)
+        return parsed.get("follow_up_question") or _FALLBACK["follow_up_question"]
+
     related = retrieve_related_context(db, transcript, exclude_id=exclude_question_id, n=3)
     related_text = "\n".join(f"- {q.question}" for q in related) or "(none found)"
 

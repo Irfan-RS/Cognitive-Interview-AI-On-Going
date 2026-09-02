@@ -13,6 +13,7 @@ def create_session(
     track: str,
     role: str | None,
     resume_keywords: list[str],
+    resume_projects: list[dict] | None = None,
     topic: str | None,
     duration_minutes: int = 10,
 ) -> InterviewSession:
@@ -21,6 +22,7 @@ def create_session(
         track=track,
         role=role,
         resume_keywords=resume_keywords,
+        resume_projects=resume_projects or [],
         topic=topic,
         current_difficulty=2,
         duration_minutes=duration_minutes,
@@ -49,6 +51,7 @@ def add_turn(
     difficulty_at_ask: int,
     topics: list[str] | None = None,
     roles: list[str] | None = None,
+    source_project: dict | None = None,
 ) -> SessionQuestion:
     order_index = len(session.turns)
     turn = SessionQuestion(
@@ -61,6 +64,7 @@ def add_turn(
         order_index=order_index,
         topics=topics or [],
         roles=roles or [],
+        source_project=source_project,
     )
     db.add(turn)
     db.flush()

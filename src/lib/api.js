@@ -46,6 +46,12 @@ export const api = {
   deleteSession: (sessionId) => request(`/sessions/${sessionId}`, { method: "DELETE" }),
   getHint: (sessionQuestionId) => request(`/sessions/questions/${sessionQuestionId}/hint`, { method: "POST" }),
 
+  parseResume: (file) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request("/resume/parse", { method: "POST", body: form, isForm: true });
+  },
+
   submitAnswer: (sessionQuestionId, audioBlob, filename) => {
     const form = new FormData();
     form.append("file", audioBlob, filename);
