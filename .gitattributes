@@ -1,0 +1,11 @@
+# Normalize line endings on checkout regardless of the cloning machine's git
+# config — a Windows checkout of docker-entrypoint.sh with CRLF line endings
+# breaks its shebang inside the Linux container ("no such file or directory",
+# not a permissions or missing-file issue, just /bin/sh choking on the \r).
+* text=auto eol=lf
+
+*.sh text eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
