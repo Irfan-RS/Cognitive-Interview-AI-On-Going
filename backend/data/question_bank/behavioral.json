@@ -1,0 +1,1352 @@
+[
+  {
+    "id": "beh-0001",
+    "question": "Tell me about a time you disagreed with a coworker. How did you handle it?",
+    "type": "behavioral",
+    "difficulty": 2,
+    "roles": ["general_sde"],
+    "topics": ["conflict_resolution", "communication"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Sets up the specific disagreement and stakes",
+        "Explains own reasoning and actively listened to the other side",
+        "Sought data or a neutral way to resolve it",
+        "Reached a resolution and maintained the working relationship"
+      ],
+      "sample_answer": "I disagreed with a teammate over which caching strategy to use for a high-traffic endpoint. Instead of arguing positions, I proposed we each write a short proposal with trade-offs and benchmark the two approaches. The data showed my colleague's approach scaled better under load, so I adopted it, and we documented the decision for future reference."
+    },
+    "follow_up_hint": "Ask what would have happened if the data had been inconclusive.",
+    "concept": "Conflict Resolution",
+    "sub_concept": "Disagreeing Productively",
+    "expected_reasoning": "A strong answer shows active listening, a data-driven or objective path to resolution, and preserving the relationship rather than winning the argument.",
+    "common_mistakes": ["Framing the coworker as simply wrong", "No concrete resolution mechanism", "Ignoring the relationship impact"],
+    "progressive_hints": ["Focus on how you resolved it, not just the disagreement itself.", "What objective criteria did you use to settle it?"],
+    "learning_objective": "Candidate can describe a structured, respectful approach to technical disagreement."
+  },
+  {
+    "id": "beh-0002",
+    "question": "Tell me about a time you failed. What happened and what did you learn?",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["failure", "growth"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Owns the failure without deflecting blame",
+        "Explains the root cause clearly",
+        "Describes concrete corrective action taken",
+        "Shows a lasting change in behavior or process"
+      ],
+      "sample_answer": "I shipped a database migration without a rollback plan, and it caused a partial outage when an edge case appeared in production. I took ownership, worked with the team to restore service, and afterward introduced a mandatory rollback-plan checklist for migrations. Since then, no migration on my team has caused an unplanned outage."
+    },
+    "follow_up_hint": "Probe for what specifically changed in their process afterward.",
+    "concept": "Ownership Under Ambiguity",
+    "sub_concept": "Learning From Mistakes",
+    "expected_reasoning": "Strong answers isolate a genuine failure, own it fully, and connect it to a durable process or behavioral change.",
+    "common_mistakes": ["Choosing a fake or trivial failure", "Blaming teammates or circumstances", "No lasting lesson described"],
+    "progressive_hints": ["Pick a real failure with real consequences, not a disguised strength.", "What did you change permanently as a result?"],
+    "learning_objective": "Candidate can demonstrate genuine accountability and growth from failure."
+  },
+  {
+    "id": "beh-0003",
+    "question": "Tell me about a time you had to meet a very tight deadline. How did you approach it?",
+    "type": "behavioral",
+    "difficulty": 2,
+    "roles": ["general_sde"],
+    "topics": ["time_management", "prioritization"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Microsoft", "startups"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the deadline and why it mattered",
+        "Explains how scope or priorities were triaged",
+        "Shows clear communication with stakeholders",
+        "States the measurable outcome"
+      ],
+      "sample_answer": "We had three days to ship a fix before a major client's contract renewal demo. I cut the scope to the critical path, negotiated a reduced but honest set of features with my manager, and pulled in a teammate for parallel testing. We delivered on time and the client renewed."
+    },
+    "follow_up_hint": "Ask how they decided what to cut from scope.",
+    "concept": "Prioritization Under Pressure",
+    "sub_concept": "Deadline Management",
+    "expected_reasoning": "Strong answers show deliberate scope triage and proactive stakeholder communication rather than just working longer hours.",
+    "common_mistakes": ["Answer is just 'worked overtime'", "No mention of trade-off decisions", "No measurable result"],
+    "progressive_hints": ["What did you deliberately decide not to do?", "How did you keep stakeholders informed as the deadline approached?"],
+    "learning_objective": "Candidate can prioritize and communicate effectively under time pressure."
+  },
+  {
+    "id": "beh-0004",
+    "question": "Tell me about a time you disagreed with your manager. Were you right or wrong?",
+    "type": "behavioral",
+    "difficulty": 4,
+    "roles": ["general_sde"],
+    "topics": ["conflict_resolution", "disagree_and_commit"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the disagreement clearly and respectfully",
+        "Shows how they made their case with data or reasoning",
+        "Honestly reports the outcome, including if they were wrong",
+        "Shows commitment to the final decision regardless of outcome"
+      ],
+      "sample_answer": "I pushed back on my manager's plan to launch a feature without A/B testing, arguing we needed data first. She explained a competitive deadline I hadn't fully weighed, and I agreed to launch with tighter monitoring instead. In hindsight her call was right, and I learned to weigh business context more heavily in technical debates."
+    },
+    "follow_up_hint": "Ask specifically how they behaved after the decision was made, win or lose.",
+    "concept": "Disagree and Commit",
+    "sub_concept": "Handling Authority Disagreements",
+    "expected_reasoning": "Strong answers show respectful escalation of disagreement, willingness to be wrong, and full commitment once a decision is made.",
+    "common_mistakes": ["Only tells a story where they were right", "Shows resentment toward the manager", "Undermines the decision after the fact"],
+    "progressive_hints": ["It's fine if you were wrong -- what matters is how you handled it.", "Did you fully commit to the decision afterward?"],
+    "learning_objective": "Candidate can disagree respectfully and commit fully once a decision is made, even when overruled."
+  },
+  {
+    "id": "beh-0005",
+    "question": "Tell me about a time you mentored or coached a junior teammate.",
+    "type": "behavioral",
+    "difficulty": 2,
+    "roles": ["general_sde"],
+    "topics": ["mentoring", "leadership"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Meta", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Identifies the mentee's specific gap or need",
+        "Describes a concrete coaching approach, not just advice-giving",
+        "Shows patience and adapting to the mentee's style",
+        "Reports a measurable improvement"
+      ],
+      "sample_answer": "A new hire was struggling with our code review process and getting discouraged by feedback. I started pairing with them weekly, explaining the 'why' behind conventions instead of just the 'what'. Within two months their PRs needed far fewer review rounds and they began mentoring the next new hire themselves."
+    },
+    "follow_up_hint": "Ask how they measured whether the mentoring actually worked.",
+    "concept": "Leadership Without Authority",
+    "sub_concept": "Mentoring",
+    "expected_reasoning": "Strong answers show a tailored coaching approach and a concrete, measurable growth outcome for the mentee.",
+    "common_mistakes": ["Vague 'I gave advice' with no specifics", "No measurable improvement mentioned", "Takes all the credit for mentee's growth"],
+    "progressive_hints": ["What specifically did you change in how you communicated with them?", "How did you know the mentoring was working?"],
+    "learning_objective": "Candidate can describe a deliberate, effective approach to developing others."
+  },
+  {
+    "id": "beh-0006",
+    "question": "Tell me about a time you had to work with ambiguous or incomplete requirements.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["ambiguity", "requirements_gathering"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the ambiguity and its risk",
+        "Shows proactive clarification with stakeholders",
+        "Explains how they made reasonable assumptions and validated them early",
+        "States the outcome and stakeholder reaction"
+      ],
+      "sample_answer": "I was asked to 'improve search relevance' with no defined success metric. I met with the product owner to define a measurable target, proposed two candidate approaches with trade-offs, and validated my assumptions with a quick prototype before full implementation. This avoided weeks of wasted work on the wrong metric."
+    },
+    "follow_up_hint": "Ask how they decided when to stop clarifying and start building.",
+    "concept": "Ownership Under Ambiguity",
+    "sub_concept": "Requirements Clarification",
+    "expected_reasoning": "Strong answers show proactive clarification, explicit assumptions, and early validation rather than guessing silently.",
+    "common_mistakes": ["Just guessed and built without validating", "Waited passively for someone else to clarify", "No mention of checking assumptions early"],
+    "progressive_hints": ["How did you validate your assumptions before investing heavily?", "Who did you go to for clarification, and when?"],
+    "learning_objective": "Candidate can make forward progress under ambiguity while managing risk."
+  },
+  {
+    "id": "beh-0007",
+    "question": "Tell me about a time you had to juggle multiple competing priorities. How did you decide what to work on first?",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "product_manager"],
+    "topics": ["prioritization", "time_management"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Lists the competing demands clearly",
+        "Explains the prioritization framework used (impact, urgency, dependencies)",
+        "Shows communication with stakeholders about trade-offs",
+        "States the outcome"
+      ],
+      "sample_answer": "I had a production bug, a stakeholder demo, and a sprint commitment all due the same week. I triaged by customer impact, fixed the production bug first, delegated demo prep to a teammate with clear guidance, and renegotiated the sprint deadline with my lead. All three were resolved without a major slip."
+    },
+    "follow_up_hint": "Ask what framework or criteria they used to rank the priorities.",
+    "concept": "Prioritization Under Pressure",
+    "sub_concept": "Competing Demands",
+    "expected_reasoning": "Strong answers apply an explicit prioritization framework and communicate trade-offs rather than just working harder.",
+    "common_mistakes": ["No explicit prioritization logic", "Tried to do everything at once and did all of it poorly", "Didn't communicate trade-offs to stakeholders"],
+    "progressive_hints": ["What criteria did you use to rank the tasks?", "Who did you need to inform about the trade-offs you made?"],
+    "learning_objective": "Candidate can apply a clear framework to prioritize under competing demands."
+  },
+  {
+    "id": "beh-0008",
+    "question": "Tell me about a time you took initiative without being asked.",
+    "type": "behavioral",
+    "difficulty": 2,
+    "roles": ["general_sde"],
+    "topics": ["initiative", "ownership"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "startups"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Identifies a problem no one had assigned to them",
+        "Explains why they decided to act rather than wait",
+        "Describes the action taken and how they got buy-in",
+        "States the impact"
+      ],
+      "sample_answer": "I noticed our deploy process required 40 manual steps and caused frequent errors, though it wasn't anyone's assigned task to fix. I wrote a proposal, built a proof-of-concept automation script in my own time, and presented the time savings to my team. We adopted it and cut deploy time by 70%."
+    },
+    "follow_up_hint": "Ask how they got others to adopt something nobody asked for.",
+    "concept": "Bias for Action",
+    "sub_concept": "Proactive Ownership",
+    "expected_reasoning": "Strong answers show the candidate spotting an unowned problem and driving it to resolution with measurable impact.",
+    "common_mistakes": ["The 'initiative' was actually assigned by someone", "No measurable impact", "Didn't get buy-in and it was never adopted"],
+    "progressive_hints": ["What made you decide to act instead of waiting for direction?", "How did you convince others to adopt what you built?"],
+    "learning_objective": "Candidate can identify and act on unassigned problems that create value."
+  },
+  {
+    "id": "beh-0009",
+    "question": "Tell me about a time you received tough or critical feedback. How did you respond?",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["feedback", "growth"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Meta", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the specific feedback received without being defensive",
+        "Shows genuine reflection on its validity",
+        "Explains concrete action taken to address it",
+        "States the resulting improvement"
+      ],
+      "sample_answer": "My manager told me my code reviews were too terse and came across as dismissive. Initially I was surprised, but I asked for examples and realized she was right. I started adding context and reasoning to my comments, and later feedback confirmed the team found reviews much more constructive."
+    },
+    "follow_up_hint": "Ask how they verified the feedback actually led to a change others noticed.",
+    "concept": "Growth Mindset",
+    "sub_concept": "Receiving Feedback",
+    "expected_reasoning": "Strong answers show non-defensive reflection, concrete behavior change, and evidence the change was noticed by others.",
+    "common_mistakes": ["Gets defensive or argues the feedback was wrong", "No specific behavior change described", "Picks feedback that is really a disguised compliment"],
+    "progressive_hints": ["Was there a moment you felt defensive, and how did you push past it?", "How do you know the change actually stuck?"],
+    "learning_objective": "Candidate can accept and act on critical feedback constructively."
+  },
+  {
+    "id": "beh-0010",
+    "question": "Walk me through a project you owned end-to-end, from design to production.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend", "fullstack"],
+    "topics": ["ownership", "project_deep_dive"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the problem and why it mattered",
+        "Explains key design decisions and alternatives considered",
+        "Describes their specific role versus the team's",
+        "Reports measurable outcomes and what they'd do differently"
+      ],
+      "sample_answer": "I owned the redesign of our notification service, from initial design doc through rollout. I evaluated a queue-based versus polling architecture, chose queue-based for scalability, and led implementation and phased rollout. The new system cut notification latency by 60% and I later documented lessons on backpressure handling for the team."
+    },
+    "follow_up_hint": "Dig into one specific technical decision and ask why they chose it over alternatives.",
+    "concept": "Ownership Under Ambiguity",
+    "sub_concept": "End-to-End Project Ownership",
+    "expected_reasoning": "Strong answers cover problem framing, design trade-offs, personal role clarity, and measurable results in a structured narrative.",
+    "common_mistakes": ["Can't clearly separate their contribution from the team's", "No discussion of alternatives considered", "No metrics or concrete outcome"],
+    "progressive_hints": ["What was your specific role versus the rest of the team?", "What would you do differently if you started over?"],
+    "learning_objective": "Candidate can narrate a full project lifecycle with clear ownership and measurable impact."
+  },
+  {
+    "id": "beh-0011",
+    "question": "Tell me about a significant technical trade-off decision you made on a real project.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend", "system_design"],
+    "topics": ["technical_tradeoffs", "decision_making"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the competing options and constraints clearly",
+        "Explains the evaluation criteria used",
+        "Justifies the final decision with reasoning",
+        "Reflects on the consequences, good or bad"
+      ],
+      "sample_answer": "We had to choose between strong consistency and higher availability for an inventory system. I chose eventual consistency with compensating transactions since brief overselling was more tolerable than downtime during flash sales. This held up well under peak load, though we later had to add extra reconciliation tooling to handle edge cases."
+    },
+    "follow_up_hint": "Ask what would have changed their decision if the constraints were different.",
+    "concept": "Technical Decision Making",
+    "sub_concept": "Trade-off Analysis",
+    "expected_reasoning": "Strong answers articulate explicit trade-off criteria and honestly assess the consequences of the choice made.",
+    "common_mistakes": ["Presents the decision as obviously correct with no real trade-off", "No mention of downsides encountered later", "Too abstract, no concrete project details"],
+    "progressive_hints": ["What were the other options and why did you rule them out?", "What downside did the chosen approach have in practice?"],
+    "learning_objective": "Candidate can reason explicitly about engineering trade-offs and their consequences."
+  },
+  {
+    "id": "beh-0012",
+    "question": "Tell me about a time you collaborated with another team to get something done.",
+    "type": "behavioral",
+    "difficulty": 2,
+    "roles": ["general_sde"],
+    "topics": ["cross_team_collaboration", "communication"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the shared goal and each team's stake in it",
+        "Shows proactive communication and alignment across teams",
+        "Handles differing priorities or working styles",
+        "States the joint outcome"
+      ],
+      "sample_answer": "My team needed a new API from another team that had a full backlog. I set up a joint planning session to understand their constraints, offered engineering help from my side to speed things up, and we agreed on a minimal interface that unblocked us two weeks earlier than their original estimate. The partnership continued for future integrations."
+    },
+    "follow_up_hint": "Ask how they handled the other team's competing priorities.",
+    "concept": "Cross-Team Collaboration",
+    "sub_concept": "Cross-Functional Alignment",
+    "expected_reasoning": "Strong answers show proactive alignment, empathy for the other team's constraints, and a concrete joint outcome.",
+    "common_mistakes": ["Frames the other team as an obstacle", "No specifics on how alignment was reached", "Takes sole credit for a joint effort"],
+    "progressive_hints": ["How did you understand the other team's constraints?", "What did you offer them to make the collaboration mutually beneficial?"],
+    "learning_objective": "Candidate can build effective cross-team partnerships to achieve shared goals."
+  },
+  {
+    "id": "beh-0013",
+    "question": "Tell me about a time you had to deal with an underperforming teammate.",
+    "type": "behavioral",
+    "difficulty": 4,
+    "roles": ["general_sde"],
+    "topics": ["team_dynamics", "leadership"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the performance gap objectively, without judgment",
+        "Shows direct, empathetic communication with the teammate",
+        "Explains concrete support offered (pairing, clearer expectations)",
+        "States the outcome, whether improvement or escalation"
+      ],
+      "sample_answer": "A teammate was consistently missing sprint commitments, which was affecting the whole team's delivery. I had a private, direct conversation to understand root causes and learned they were struggling with an unfamiliar part of the stack. We set up pairing sessions and clearer daily check-ins, and their output improved significantly within a month."
+    },
+    "follow_up_hint": "Ask what they would have done if the performance hadn't improved.",
+    "concept": "Team Leadership",
+    "sub_concept": "Managing Underperformance",
+    "expected_reasoning": "Strong answers show empathy, direct communication, and a concrete support plan rather than avoidance or public criticism.",
+    "common_mistakes": ["Publicly criticized the teammate", "Avoided the conversation entirely", "No follow-up or support plan described"],
+    "progressive_hints": ["How did you approach the conversation without being confrontational?", "What was the escalation path if things didn't improve?"],
+    "learning_objective": "Candidate can address underperformance constructively and directly."
+  },
+  {
+    "id": "beh-0014",
+    "question": "Tell me about a time a project suffered from scope creep. How did you handle it?",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "product_manager"],
+    "topics": ["scope_management", "prioritization"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes how scope expanded and why",
+        "Shows how they pushed back or renegotiated scope",
+        "Explains communication with stakeholders about trade-offs",
+        "States the final outcome"
+      ],
+      "sample_answer": "A 'small' reporting feature kept growing as stakeholders added requests mid-sprint. I documented the original scope, quantified the added effort for each new request, and worked with the product owner to move non-critical items to a follow-up release. We delivered the core feature on time and shipped the extras two weeks later."
+    },
+    "follow_up_hint": "Ask how they decided which additions were truly critical.",
+    "concept": "Scope Management",
+    "sub_concept": "Handling Scope Creep",
+    "expected_reasoning": "Strong answers show quantifying added effort, transparent renegotiation, and protecting the original delivery commitment.",
+    "common_mistakes": ["Silently absorbed all scope creep and worked overtime", "No renegotiation with stakeholders", "No clear before/after outcome"],
+    "progressive_hints": ["How did you quantify the impact of the new requests?", "How did you communicate the trade-off to stakeholders?"],
+    "learning_objective": "Candidate can manage scope changes without silently absorbing unsustainable work."
+  },
+  {
+    "id": "beh-0015",
+    "question": "Tell me about a production incident you handled. Walk me through what happened.",
+    "type": "behavioral",
+    "difficulty": 4,
+    "roles": ["general_sde", "backend", "devops"],
+    "topics": ["incident_response", "ownership"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes detection and immediate triage steps",
+        "Explains mitigation to restore service quickly",
+        "Shows root-cause analysis after stabilization",
+        "States the follow-up prevention work"
+      ],
+      "sample_answer": "A deployment caused a memory leak that took down our checkout service during peak traffic. I rolled back immediately to restore service, then led a post-incident review that traced the leak to an unclosed connection pool. We added automated memory profiling to our CI pipeline to catch similar issues before release."
+    },
+    "follow_up_hint": "Ask what specifically changed in their process to prevent recurrence.",
+    "concept": "Operational Ownership",
+    "sub_concept": "Incident Response",
+    "expected_reasoning": "Strong answers separate immediate mitigation from root-cause analysis and end with a durable prevention measure.",
+    "common_mistakes": ["Conflates mitigation with root cause fix", "No blameless postmortem or prevention step", "Focuses only on the technical fix, ignoring communication during the incident"],
+    "progressive_hints": ["What did you do to restore service immediately, separate from the long-term fix?", "How did you communicate status during the incident?"],
+    "learning_objective": "Candidate can respond to incidents systematically: mitigate, diagnose, prevent."
+  },
+  {
+    "id": "beh-0016",
+    "question": "Tell me about a time you had to say no to a stakeholder's request.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "product_manager"],
+    "topics": ["stakeholder_management", "communication"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the request and why it was problematic",
+        "Explains the reasoning given for declining or deferring",
+        "Shows an alternative or compromise offered",
+        "States how the relationship was preserved"
+      ],
+      "sample_answer": "A stakeholder wanted a feature added mid-sprint that would have compromised our security review timeline. I explained the risk clearly with concrete consequences, and offered to fast-track it in the next sprint instead. They appreciated the transparency and the relationship stayed strong."
+    },
+    "follow_up_hint": "Ask how the stakeholder reacted and whether trust was maintained.",
+    "concept": "Stakeholder Management",
+    "sub_concept": "Pushing Back Respectfully",
+    "expected_reasoning": "Strong answers explain the reasoning behind saying no and offer a constructive alternative rather than a flat refusal.",
+    "common_mistakes": ["Simply refused without explanation or alternative", "Caved under pressure despite knowing better", "Damaged the relationship unnecessarily"],
+    "progressive_hints": ["What alternative or compromise did you offer?", "How did you make sure the stakeholder didn't feel dismissed?"],
+    "learning_objective": "Candidate can decline unreasonable requests while preserving trust and offering alternatives."
+  },
+  {
+    "id": "beh-0017",
+    "question": "Tell me about a time you had to learn a new technology quickly under pressure.",
+    "type": "behavioral",
+    "difficulty": 2,
+    "roles": ["general_sde"],
+    "topics": ["learning_agility", "adaptability"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "startups", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States why the new technology was suddenly needed",
+        "Describes their learning approach (docs, prototypes, experts)",
+        "Shows how they validated understanding before relying on it fully",
+        "States the outcome"
+      ],
+      "sample_answer": "Our team needed to integrate a message queue technology I had never used, with a launch two weeks away. I built a small prototype first to validate core assumptions, consulted an internal expert for gotchas, and documented what I learned for the team. We shipped on time and the notes became onboarding material for new hires."
+    },
+    "follow_up_hint": "Ask how they validated they'd actually learned it correctly before shipping.",
+    "concept": "Learning Agility",
+    "sub_concept": "Rapid Skill Acquisition",
+    "expected_reasoning": "Strong answers show a deliberate, efficient learning strategy and validation before relying on the new skill in production.",
+    "common_mistakes": ["No structured learning approach described", "Didn't validate understanding before shipping", "Overstates prior familiarity with the technology"],
+    "progressive_hints": ["How did you validate you understood it correctly before using it in production?", "Who or what resources did you lean on to learn faster?"],
+    "learning_objective": "Candidate can ramp up on unfamiliar technology efficiently under time pressure."
+  },
+  {
+    "id": "beh-0018",
+    "question": "Tell me about your proudest professional achievement.",
+    "type": "behavioral",
+    "difficulty": 2,
+    "roles": ["general_sde"],
+    "topics": ["achievement", "ownership"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Picks an achievement with genuine difficulty or impact",
+        "Explains their specific contribution",
+        "Quantifies the impact where possible",
+        "Reflects on why it mattered to them"
+      ],
+      "sample_answer": "I led the migration of a monolith to microservices that had stalled twice before under previous owners. I broke it into incremental, low-risk steps and got buy-in by demonstrating early wins. The migration finished six months ahead of the original estimate and cut deployment time by half."
+    },
+    "follow_up_hint": "Ask what made this achievement personally meaningful versus just impactful.",
+    "concept": "Ownership Under Ambiguity",
+    "sub_concept": "Personal Impact Narrative",
+    "expected_reasoning": "Strong answers combine a genuinely difficult challenge, clear personal contribution, and measurable impact.",
+    "common_mistakes": ["Picks something trivial or team-wide with no personal contribution", "No quantified impact", "Sounds rehearsed and generic"],
+    "progressive_hints": ["What was uniquely difficult about this compared to your other work?", "What was your specific individual contribution?"],
+    "learning_objective": "Candidate can articulate meaningful personal impact with evidence."
+  },
+  {
+    "id": "beh-0019",
+    "question": "Tell me about the biggest challenge you've faced in your career so far.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["resilience", "problem_solving"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Clearly defines the challenge and its stakes",
+        "Explains the approach taken to work through it",
+        "Shows resilience and adapting when initial attempts failed",
+        "States the resolution and lasting lesson"
+      ],
+      "sample_answer": "Early in my career I inherited a legacy system with no documentation and a critical bug affecting customers. I spent a week systematically reverse-engineering the code, wrote documentation as I went, and eventually isolated and fixed the bug. It taught me the value of documenting institutional knowledge as you learn it."
+    },
+    "follow_up_hint": "Ask what they would do differently if faced with a similar challenge now.",
+    "concept": "Resilience",
+    "sub_concept": "Overcoming Adversity",
+    "expected_reasoning": "Strong answers show systematic problem-solving under real difficulty and a durable lesson learned.",
+    "common_mistakes": ["Challenge is too vague or not actually difficult", "No systematic approach described", "No lasting takeaway"],
+    "progressive_hints": ["What made this the biggest challenge rather than just a hard one?", "What would you do differently today?"],
+    "learning_objective": "Candidate can demonstrate resilience and systematic problem-solving under real adversity."
+  },
+  {
+    "id": "beh-0020",
+    "question": "Tell me about a time you went above and beyond what was expected of you.",
+    "type": "behavioral",
+    "difficulty": 2,
+    "roles": ["general_sde"],
+    "topics": ["initiative", "customer_obsession"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the baseline expectation clearly",
+        "Explains what extra effort or scope they added and why",
+        "Shows this was driven by genuine impact, not just extra hours",
+        "States the outcome"
+      ],
+      "sample_answer": "I was asked to fix a single reported bug, but while investigating I found the same root cause affected three other features silently. I proactively fixed all of them and added regression tests, well beyond the original ticket's scope. This prevented several future support escalations."
+    },
+    "follow_up_hint": "Ask what motivated them to go beyond the stated task.",
+    "concept": "Customer Obsession",
+    "sub_concept": "Exceeding Expectations",
+    "expected_reasoning": "Strong answers show going beyond scope for genuine impact reasons, not just working more hours.",
+    "common_mistakes": ["Equates 'above and beyond' with just working overtime", "No clear baseline to compare against", "No real impact from the extra effort"],
+    "progressive_hints": ["What was the original ask, specifically?", "What made you decide the extra effort was worth it?"],
+    "learning_objective": "Candidate can identify and act on opportunities to create outsized impact."
+  },
+  {
+    "id": "beh-0021",
+    "question": "Tell me about a time you had to persuade someone without having direct authority over them.",
+    "type": "behavioral",
+    "difficulty": 4,
+    "roles": ["general_sde"],
+    "topics": ["influence", "leadership"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes who they needed to influence and why",
+        "Explains the approach: data, empathy, incremental buy-in",
+        "Shows patience through resistance",
+        "States the outcome"
+      ],
+      "sample_answer": "I needed a senior engineer on another team to adopt a shared library instead of building a duplicate. I demonstrated a working prototype, quantified the maintenance savings, and addressed their specific concerns about flexibility with a small extension point. They adopted it, and it became the team standard within a quarter."
+    },
+    "follow_up_hint": "Ask what they did when the other person initially resisted.",
+    "concept": "Influence Without Authority",
+    "sub_concept": "Persuasion",
+    "expected_reasoning": "Strong answers combine data-driven persuasion with genuine empathy for the other party's concerns.",
+    "common_mistakes": ["Relies purely on authority or escalation instead of persuasion", "Ignores the other person's legitimate concerns", "No concrete outcome"],
+    "progressive_hints": ["How did you address their specific objections?", "What data or demonstration helped make your case?"],
+    "learning_objective": "Candidate can influence outcomes through persuasion rather than positional authority."
+  },
+  {
+    "id": "beh-0022",
+    "question": "Tell me about a calculated risk you took that didn't go as planned.",
+    "type": "behavioral",
+    "difficulty": 4,
+    "roles": ["general_sde"],
+    "topics": ["risk_taking", "failure"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "startups"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the risk and the reasoning behind taking it",
+        "Explains what safeguards were in place",
+        "Owns the outcome honestly, even if negative",
+        "States what was learned about risk-taking"
+      ],
+      "sample_answer": "I chose to launch a new recommendation algorithm to 100% of traffic instead of a slow rollout, believing our offline testing was sufficient. It caused a temporary drop in engagement due to an untested edge case. I rolled it back within hours and adopted staged rollouts for all future launches."
+    },
+    "follow_up_hint": "Ask what safeguard was missing that they added afterward.",
+    "concept": "Calculated Risk-Taking",
+    "sub_concept": "Learning From Risk",
+    "expected_reasoning": "Strong answers show genuine risk with real downside, honest ownership of the outcome, and a durable change in risk management.",
+    "common_mistakes": ["Risk was actually low-stakes or safe", "Avoids admitting the outcome was negative", "No change in future risk-taking behavior"],
+    "progressive_hints": ["What made this genuinely risky rather than a safe bet?", "What specific safeguard do you now use that you didn't before?"],
+    "learning_objective": "Candidate can take informed risks and learn from imperfect outcomes."
+  },
+  {
+    "id": "beh-0023",
+    "question": "Tell me about a time you had to give a teammate difficult or critical feedback.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["feedback", "communication"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the specific, observable behavior addressed",
+        "Shows a private, respectful delivery approach",
+        "Focuses on impact rather than personal criticism",
+        "States the outcome"
+      ],
+      "sample_answer": "A teammate's PRs were routinely breaking the build because they skipped local testing. I raised it privately, framed it around the team impact rather than blame, and offered to pair on setting up a pre-commit test hook. They appreciated the direct but constructive approach and the issue stopped recurring."
+    },
+    "follow_up_hint": "Ask how they made sure the feedback felt safe rather than punitive.",
+    "concept": "Feedback Delivery",
+    "sub_concept": "Giving Difficult Feedback",
+    "expected_reasoning": "Strong answers give behavior-specific, private, and constructive feedback focused on impact rather than character.",
+    "common_mistakes": ["Gave feedback publicly or harshly", "Feedback was vague rather than specific and actionable", "No follow-up to confirm the issue was resolved"],
+    "progressive_hints": ["How did you frame the feedback around impact rather than blame?", "How did you confirm the feedback landed well?"],
+    "learning_objective": "Candidate can deliver direct, respectful, and effective feedback."
+  },
+  {
+    "id": "beh-0024",
+    "question": "Tell me about a time you faced an ethical dilemma at work.",
+    "type": "behavioral",
+    "difficulty": 4,
+    "roles": ["general_sde"],
+    "topics": ["ethics", "integrity"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the dilemma and competing pressures clearly",
+        "Explains the principle or value that guided the decision",
+        "Shows the action taken despite difficulty",
+        "States the outcome and any lasting consequence"
+      ],
+      "sample_answer": "I discovered a metric was being reported in a way that made a feature look more successful than it was, under pressure to hit a launch target. I raised the discrepancy to my manager despite the risk of delaying the launch, and we corrected the reporting before it reached leadership. The launch was delayed a week but the numbers stayed honest."
+    },
+    "follow_up_hint": "Ask what made this genuinely difficult rather than an easy call.",
+    "concept": "Integrity",
+    "sub_concept": "Ethical Decision Making",
+    "expected_reasoning": "Strong answers show a real conflict between competing pressures, resolved by prioritizing integrity even at a cost.",
+    "common_mistakes": ["Picks a dilemma with no real cost to doing the right thing", "Avoids saying what the actual conflict was", "No real consequence or trade-off described"],
+    "progressive_hints": ["What would have been the easier, less ethical path?", "What did it cost you or the team to do the right thing?"],
+    "learning_objective": "Candidate demonstrates integrity when facing competing pressures."
+  },
+  {
+    "id": "beh-0025",
+    "question": "Tell me about a time you had to make an important decision with incomplete information.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["decision_making", "ambiguity"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the decision and why full information wasn't available",
+        "Explains how they gathered what data was feasible",
+        "Shows reasoning about acceptable risk given the gaps",
+        "States the outcome and how they'd adjust if wrong"
+      ],
+      "sample_answer": "We had to choose a cloud provider before finalizing full cost projections due to a contract deadline. I gathered the best available estimates, identified the biggest cost risk, and negotiated a short-term contract to allow course correction if needed. The provider worked out well, and the flexible contract term proved a useful safeguard."
+    },
+    "follow_up_hint": "Ask how they built in a way to correct course if the decision proved wrong.",
+    "concept": "Decision Making Under Uncertainty",
+    "sub_concept": "Bounded Rationality",
+    "expected_reasoning": "Strong answers gather the best feasible information, reason explicitly about risk, and build in mechanisms to correct course.",
+    "common_mistakes": ["Pretends they had complete information", "No mitigation for being wrong", "Decision had low real stakes"],
+    "progressive_hints": ["What information was missing, and how did you compensate?", "How did you build in a way to course-correct if you were wrong?"],
+    "learning_objective": "Candidate can make sound decisions despite incomplete information."
+  },
+  {
+    "id": "beh-0026",
+    "question": "Tell me about a time you had to defend a decision that later turned out to be wrong.",
+    "type": "behavioral",
+    "difficulty": 4,
+    "roles": ["general_sde"],
+    "topics": ["accountability", "decision_making"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the original decision and reasoning at the time",
+        "Explains what new information revealed the error",
+        "Shows they owned the mistake without excessive self-blame or excuses",
+        "States corrective action taken"
+      ],
+      "sample_answer": "I advocated strongly for building a custom authentication system instead of using a third-party provider, believing it gave more control. Six months in, maintenance overhead proved far higher than anticipated. I acknowledged the miscalculation to my team, led the migration to a managed provider, and now default to buy-over-build unless there's a strong justification."
+    },
+    "follow_up_hint": "Ask what heuristic or rule they now apply because of this experience.",
+    "concept": "Accountability",
+    "sub_concept": "Owning Wrong Decisions",
+    "expected_reasoning": "Strong answers own the mistake plainly and describe a durable change in their decision-making heuristics.",
+    "common_mistakes": ["Blames unforeseeable circumstances entirely", "Doesn't clearly admit the decision was wrong", "No change in future decision-making"],
+    "progressive_hints": ["What specifically did you miscalculate at the time?", "What do you do differently now because of this?"],
+    "learning_objective": "Candidate can own incorrect past decisions and extract a durable lesson."
+  },
+  {
+    "id": "beh-0027",
+    "question": "Tell me about a time you simplified a complex process or system.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend"],
+    "topics": ["simplification", "efficiency"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the complexity and its cost",
+        "Explains the simplification approach taken",
+        "Shows how they validated it didn't lose necessary functionality",
+        "States the measurable improvement"
+      ],
+      "sample_answer": "Our release process involved seven manual approval steps across three tools, causing frequent delays. I mapped the actual risk each step addressed, consolidated redundant approvals, and automated the rest into a single pipeline. Release time dropped from two days to two hours with no increase in incidents."
+    },
+    "follow_up_hint": "Ask how they made sure simplification didn't remove necessary safeguards.",
+    "concept": "Invent and Simplify",
+    "sub_concept": "Process Simplification",
+    "expected_reasoning": "Strong answers identify unnecessary complexity, validate that simplification preserves necessary safeguards, and measure the improvement.",
+    "common_mistakes": ["Oversimplified and removed something necessary", "No measurable before/after comparison", "Complexity removed was trivial"],
+    "progressive_hints": ["How did you make sure you weren't removing something important?", "What was the measurable before-and-after difference?"],
+    "learning_objective": "Candidate can reduce unnecessary complexity while preserving necessary rigor."
+  },
+  {
+    "id": "beh-0028",
+    "question": "Tell me about a time you dove deep into data or logs to solve a hard problem.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend", "data_engineer"],
+    "topics": ["debugging", "dive_deep"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the symptom and why the cause wasn't obvious",
+        "Explains the systematic investigation approach",
+        "Shows persistence through dead ends",
+        "States the root cause found and fix applied"
+      ],
+      "sample_answer": "Users reported intermittent slow page loads with no obvious pattern. I dug through distributed traces across services, correlated timing with a specific downstream cache, and found a cache eviction bug triggered only under specific memory pressure. Fixing the eviction logic eliminated the slow loads entirely."
+    },
+    "follow_up_hint": "Ask about a dead end they hit during the investigation and how they got past it.",
+    "concept": "Dive Deep",
+    "sub_concept": "Root Cause Investigation",
+    "expected_reasoning": "Strong answers show systematic, evidence-based investigation and persistence rather than guesswork.",
+    "common_mistakes": ["Jumped to a fix without confirming root cause", "No systematic investigation method described", "Problem wasn't actually hard to diagnose"],
+    "progressive_hints": ["What made this hard to diagnose initially?", "Walk me through a dead end you hit and how you got past it."],
+    "learning_objective": "Candidate can systematically investigate and resolve non-obvious technical problems."
+  },
+  {
+    "id": "beh-0029",
+    "question": "Tell me about a time you delivered results despite significant obstacles.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["deliver_results", "resilience"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the obstacles clearly (technical, organizational, resource)",
+        "Explains how they adapted the plan without losing sight of the goal",
+        "Shows persistence and problem-solving through setbacks",
+        "States the measurable result achieved"
+      ],
+      "sample_answer": "Midway through a critical migration, our key infrastructure vendor had an outage that blocked our timeline. I found a temporary workaround using a secondary provider, kept stakeholders updated on the revised plan, and we still hit our original launch date. The workaround later became a permanent redundancy measure."
+    },
+    "follow_up_hint": "Ask what they would have done if the workaround hadn't been available.",
+    "concept": "Deliver Results",
+    "sub_concept": "Overcoming Obstacles",
+    "expected_reasoning": "Strong answers show adaptive problem-solving under real obstacles while keeping stakeholders informed and still hitting the goal.",
+    "common_mistakes": ["Obstacle wasn't actually significant", "No adaptation shown, just persistence", "No measurable result stated"],
+    "progressive_hints": ["What was your backup plan if the workaround hadn't worked?", "How did you keep stakeholders informed as the plan changed?"],
+    "learning_objective": "Candidate can adapt and still deliver outcomes when plans are disrupted."
+  },
+  {
+    "id": "beh-0030",
+    "question": "Tell me about a time you had to earn the trust of a new team or manager quickly.",
+    "type": "behavioral",
+    "difficulty": 2,
+    "roles": ["general_sde"],
+    "topics": ["trust_building", "onboarding"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the initial trust gap or skepticism",
+        "Shows concrete, credible actions taken to build trust",
+        "Explains listening and delivering small wins first",
+        "States the outcome"
+      ],
+      "sample_answer": "Joining a team skeptical of outside hires, I spent my first two weeks mostly listening and understanding their existing systems before proposing changes. I then delivered a small, well-scoped improvement that addressed a known pain point. That early credibility made later, larger proposals much easier to get buy-in for."
+    },
+    "follow_up_hint": "Ask what signal told them trust had actually been established.",
+    "concept": "Earn Trust",
+    "sub_concept": "Building Credibility",
+    "expected_reasoning": "Strong answers show listening first, delivering credible small wins, and using that credibility to build toward larger impact.",
+    "common_mistakes": ["Tried to make big changes immediately without listening first", "No concrete evidence trust was built", "Generic answer with no specific actions"],
+    "progressive_hints": ["What did you do before proposing any changes?", "How did you know trust had actually been established?"],
+    "learning_objective": "Candidate can build credibility and trust efficiently in a new environment."
+  },
+  {
+    "id": "beh-0031",
+    "question": "Tell me about a time you had to manage several projects simultaneously.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "product_manager"],
+    "topics": ["time_management", "prioritization"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Lists the concurrent projects and their constraints",
+        "Explains the system used to track and switch between them",
+        "Shows how context-switching cost was minimized",
+        "States the outcome across all projects"
+      ],
+      "sample_answer": "I was responsible for three parallel workstreams during a quarter with a hard launch date. I time-boxed focused blocks for each project, used a shared status doc to reduce context-switch overhead, and flagged early when one project needed extra help. All three shipped, with one requiring a short extension that was communicated well in advance."
+    },
+    "follow_up_hint": "Ask how they minimized the cost of switching between projects.",
+    "concept": "Prioritization Under Pressure",
+    "sub_concept": "Parallel Project Management",
+    "expected_reasoning": "Strong answers show a deliberate system for managing parallel work and proactive communication about slippage.",
+    "common_mistakes": ["No system described, just 'worked hard'", "Didn't flag risk of delay early", "All projects suffered due to poor prioritization"],
+    "progressive_hints": ["What system did you use to track progress across projects?", "How did you flag risk early rather than at the deadline?"],
+    "learning_objective": "Candidate can manage multiple concurrent workstreams effectively."
+  },
+  {
+    "id": "beh-0032",
+    "question": "Tell me about a time you had to handle a difficult or upset customer or stakeholder.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "product_manager"],
+    "topics": ["customer_obsession", "communication"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the stakeholder's concern and its validity",
+        "Shows empathetic, calm communication",
+        "Explains the concrete action taken to resolve the issue",
+        "States the outcome and relationship repair"
+      ],
+      "sample_answer": "A key client was frustrated after a bug caused data discrepancies in their reports. I acknowledged the impact directly, gave a clear timeline for the fix, and provided a manual workaround in the meantime. We delivered the fix ahead of schedule and the client specifically praised the communication during the incident."
+    },
+    "follow_up_hint": "Ask what they did to prevent the same issue from recurring for that customer.",
+    "concept": "Customer Obsession",
+    "sub_concept": "De-escalation",
+    "expected_reasoning": "Strong answers show empathy, clear communication, and concrete resolution steps that rebuild trust.",
+    "common_mistakes": ["Became defensive with the customer", "No concrete resolution offered, only apologies", "No follow-up to prevent recurrence"],
+    "progressive_hints": ["What specifically did you say to acknowledge their frustration?", "What did you do afterward to prevent recurrence?"],
+    "learning_objective": "Candidate can de-escalate and resolve stakeholder frustration constructively."
+  },
+  {
+    "id": "beh-0033",
+    "question": "Tell me about a time you strongly disagreed with feedback in a code review.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend", "frontend"],
+    "topics": ["conflict_resolution", "code_quality"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the specific disagreement over the code review comment",
+        "Shows they explained their reasoning rather than just complying or dismissing",
+        "Describes reaching a resolution through discussion or data",
+        "States the final outcome and relationship with the reviewer"
+      ],
+      "sample_answer": "A reviewer wanted me to abstract a pattern I felt was premature and would add unnecessary complexity. I explained my reasoning and asked about their concern, and we discovered they were worried about a future use case I hadn't considered. We agreed on a lighter-weight solution that addressed both concerns."
+    },
+    "follow_up_hint": "Ask how they avoided the disagreement becoming personal or unproductive.",
+    "concept": "Conflict Resolution",
+    "sub_concept": "Code Review Disagreements",
+    "expected_reasoning": "Strong answers show explaining reasoning, understanding the reviewer's underlying concern, and reaching a mutually agreeable resolution.",
+    "common_mistakes": ["Simply complied without engaging their own reasoning", "Dismissed the reviewer's concern without understanding it", "Disagreement became personal or unresolved"],
+    "progressive_hints": ["What was the reviewer's underlying concern beneath their comment?", "How did you reach a resolution both of you were comfortable with?"],
+    "learning_objective": "Candidate can navigate code review disagreements productively."
+  },
+  {
+    "id": "beh-0034",
+    "question": "Tell me about a time your estimate for a project was significantly wrong.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["estimation", "accountability"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the original estimate and what it missed",
+        "Explains how and when the gap was discovered",
+        "Shows proactive communication once the miss was known",
+        "States what changed in their estimation approach afterward"
+      ],
+      "sample_answer": "I estimated a data migration would take one week but underestimated the volume of legacy edge cases, and it took three. As soon as I recognized the gap, I flagged it immediately with a revised plan rather than waiting until the deadline. I now build in explicit buffers for unknown legacy systems in my estimates."
+    },
+    "follow_up_hint": "Ask how early they flagged the estimate miss versus waiting until the deadline.",
+    "concept": "Accountability",
+    "sub_concept": "Estimation and Communication",
+    "expected_reasoning": "Strong answers show early, proactive communication of the miss and a durable improvement to their estimation process.",
+    "common_mistakes": ["Hid the slip until the deadline arrived", "No change in estimation process afterward", "Blames the underlying task rather than their own estimate"],
+    "progressive_hints": ["How early did you flag the estimate was wrong?", "What do you do differently now when estimating similar work?"],
+    "learning_objective": "Candidate can communicate estimate misses early and improve their estimation process."
+  },
+  {
+    "id": "beh-0035",
+    "question": "Tell me about your experience being on-call and responding to an incident outside work hours.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend", "devops"],
+    "topics": ["incident_response", "operational_ownership"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the alert and initial assessment of severity",
+        "Shows calm, methodical triage despite being off-hours",
+        "Explains escalation decisions if needed",
+        "States resolution and any follow-up documentation"
+      ],
+      "sample_answer": "I got paged at 2am for an elevated error rate on a payment service. I quickly assessed the blast radius, mitigated by rolling back a recent config change, and confirmed recovery before going back to sleep. The next day I wrote up the incident and added better alerting to catch the root cause earlier next time."
+    },
+    "follow_up_hint": "Ask how they decided whether to escalate versus handle it alone.",
+    "concept": "Operational Ownership",
+    "sub_concept": "On-Call Response",
+    "expected_reasoning": "Strong answers show calm triage, sound escalation judgment, and follow-through with documentation and prevention.",
+    "common_mistakes": ["No triage or severity assessment described", "Never escalated when they should have", "No follow-up after the incident was resolved"],
+    "progressive_hints": ["How did you decide the severity and whether to escalate?", "What did you do the next day to follow up?"],
+    "learning_objective": "Candidate can handle on-call incidents calmly and responsibly."
+  },
+  {
+    "id": "beh-0036",
+    "question": "Tell me about a time you had to explain a complex technical concept to a non-technical stakeholder.",
+    "type": "behavioral",
+    "difficulty": 2,
+    "roles": ["general_sde", "product_manager"],
+    "topics": ["communication", "stakeholder_management"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the concept and audience clearly",
+        "Explains the analogy or simplification approach used",
+        "Shows checking for understanding along the way",
+        "States the outcome, e.g., a decision made confidently"
+      ],
+      "sample_answer": "I needed to explain why fixing technical debt in our payment system was urgent to non-technical executives. I used an analogy comparing it to deferred maintenance on a building's foundation, and quantified the risk in terms of potential downtime cost. They approved the investment after understanding the concrete business risk."
+    },
+    "follow_up_hint": "Ask how they confirmed the stakeholder actually understood, not just nodded along.",
+    "concept": "Communication",
+    "sub_concept": "Technical Translation",
+    "expected_reasoning": "Strong answers use accessible analogies, tie technical issues to business impact, and verify understanding.",
+    "common_mistakes": ["Used jargon the audience couldn't follow", "No verification that the message landed", "No business framing of the technical issue"],
+    "progressive_hints": ["What analogy or framing did you use to make it click?", "How did you check they actually understood, versus just agreeing politely?"],
+    "learning_objective": "Candidate can translate technical concepts into business-relevant terms for non-technical audiences."
+  },
+  {
+    "id": "beh-0037",
+    "question": "Tell me about a time you brought a different perspective that changed the outcome of a project.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["diverse_perspectives", "innovation"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the prevailing view before their input",
+        "Explains the different perspective and its reasoning",
+        "Shows how they made the case for it credibly",
+        "States the changed outcome and impact"
+      ],
+      "sample_answer": "The team was planning a feature based on internal assumptions about user behavior, but I had prior experience with a similar user segment that suggested otherwise. I brought supporting data from that experience and proposed a quick validation test before full build-out. The test disproved the original assumption and saved months of wasted work."
+    },
+    "follow_up_hint": "Ask how they made their differing perspective land with a skeptical team.",
+    "concept": "Diverse Perspectives",
+    "sub_concept": "Constructive Dissent",
+    "expected_reasoning": "Strong answers show credible reasoning behind the differing view and evidence of concrete impact from raising it.",
+    "common_mistakes": ["Perspective wasn't actually different or impactful", "No description of how they got it heard", "No measurable change in outcome"],
+    "progressive_hints": ["How did you get a skeptical team to consider your perspective?", "What was the concrete impact of the changed approach?"],
+    "learning_objective": "Candidate can contribute differing perspectives that meaningfully improve outcomes."
+  },
+  {
+    "id": "beh-0038",
+    "question": "Tell me about a time you had to manage burnout or protect your work-life balance during a demanding period.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["self_management", "resilience"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "startups"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the demanding period and signs of burnout risk",
+        "Shows proactive steps taken to manage workload sustainably",
+        "Explains communication with manager or team about capacity",
+        "States the outcome, both personal and for the work"
+      ],
+      "sample_answer": "During a multi-month critical launch, I noticed I was consistently working late and losing focus. I talked to my manager about redistributing some tasks and blocked dedicated recovery time on weekends. This kept my output quality high through the launch without long-term burnout."
+    },
+    "follow_up_hint": "Ask what specific signal made them realize they needed to act.",
+    "concept": "Self-Management",
+    "sub_concept": "Sustainable Pace",
+    "expected_reasoning": "Strong answers show self-awareness of burnout signals and proactive, communicated steps to manage workload sustainably.",
+    "common_mistakes": ["No self-awareness of burnout signs described", "Suffered silently without addressing it", "No concrete corrective action taken"],
+    "progressive_hints": ["What was the specific signal that told you something needed to change?", "How did you communicate your capacity concerns to your manager?"],
+    "learning_objective": "Candidate can recognize and manage burnout risk proactively and sustainably."
+  },
+  {
+    "id": "beh-0039",
+    "question": "Tell me about a time you had to push back on your manager's plan and say no.",
+    "type": "behavioral",
+    "difficulty": 4,
+    "roles": ["general_sde"],
+    "topics": ["disagree_and_commit", "communication"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the plan and the specific concern raised",
+        "Shows respectful, evidence-based pushback",
+        "Explains the outcome of the conversation",
+        "Shows commitment to whatever was ultimately decided"
+      ],
+      "sample_answer": "My manager wanted to skip load testing to hit a launch date. I raised the specific risk with historical incident data from a similar past launch, and proposed a condensed testing plan as a middle ground. She agreed to the condensed plan, and it caught a critical bug before launch."
+    },
+    "follow_up_hint": "Ask what they would have done if the manager had overruled them anyway.",
+    "concept": "Disagree and Commit",
+    "sub_concept": "Pushing Back on Authority",
+    "expected_reasoning": "Strong answers use evidence-based pushback, propose a constructive middle ground, and remain committed regardless of the final call.",
+    "common_mistakes": ["Complied silently despite real concerns", "Pushback was purely emotional, not evidence-based", "No resolution or middle ground offered"],
+    "progressive_hints": ["What evidence did you bring to support your concern?", "What would you have done if your manager still said no?"],
+    "learning_objective": "Candidate can respectfully challenge authority with evidence while remaining professional."
+  },
+  {
+    "id": "beh-0040",
+    "question": "Tell me about a time you took ownership of a mistake that wasn't entirely your fault.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["ownership", "accountability"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the mistake and the shared circumstances behind it",
+        "Shows choosing to own the outcome rather than assign blame",
+        "Explains the corrective action taken",
+        "States how the team responded and what changed"
+      ],
+      "sample_answer": "A shared library I maintained caused an outage due to a dependency I hadn't fully vetted, though the dependency choice predated me. Rather than pointing to history, I took ownership of the fix and communication with affected teams. We ended up establishing a dependency review process that prevented similar issues going forward."
+    },
+    "follow_up_hint": "Ask what made them choose to own it rather than clarify whose fault it originally was.",
+    "concept": "Ownership Under Ambiguity",
+    "sub_concept": "Owning Shared Failures",
+    "expected_reasoning": "Strong answers show choosing accountability over blame-assignment and turning the incident into a process improvement.",
+    "common_mistakes": ["Spends the story assigning blame to others", "No corrective action or process change described", "Ownership claimed but no concrete follow-through"],
+    "progressive_hints": ["Why did you choose to own it rather than explain the history?", "What changed as a result of you taking ownership?"],
+    "learning_objective": "Candidate can take ownership of outcomes even when circumstances are shared or inherited."
+  },
+  {
+    "id": "beh-0041",
+    "question": "Tell me about a time you had to quickly adapt to a sudden and significant change in plans.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["adaptability", "resilience"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "startups"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the sudden change and its disruption",
+        "Shows quick reassessment of priorities and plan",
+        "Explains how the team was kept aligned through the change",
+        "States the outcome"
+      ],
+      "sample_answer": "Two weeks before launch, a key third-party API we depended on announced deprecation with only a month's notice. I quickly assessed alternatives, chose the closest drop-in replacement, and reorganized the team's remaining sprint around the migration. We adapted the launch scope slightly but still shipped on the original date."
+    },
+    "follow_up_hint": "Ask how they kept the team aligned and calm during the sudden change.",
+    "concept": "Adaptability",
+    "sub_concept": "Responding to Sudden Change",
+    "expected_reasoning": "Strong answers show fast reassessment, clear re-prioritization, and team alignment through unexpected disruption.",
+    "common_mistakes": ["Change wasn't actually sudden or significant", "No clear reprioritization process described", "Team alignment or communication not addressed"],
+    "progressive_hints": ["How did you quickly reassess what mattered most?", "How did you keep the team aligned as plans shifted?"],
+    "learning_objective": "Candidate can adapt quickly and effectively to unexpected disruptions."
+  },
+  {
+    "id": "beh-0042",
+    "question": "Tell me about a conflict you had with a peer over the right technical approach to a problem.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["conflict_resolution", "technical_tradeoffs"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States both technical positions and the underlying reasoning",
+        "Shows an objective resolution process (prototype, data, expert input)",
+        "Demonstrates respect for the peer throughout",
+        "States the resolution and outcome"
+      ],
+      "sample_answer": "A peer and I disagreed on whether to use synchronous or asynchronous processing for a new pipeline. We each built a quick spike to measure latency and throughput under realistic load, and the data clearly favored the async approach. We documented the decision together so future engineers would understand the reasoning."
+    },
+    "follow_up_hint": "Ask what they would have done if the data had been genuinely ambiguous.",
+    "concept": "Conflict Resolution",
+    "sub_concept": "Technical Disagreements",
+    "expected_reasoning": "Strong answers resolve technical conflict through objective evidence rather than seniority or persistence.",
+    "common_mistakes": ["Resolution was based on who was more senior or persistent", "No objective method used to resolve it", "Peer relationship damaged afterward"],
+    "progressive_hints": ["What objective method did you use to settle the disagreement?", "How did you make sure the peer relationship stayed intact?"],
+    "learning_objective": "Candidate can resolve technical disagreements objectively and respectfully."
+  },
+  {
+    "id": "beh-0043",
+    "question": "Tell me about a time you had to work closely with someone whose working style was very different from yours.",
+    "type": "behavioral",
+    "difficulty": 2,
+    "roles": ["general_sde"],
+    "topics": ["team_dynamics", "communication"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the specific style difference and friction it caused",
+        "Shows adapting their own approach to bridge the gap",
+        "Explains explicit communication about working preferences",
+        "States the improved collaboration outcome"
+      ],
+      "sample_answer": "I preferred written async communication, while a close collaborator preferred quick verbal syncs, which caused early friction and missed context. We talked openly about our preferences and agreed on a hybrid: quick syncs for decisions, written notes for follow-up. Our collaboration became much smoother afterward."
+    },
+    "follow_up_hint": "Ask what compromise they made to bridge the style gap.",
+    "concept": "Team Dynamics",
+    "sub_concept": "Working Style Adaptation",
+    "expected_reasoning": "Strong answers show explicit conversation about style differences and a concrete compromise that improved collaboration.",
+    "common_mistakes": ["Never directly addressed the style difference", "No compromise, just one-sided adaptation", "No improved outcome described"],
+    "progressive_hints": ["Did you ever talk directly about the style difference?", "What compromise made the collaboration work better?"],
+    "learning_objective": "Candidate can adapt collaboration style to work effectively with different personalities."
+  },
+  {
+    "id": "beh-0044",
+    "question": "Tell me about a time you missed a deadline. What happened?",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["accountability", "time_management"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the deadline and why it was missed honestly",
+        "Shows how and when they communicated the miss",
+        "Explains mitigation to reduce downstream impact",
+        "States what changed in their planning afterward"
+      ],
+      "sample_answer": "I missed a deadline on an integration because a third-party API had undocumented rate limits that surfaced late in testing. I flagged the risk to stakeholders as soon as I identified it, rather than waiting for the deadline to pass silently, and negotiated a short extension with a clear revised plan. I now build in early integration testing with any new external dependency."
+    },
+    "follow_up_hint": "Ask exactly when they communicated the risk relative to the deadline.",
+    "concept": "Accountability",
+    "sub_concept": "Communicating Delays",
+    "expected_reasoning": "Strong answers show honest acknowledgment, early communication of risk, and a durable process improvement.",
+    "common_mistakes": ["Blames external factors entirely with no self-reflection", "Communicated the miss too late to matter", "No process change afterward"],
+    "progressive_hints": ["When exactly did you flag the risk of missing the deadline?", "What changed in how you plan for similar work now?"],
+    "learning_objective": "Candidate can own missed deadlines honestly and improve future planning."
+  },
+  {
+    "id": "beh-0045",
+    "question": "Tell me about a time you advocated for addressing technical debt or improving code quality.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "backend"],
+    "topics": ["code_quality", "technical_debt"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Describes the technical debt and its concrete cost",
+        "Shows how they built a business case for addressing it",
+        "Explains how they got buy-in from stakeholders focused on features",
+        "States the outcome"
+      ],
+      "sample_answer": "Our test suite had become so slow and flaky that engineers were routinely skipping it, increasing production bugs. I quantified the time lost to flaky test reruns and presented it alongside a proposed cleanup plan with a clear timeline. Leadership approved a two-week investment, and post-cleanup, our bug escape rate dropped noticeably."
+    },
+    "follow_up_hint": "Ask how they quantified the cost of the technical debt to make the business case.",
+    "concept": "Code Quality Advocacy",
+    "sub_concept": "Justifying Technical Investment",
+    "expected_reasoning": "Strong answers quantify the cost of technical debt in business terms and secure buy-in with a clear plan.",
+    "common_mistakes": ["No quantification of the debt's real cost", "Couldn't get buy-in from non-technical stakeholders", "No measurable improvement after the investment"],
+    "progressive_hints": ["How did you quantify the cost of the technical debt?", "How did you convince stakeholders focused on features to invest time here?"],
+    "learning_objective": "Candidate can build a compelling, quantified case for technical investment."
+  },
+  {
+    "id": "beh-0046",
+    "question": "Walk me through the project you are most proud of and your specific role in it.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "fullstack", "backend"],
+    "topics": ["project_deep_dive", "ownership"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Meta", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "Frames the problem and its significance clearly",
+        "Distinguishes personal contribution from team contribution",
+        "Explains a key technical or organizational challenge overcome",
+        "States measurable impact and personal reflection"
+      ],
+      "sample_answer": "I'm most proud of building a real-time fraud detection pipeline that reduced false positives by 40% while cutting detection latency in half. My specific role was designing the streaming architecture and leading the rollout strategy to avoid disrupting existing fraud checks. It taught me how much rollout strategy matters as much as the technical design itself."
+    },
+    "follow_up_hint": "Ask them to go deeper into one specific technical challenge within the project.",
+    "concept": "Ownership Under Ambiguity",
+    "sub_concept": "Project Deep Dive",
+    "expected_reasoning": "Strong answers clearly separate personal role from team effort and connect technical choices to measurable business impact.",
+    "common_mistakes": ["Cannot distinguish their role from the team's", "No measurable impact stated", "Answer stays too high-level with no technical depth"],
+    "progressive_hints": ["What was uniquely your contribution versus the team's?", "What was the hardest technical decision within this project?"],
+    "learning_objective": "Candidate can narrate a project with clear personal ownership and technical depth."
+  },
+  {
+    "id": "beh-0047",
+    "question": "Tell me about a time you had to make an unpopular decision that others disagreed with.",
+    "type": "behavioral",
+    "difficulty": 4,
+    "roles": ["general_sde"],
+    "topics": ["decision_making", "leadership"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the decision and why it was unpopular",
+        "Explains the reasoning that justified going against consensus",
+        "Shows how they communicated the decision transparently",
+        "States the outcome and any relationship repair needed"
+      ],
+      "sample_answer": "I decided to delay a feature launch the team was excited about because early testing showed a serious data integrity risk. It was unpopular given the sunk effort, but I explained the risk transparently with concrete evidence and offered a revised timeline. The team ultimately agreed it was the right call once they saw the risk clearly."
+    },
+    "follow_up_hint": "Ask how they handled the team's initial pushback or frustration.",
+    "concept": "Decision Making",
+    "sub_concept": "Unpopular Decisions",
+    "expected_reasoning": "Strong answers show clear, evidence-based reasoning communicated transparently, with attention to team morale afterward.",
+    "common_mistakes": ["Made the decision unilaterally without explaining reasoning", "Ignored team pushback instead of addressing it", "No follow-up on team morale after the decision"],
+    "progressive_hints": ["How did you explain your reasoning to a frustrated team?", "How did you rebuild morale or buy-in after the decision?"],
+    "learning_objective": "Candidate can make and communicate difficult, unpopular decisions responsibly."
+  },
+  {
+    "id": "beh-0048",
+    "question": "Tell me about a time you had to balance shipping speed against quality.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde"],
+    "topics": ["technical_tradeoffs", "quality"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "startups", "Meta"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the specific speed-versus-quality tension",
+        "Explains the criteria used to decide where to compromise",
+        "Shows safeguards added to manage the accepted risk",
+        "States the outcome"
+      ],
+      "sample_answer": "For a time-sensitive marketing launch, I chose to ship with a manual data reconciliation step rather than full automation to meet the deadline. I clearly documented the technical debt and added monitoring to catch reconciliation errors quickly. We hit the launch date and automated the step properly the following sprint with no incidents in between."
+    },
+    "follow_up_hint": "Ask how they made sure the shortcut didn't become permanent, unmanaged debt.",
+    "concept": "Technical Trade-off Decisions",
+    "sub_concept": "Speed vs Quality",
+    "expected_reasoning": "Strong answers show deliberate, bounded trade-offs with safeguards and a plan to address any accepted debt.",
+    "common_mistakes": ["Sacrificed quality without any safeguard or plan to fix it later", "Shortcut became permanent unmanaged debt", "No clear criteria for where the line was drawn"],
+    "progressive_hints": ["What safeguard did you put in place for the accepted risk?", "How did you make sure the shortcut got addressed properly later?"],
+    "learning_objective": "Candidate can make sound, bounded trade-offs between speed and quality."
+  },
+  {
+    "id": "beh-0049",
+    "question": "Tell me about a time you had to work with limited resources or budget to accomplish a goal.",
+    "type": "behavioral",
+    "difficulty": 3,
+    "roles": ["general_sde", "product_manager"],
+    "topics": ["resourcefulness", "prioritization"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "startups"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the resource constraint clearly",
+        "Explains how they prioritized to maximize impact within limits",
+        "Shows creative or resourceful problem-solving",
+        "States the outcome achieved despite constraints"
+      ],
+      "sample_answer": "With no budget for new infrastructure, I needed to improve system reliability using only existing tools. I identified the highest-impact reliability gaps and used open-source monitoring already available in our stack instead of buying a new tool. We improved uptime meaningfully without any additional spend."
+    },
+    "follow_up_hint": "Ask what they had to explicitly deprioritize because of the constraint.",
+    "concept": "Resourcefulness",
+    "sub_concept": "Constrained Problem Solving",
+    "expected_reasoning": "Strong answers show creative prioritization to maximize impact within genuine resource constraints.",
+    "common_mistakes": ["Constraint wasn't real or significant", "No creative problem-solving, just reduced scope", "No meaningful outcome despite the constraint"],
+    "progressive_hints": ["What did you have to explicitly say no to because of the constraint?", "What creative approach let you get more out of what you had?"],
+    "learning_objective": "Candidate can achieve meaningful outcomes despite genuine resource constraints."
+  },
+  {
+    "id": "beh-0050",
+    "question": "Tell me about a time you had to deliver bad news to a stakeholder or leadership.",
+    "type": "behavioral",
+    "difficulty": 4,
+    "roles": ["general_sde", "product_manager"],
+    "topics": ["communication", "accountability"],
+    "tech_keywords": ["behavioral"],
+    "companies_common": ["Amazon", "Google", "Microsoft"],
+    "source_style": "common-interview",
+    "reference_solution": {
+      "key_points": [
+        "States the bad news and why it needed to be delivered promptly",
+        "Shows clear, direct, and honest communication without spin",
+        "Explains what mitigation or path forward was proposed alongside the news",
+        "States how the stakeholder responded and what followed"
+      ],
+      "sample_answer": "I had to tell leadership that a major integration would miss its committed date due to a critical security issue we uncovered late. I delivered the news as soon as it was confirmed, along with a concrete revised plan and the reasoning behind the delay. Leadership appreciated the transparency and the early warning gave them time to adjust downstream commitments."
+    },
+    "follow_up_hint": "Ask how far in advance of the original deadline they delivered the news.",
+    "concept": "Communication",
+    "sub_concept": "Delivering Bad News",
+    "expected_reasoning": "Strong answers show prompt, honest delivery paired with a concrete mitigation plan rather than delay or spin.",
+    "common_mistakes": ["Delayed delivering the bad news until it was unavoidable", "No mitigation plan offered alongside the news", "Downplayed or spun the severity of the issue"],
+    "progressive_hints": ["How soon after learning the bad news did you communicate it?", "What plan did you offer alongside the bad news itself?"],
+    "learning_objective": "Candidate can deliver difficult news promptly, honestly, and constructively."
+  }
+]
