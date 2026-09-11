@@ -49,7 +49,7 @@ class CloudLLMProvider(LLMProvider):
         headers = {"Authorization": f"Bearer {self.api_key}"}
         url = f"{self.base_url}/chat/completions"
 
-        async with httpx.AsyncClient(timeout=90.0) as client:
+        async with httpx.AsyncClient(timeout=180.0) as client:
             for attempt in range(1, MAX_ATTEMPTS + 1):
                 try:
                     resp = await client.post(url, json=payload, headers=headers)
