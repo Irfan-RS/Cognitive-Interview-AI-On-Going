@@ -33,26 +33,31 @@ export default function Monitoring() {
           </div>
         </div>
 
-        <div className="glass-panel animate-rise-in relative mx-auto aspect-video w-full max-w-lg overflow-hidden" style={{ animationDelay: "100ms" }}>
-          <div className="bg-grid pointer-events-none absolute inset-0 opacity-30" />
-          {["top-4 left-4", "top-4 right-4", "bottom-4 left-4", "bottom-4 right-4"].map((pos, i) => (
-            <span key={pos} className={`absolute ${pos}`}>
-              <span
-                className="absolute inset-0 -m-2 animate-ping rounded-full bg-brand-400/30"
-                style={{ animationDelay: `${i * 300}ms`, animationDuration: "2.4s" }}
-              />
-              <span className="relative block h-3 w-3 rounded-full bg-brand-400 shadow-[0_0_12px_2px_rgba(139,123,255,0.6)]" />
-            </span>
-          ))}
-          <span className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-practice-500 shadow-[0_0_12px_2px_rgba(34,211,184,0.6)]" />
+        <div className="glass-panel animate-rise-in relative mx-auto aspect-video w-full max-w-lg" style={{ animationDelay: "100ms" }}>
+          {/* Clipped to the card's rounded corners — everything that must stay inside lives here. The
+              "Focus on the screen" badge below is deliberately positioned to float PAST this box's bottom
+              edge, so it stays a sibling outside this clipped layer instead of being cut off by it. */}
+          <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
+            <div className="bg-grid pointer-events-none absolute inset-0 opacity-30" />
+            {["top-4 left-4", "top-4 right-4", "bottom-4 left-4", "bottom-4 right-4"].map((pos, i) => (
+              <span key={pos} className={`absolute ${pos}`}>
+                <span
+                  className="absolute inset-0 -m-2 animate-ping rounded-full bg-brand-400/30"
+                  style={{ animationDelay: `${i * 300}ms`, animationDuration: "2.4s" }}
+                />
+                <span className="relative block h-3 w-3 rounded-full bg-brand-400 shadow-[0_0_12px_2px_rgba(139,123,255,0.6)]" />
+              </span>
+            ))}
+            <span className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-practice-500 shadow-[0_0_12px_2px_rgba(34,211,184,0.6)]" />
 
-          <div className="relative flex h-full flex-col items-center justify-center gap-3 text-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full border border-ink-500 bg-ink-800/80 backdrop-blur">
-              <Eye size={22} className="text-mist-200" />
-            </span>
-            <p className="max-w-[220px] text-xs text-mist-400">
-              Calibration reference: 4 corners + center, then continuous tracking during the interview.
-            </p>
+            <div className="relative flex h-full flex-col items-center justify-center gap-3 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full border border-ink-500 bg-ink-800/80 backdrop-blur">
+                <Eye size={22} className="text-mist-200" />
+              </span>
+              <p className="max-w-[220px] text-xs text-mist-400">
+                Calibration reference: 4 corners + center, then continuous tracking during the interview.
+              </p>
+            </div>
           </div>
 
           <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-mock-500/40 bg-ink-950 px-4 py-1.5 text-xs text-mock-500 shadow-lg">
