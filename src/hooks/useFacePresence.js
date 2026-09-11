@@ -12,11 +12,14 @@ const ABSENT_AFTER_MS = 800; // sustained no-face before flagging — avoids sin
  */
 export default function useFacePresence(videoRef, active) {
   const [faceDetected, setFaceDetected] = useState(true);
+  const [facePartial, setFacePartial] = useState(false);
   const absentSinceRef = useRef(null);
+  const partialSinceRef = useRef(null);
 
   useEffect(() => {
     if (!active || !videoRef.current) {
       setFaceDetected(true);
+      setFacePartial(false);
       return;
     }
 
@@ -32,9 +35,18 @@ export default function useFacePresence(videoRef, active) {
         if (!vector) {
           if (absentSinceRef.current == null) absentSinceRef.current = now;
           setFaceDetected(now - absentSinceRef.current < ABSENT_AFTER_MS);
+          partialSinceRef.current = null;
+          setFacePartial(false);
         } else {
           absentSinceRef.current = null;
           setFaceDetected(true);
+          if (!vector.faceFullyVisible) {
+            if (partialSinceRef.current == null) partialSinceRef.current = now;
+            setFacePartial(now - partialSinceRef.current >= ABSENT_AFTER_MS);
+          } else {
+            partialSinceRef.current = null;
+            setFacePartial(false);
+          }
         }
       }
 
@@ -46,8 +58,9 @@ export default function useFacePresence(videoRef, active) {
       cancelled = true;
       clearTimeout(timer);
       absentSinceRef.current = null;
+      partialSinceRef.current = null;
     };
   }, [active, videoRef]);
 
-  return faceDetected;
+  return { faceDetected, facePartial };
 }

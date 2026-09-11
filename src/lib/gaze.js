@@ -34,6 +34,13 @@ const FACE_TOP = 10;
 const FACE_BOTTOM = 152;
 const NOSE_TIP = 1;
 
+// How close a face landmark is allowed to get to the video frame's edge before we
+// treat the face as clipped (part of it is out of the camera's view). MediaPipe's
+// mesh model will happily extrapolate landmarks for a partially-cropped face rather
+// than failing outright, so "a face was detected" alone doesn't mean the whole face
+// is visible — we have to check the mesh's own bounding box against the frame.
+const FACE_EDGE_MARGIN = 0.035;
+
 /** Kicks off loading the WASM runtime + face model ahead of time (cached, so a
  * later sampleAttentionVector call reuses it) — call this as soon as a screen
  * that will need face tracking mounts, rather than paying the multi-second
@@ -46,7 +53,15 @@ async function createLandmarker(vision, delegate) {
   const { FaceLandmarker } = await import("@mediapipe/tasks-vision");
   return FaceLandmarker.createFromOptions(vision, {
     baseOptions: { modelAssetPath: MODEL_URL, delegate },
-    runningMode: "VIDEO",
+    // IMAGE mode, not VIDEO — VIDEO mode's internal tracker is built for continuous,
+    // evenly-timed frames and smooths a face's position across them, including
+    // briefly still "tracking" a face that has actually left the frame or become
+    // occluded. This app polls one frame every 400ms (sparse, irregular), so that
+    // tracking assumption doesn't hold — it was letting a stale detection survive
+    // long enough for calibration/live monitoring to read "face present" when it
+    // wasn't. IMAGE mode has no tracking state: every call is an independent,
+    // from-scratch detection on exactly the frame handed to it.
+    runningMode: "IMAGE",
     numFaces: 1,
     refineLandmarks: true,
   });
@@ -101,7 +116,7 @@ export async function sampleAttentionVector(videoEl, timestampMs) {
   const landmarker = await getLandmarker();
   let result;
   try {
-    result = landmarker.detectForVideo(videoEl, timestampMs);
+    result = landmarker.detect(videoEl);
   } catch {
     return null;
   }
@@ -150,9 +165,26 @@ export async function sampleAttentionVector(videoEl, timestampMs) {
   const irisOffsetY =
     ((leftIris.y - leftLidMidY) / leftEyeHeight + (rightIris.y - rightLidMidY) / rightEyeHeight) / 2;
 
+  // Whole-mesh bounding box, in the video frame's own normalized [0,1] space —
+  // if any of it presses up against the frame edge, the camera is cropping part
+  // of the face (too close, off-center, or partially out of shot).
+  let minX = 1, maxX = 0, minY = 1, maxY = 0;
+  for (const p of landmarks) {
+    if (p.x < minX) minX = p.x;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.y > maxY) maxY = p.y;
+  }
+  const faceFullyVisible =
+    minX > FACE_EDGE_MARGIN &&
+    maxX < 1 - FACE_EDGE_MARGIN &&
+    minY > FACE_EDGE_MARGIN &&
+    maxY < 1 - FACE_EDGE_MARGIN;
+
   return {
     dx: headYaw * 0.6 + irisOffsetX * 0.4,
     dy: headPitch * 0.6 + irisOffsetY * 0.4,
+    faceFullyVisible,
   };
 }
 
@@ -218,6 +250,10 @@ export function fitCalibration(samples) {
   };
 }
 
-export function isWithinBounds(point, margin = 0.22) {
+// This is a heuristic head-pose + iris estimate, not true infrared-grade gaze
+// tracking — even with a good calibration it's noisy by nature. A tight margin
+// here reads as "constantly told I'm looking away while staring at the screen,"
+// which is worse than occasionally missing a genuine glance off-screen.
+export function isWithinBounds(point, margin = 0.32) {
   return point.x >= -margin && point.x <= 1 + margin && point.y >= -margin && point.y <= 1 + margin;
 }

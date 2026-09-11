@@ -24,7 +24,7 @@ export default function CalibrationScreen({ videoRef, videoRefCallback, onCalibr
   // check — this runs continuously so a candidate who drifts out of frame between
   // dots (or before ever clicking Start) sees it immediately, not only after a
   // failed capture.
-  const faceDetected = useFacePresence(videoRef, !done);
+  const { faceDetected, facePartial } = useFacePresence(videoRef, !done);
 
   // The face model is a multi-MB WASM + weights download loaded lazily on first
   // use — without this, that cold load happened silently inside the first dot
@@ -64,11 +64,13 @@ export default function CalibrationScreen({ videoRef, videoRefCallback, onCalibr
         Exit
       </button>
 
-      {!faceDetected && (
+      {(!faceDetected || facePartial) && (
         <div className="fixed left-1/2 top-16 z-30 -translate-x-1/2 animate-rise-in">
           <div className="glass-panel flex items-center gap-2 border-mock-500/40 px-4 py-2 text-sm font-medium text-mock-500 shadow-[0_10px_40px_-10px_rgba(255,107,107,0.5)]">
             <AlertTriangle size={16} className="shrink-0" />
-            Face not detected — move into frame and make sure you're well lit
+            {faceDetected
+              ? "Part of your face is out of frame — center yourself and move back a little"
+              : "Face not detected — move into frame and make sure you're well lit"}
           </div>
         </div>
       )}

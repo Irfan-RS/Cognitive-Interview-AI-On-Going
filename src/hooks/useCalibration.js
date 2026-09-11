@@ -52,10 +52,28 @@ export default function useCalibration(videoRef) {
         await new Promise((r) => setTimeout(r, SAMPLE_INTERVAL_MS));
       }
 
+      // TEMPORARY diagnostic — remove once the no-face calibration bug is confirmed fixed.
+      console.log("[calibration-debug]", {
+        videoReadyState: videoRef.current?.readyState,
+        videoSize: videoRef.current ? `${videoRef.current.videoWidth}x${videoRef.current.videoHeight}` : null,
+        samplesTaken: SAMPLES_PER_POINT,
+        samplesWithFace: vectors.length,
+        faceFullyVisibleFlags: vectors.map((v) => v.faceFullyVisible),
+      });
+
       if (vectors.length < SAMPLES_PER_POINT * 0.4) {
         setCaptureError(
           "Couldn't see your face clearly — make sure your face is well lit and centered, then try again."
         );
+        return;
+      }
+
+      // A calibration point captured from a partially cropped face bakes that
+      // distortion into the fitted mapping for the whole interview — reject it
+      // here rather than let it silently produce "looking away" false positives later.
+      const fullyVisibleCount = vectors.filter((v) => v.faceFullyVisible).length;
+      if (fullyVisibleCount < vectors.length * 0.6) {
+        setCaptureError("Part of your face was out of frame — move back a little so your whole face is visible, then try again.");
         return;
       }
 
