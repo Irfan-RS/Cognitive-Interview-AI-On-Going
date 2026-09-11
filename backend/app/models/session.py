@@ -33,6 +33,13 @@ class InterviewSession(Base):
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=lambda: datetime.now(timezone.utc))
     completed_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
 
+    # Cached LLM-generated report narrative. NULL means "not generated yet" —
+    # generating this costs one full LLM round-trip (tens of seconds), so it's
+    # computed once on first report view and reused on every later view instead
+    # of re-running the same call every time the report page loads.
+    report_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    report_action_items: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+
     turns: Mapped[list["SessionQuestion"]] = relationship(
         back_populates="session", cascade="all, delete-orphan", order_by="SessionQuestion.order_index"
     )

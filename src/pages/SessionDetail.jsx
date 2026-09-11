@@ -14,9 +14,11 @@ import {
   Gauge,
   ListChecks,
   MessageCircleQuestion,
+  RotateCcw,
   Target,
   XCircle,
 } from "lucide-react";
+import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import { api } from "../lib/api";
 
@@ -357,9 +359,11 @@ export default function SessionDetail() {
   const [report, setReport] = useState(null);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("summary");
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    setError(null);
     api
       .getReport(sessionId)
       .then((data) => {
@@ -371,7 +375,7 @@ export default function SessionDetail() {
     return () => {
       cancelled = true;
     };
-  }, [sessionId]);
+  }, [sessionId, attempt]);
 
   return (
     <div className="relative min-h-screen bg-ink-950">
@@ -386,12 +390,21 @@ export default function SessionDetail() {
 
       <div className="mx-auto max-w-4xl px-6 py-10 sm:py-14">
         {error && (
-          <div className="animate-rise-in rounded-xl border border-mock-500/40 bg-mock-500/10 px-4 py-3 text-sm text-mock-500">
-            {error}
+          <div className="animate-rise-in flex flex-col items-start gap-3 rounded-xl border border-mock-500/40 bg-mock-500/10 px-4 py-3 text-sm text-mock-500">
+            <p>{error}</p>
+            <Button variant="ghost" onClick={() => setAttempt((n) => n + 1)}>
+              <RotateCcw size={14} />
+              Try again
+            </Button>
           </div>
         )}
 
-        {!report && !error && <p className="text-sm text-mist-400">Loading report…</p>}
+        {!report && !error && (
+          <p className="text-sm text-mist-400">
+            Generating your report — the first view synthesizes a summary from your answers, which can take up to a
+            minute for longer sessions. Later views load instantly.
+          </p>
+        )}
 
         {report && (
           <>

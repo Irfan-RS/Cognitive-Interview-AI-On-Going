@@ -11,12 +11,29 @@ class ApiError extends Error {
   }
 }
 
-async function request(path, { method = "GET", body, isForm = false } = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers: isForm ? undefined : body ? { "Content-Type": "application/json" } : undefined,
-    body: isForm ? body : body ? JSON.stringify(body) : undefined,
-  });
+async function request(path, { method = "GET", body, isForm = false, timeoutMs } = {}) {
+  // No timeout by default — most endpoints should fail exactly when the server
+  // responds. Only opted into for calls known to involve a slow LLM round-trip,
+  // so a genuinely stuck request surfaces as an error instead of an infinite spinner.
+  const controller = timeoutMs ? new AbortController() : undefined;
+  const timer = timeoutMs ? setTimeout(() => controller.abort(), timeoutMs) : undefined;
+
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers: isForm ? undefined : body ? { "Content-Type": "application/json" } : undefined,
+      body: isForm ? body : body ? JSON.stringify(body) : undefined,
+      signal: controller?.signal,
+    });
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw new ApiError(0, "This is taking longer than expected — the server may still be working on it. Try again in a moment.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!res.ok) {
     let detail;
@@ -41,7 +58,11 @@ export const api = {
   createSession: (payload) => request("/sessions", { method: "POST", body: payload }),
   listSessions: () => request("/sessions"),
   getSession: (sessionId) => request(`/sessions/${sessionId}`),
-  getReport: (sessionId) => request(`/sessions/${sessionId}/report`),
+  // First view of a session's report generates its narrative summary via an LLM
+  // call (order of a minute); later views reuse the cached result and return
+  // fast. The generous timeout covers a genuinely slow first generation without
+  // hanging forever if something is actually stuck.
+  getReport: (sessionId) => request(`/sessions/${sessionId}/report`, { timeoutMs: 180_000 }),
   completeSession: (sessionId) => request(`/sessions/${sessionId}/complete`, { method: "POST" }),
   deleteSession: (sessionId) => request(`/sessions/${sessionId}`, { method: "DELETE" }),
   getHint: (sessionQuestionId) => request(`/sessions/questions/${sessionQuestionId}/hint`, { method: "POST" }),

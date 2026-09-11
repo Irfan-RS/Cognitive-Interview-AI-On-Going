@@ -71,6 +71,20 @@ async def _generate_summary_and_actions(llm: LLMProvider, session: InterviewSess
     }
 
 
+async def _cached_summary_and_actions(db: Session, llm: LLMProvider, session: InterviewSession) -> dict:
+    """The narrative costs one full LLM round-trip (order of a minute) — generate
+    it once per session and persist it, rather than re-running it on every report
+    view (including repeat visits to an already-completed session's report)."""
+    if session.report_summary is not None:
+        return {"summary": session.report_summary, "action_items": session.report_action_items or []}
+
+    narrative = await _generate_summary_and_actions(llm, session)
+    session.report_summary = narrative["summary"]
+    session.report_action_items = narrative["action_items"]
+    db.commit()
+    return narrative
+
+
 async def build_report(db: Session, llm: LLMProvider, session: InterviewSession) -> SessionReport:
     turns: list[ReportTurn] = []
     relevance_scores: list[float] = []
@@ -118,7 +132,7 @@ async def build_report(db: Session, llm: LLMProvider, session: InterviewSession)
         look_away_count=monitoring_repo.look_away_count_for_session(db, session.id),
     )
 
-    narrative = await _generate_summary_and_actions(llm, session)
+    narrative = await _cached_summary_and_actions(db, llm, session)
 
     return SessionReport(
         session_id=session.id,

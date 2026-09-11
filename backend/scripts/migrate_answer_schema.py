@@ -48,6 +48,8 @@ NEW_COLUMNS: dict[str, dict[str, str]] = {
     },
     "interview_sessions": {
         "resume_projects": "JSON",
+        "report_summary": "TEXT",
+        "report_action_items": "JSON",
     },
     "session_questions": {
         "source_project": "JSON",
