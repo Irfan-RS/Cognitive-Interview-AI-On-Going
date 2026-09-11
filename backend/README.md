@@ -110,4 +110,7 @@ Interactive API docs at `http://localhost:8000/docs`.
 5. `GET /api/v1/sessions/{id}/report` — full per-question breakdown:
    transcript, grammar issues, filler/pause counts, relevance %, eye-contact
    ratio (from `/api/v1/monitoring/events`), confidence score, and the
-   LLM's model solution.
+   LLM's model solution. The overall narrative summary + action items cost one
+   LLM round-trip to generate (can take up to ~90s on slower cloud models) — it's
+   cached on `InterviewSession.report_summary`/`report_action_items` after the
+   first view, so every later view of the same session's report is instant.

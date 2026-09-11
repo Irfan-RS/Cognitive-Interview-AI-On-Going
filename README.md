@@ -1,6 +1,6 @@
 # Cognitive Interview AI
 
-**A voice-driven, AI-powered mock & practice interview platform** that evaluates *how a candidate thinks*, not just whether their final answer is correct — combining cognitive, multi-dimensional LLM grading, live webcam-based eye-contact monitoring kept strictly separate from scoring, adaptive difficulty, speech-to-text/text-to-speech, and a RAG-backed question bank of 900+ interview questions to help candidates build real interview confidence.
+**A voice-driven, AI-powered mock & practice interview platform** that evaluates *how a candidate thinks*, not just whether their final answer is correct — combining cognitive, multi-dimensional LLM grading, live webcam-based eye-contact monitoring kept strictly separate from scoring, adaptive difficulty, speech-to-text/text-to-speech, and a RAG-backed question bank of 680 interview questions to help candidates build real interview confidence.
 
 <p align="left">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" />
@@ -49,7 +49,7 @@ The whole system is built as **swappable, layered components** — the LLM, spee
 - 📈 **Adaptive difficulty engine** — each answer's score shifts the next question's difficulty up or down
 - 🔁 **Smart follow-up logic** — the system decides whether to probe deeper on the same topic or move to a new question, grounded in real related questions from the bank (RAG)
 - 🎙️ **Full voice pipeline** — questions are read aloud (TTS), answers are spoken and transcribed (STT)
-- 🗂️ **Centralized, many-to-many tagged question bank** — 900+ questions tagged by role, topic, skill, and concept (not siloed per-role banks), each with reference solutions and key points
+- 🗂️ **Centralized, many-to-many tagged question bank** — 680 questions tagged by role, topic, skill, and concept (not siloed per-role banks), each with reference solutions and key points
 - 🧠 **Cognitive, multi-dimensional grading** — every answer is scored across 8 weighted dimensions (reasoning, depth, trade-off awareness, adaptability, and more — see [Cognitive Evaluation](#cognitive-evaluation)), judging *how* the candidate reasoned, not only whether the conclusion was right
 - 👁️‍🗨️ **Proctoring kept strictly separate from scoring** — eye contact is reported as its own observational block (on-screen %, look-away count) and never affects the readiness score or pass/fail outcome
 - 🧭 **Per-question coaching in the report** — for every question, the report explains how a strong answer should have been *approached* (problem understanding → reasoning → trade-offs → adaptability → communication), plus targeted tips for whichever dimensions came out weak
@@ -315,7 +315,7 @@ Cognitive Interview AI/
 │   │   ├── models/              # SQLAlchemy models + taxonomy (Role/Topic/Skill/Concept)
 │   │   ├── schemas/             # Pydantic contracts
 │   │   └── core/                 # settings (.env-driven)
-│   ├── data/question_bank/     # 900+ questions as versioned JSON files
+│   ├── data/question_bank/     # 680 questions as versioned JSON files
 │   ├── scripts/                 # seed_questions.py, build_index.py, smoke_test.py
 │   ├── storage/                  # SQLite DB, Chroma index, recordings (gitignored)
 │   └── requirements.txt
@@ -351,7 +351,7 @@ Open `backend/.env` and paste a **[Groq API key](https://console.groq.com)** int
 docker compose up --build
 ```
 
-Then open **http://localhost:5173**. First run takes a few minutes to build the search index over 900+ questions; later starts are quick, since it's cached in a Docker volume.
+Then open **http://localhost:5173**. First run takes a few minutes to build the search index over 680 questions; later starts are quick, since it's cached in a Docker volume.
 
 **Prefer fully offline?** Skip the API key and run:
 
@@ -460,7 +460,7 @@ See `backend/README.md` for the full request/response flow through each layer.
 
 The question bank is **centralized, not siloed per-role** — every question is tagged through a many-to-many relational schema (`Role` ↔ `Topic` ↔ `Skill` ↔ `Concept`), so adding a new role or technology never requires a new bank, just new tag associations.
 
-- **900+ questions** across DSA, OOP, OS, CN, DBMS, System Design, languages (Java/Python/JS/TypeScript/C++), frontend/backend/DevOps/cloud, ML/statistics, security, testing, distributed systems, and behavioral/leadership.
+- **680 questions** across 11 curated tracks: Behavioral (50), Backend (50), OOP (50), Linux (50), OS (50), Computer Networks (50), DSA (180, Striver SDE-sheet style), System Design (50), React (50), HTML/CSS/JavaScript (50), and Machine Learning (50).
 - Each question carries: type, difficulty (1–5), tagged roles/topics/skills, a reference solution (key points + sample answer), and a follow-up hint.
 - Retrieval uses a **weighted ranking function** combining semantic similarity (via Chroma) with role/topic/skill relevance and difficulty fit — with fuzzy tag matching, so entering "backend", "Backend Engineer", or "back-end" all resolve correctly.
 - Every answer is graded against the same universal [8-dimension cognitive rubric](#cognitive-evaluation), not a per-question scoring scale — see that section for the full breakdown.
