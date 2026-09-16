@@ -52,6 +52,19 @@ async def submit_answer(
     )
 
 
+@router.post("/{session_question_id}/skip", response_model=SubmitAnswerResponse)
+async def skip_question(session_question_id: str, db: Session = Depends(get_db), llm: LLMProvider = Depends(get_llm_provider)):
+    try:
+        answer = await interview_service.skip_question(db, llm, session_question_id=session_question_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    return SubmitAnswerResponse(
+        analysis=AnswerAnalysisOut.model_validate(answer),
+        next_step_options=NextStepOptions(can_follow_up=True, can_next_question=True),
+    )
+
+
 @router.post("/{session_question_id}/follow-up", response_model=QuestionTurnOut)
 async def follow_up(session_question_id: str, db: Session = Depends(get_db), llm: LLMProvider = Depends(get_llm_provider)):
     try:

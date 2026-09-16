@@ -8,7 +8,7 @@ from app.core.config import get_settings
 from app.models.answer import Answer
 from app.models.session import InterviewSession, SessionQuestion
 from app.providers.llm.base import LLMProvider
-from app.providers.stt.base import STTProvider
+from app.providers.stt.base import STTProvider, TranscriptionResult
 from app.rag.retriever import select_question
 from app.repositories import answer_repo, monitoring_repo, question_repo, session_repo
 from app.schemas.session import CreateSessionRequest, QuestionTurnOut
@@ -197,6 +197,79 @@ async def submit_answer(
         db,
         session_question_id=turn.id,
         audio_path=audio_path,
+        transcript=analysis["transcript"],
+        grammar_issues=analysis["grammar_issues"],
+        filler_words=analysis["filler_words"],
+        pause_count=analysis["pause_count"],
+        relevance_score=analysis["relevance_score"],
+        dimension_scores=analysis["dimension_scores"],
+        overall_score=analysis["overall_score"],
+        category_scores=analysis["category_scores"],
+        covered_key_points=analysis["covered_key_points"],
+        missed_key_points=analysis["missed_key_points"],
+        eye_contact_ratio=analysis["eye_contact_ratio"],
+        llm_model_solution=analysis["llm_model_solution"],
+        concepts_demonstrated=analysis["concepts_demonstrated"],
+        strengths=analysis["strengths"],
+        weaknesses=analysis["weaknesses"],
+        reasoning_analysis=analysis["reasoning_analysis"],
+        mistakes=analysis["mistakes"],
+        hint_required=analysis["hint_required"],
+        follow_up_required=analysis["follow_up_required"],
+        suggested_follow_up=analysis["suggested_follow_up"],
+        improvement_feedback=analysis["improvement_feedback"],
+        recommended_next_action=analysis["recommended_next_action"],
+        next_difficulty=next_difficulty,
+    )
+    db.commit()
+    db.refresh(answer)
+    return answer
+
+
+async def skip_question(db: Session, llm: LLMProvider, *, session_question_id: str) -> Answer:
+    """Skipping is treated exactly like submitting silence — same zero-score
+    analysis (model solution + missed key points included, per
+    analysis_service._build_unanswered_result), same difficulty adjustment —
+    just without ever touching STT/audio, since there was nothing recorded to
+    transcribe. Reuses analyze_answer's empty-transcript short-circuit so this
+    stays a single source of truth with the "recorded but said nothing" path."""
+    turn = session_repo.get_turn(db, session_question_id)
+    if turn is None:
+        raise ValueError(f"No such question turn: {session_question_id}")
+    session = session_repo.get_session(db, turn.session_id)
+    if session is None:
+        raise ValueError(f"Turn {session_question_id} has no parent session")
+
+    # Idempotent, same reasoning as submit_answer: a double-click shouldn't
+    # re-skip (and re-adjust difficulty) a question that already has an answer.
+    existing = answer_repo.get_by_session_question(db, session_question_id)
+    if existing is not None:
+        return existing
+
+    bank_question = question_repo.get_by_id(db, turn.question_id) if turn.question_id else None
+    key_points = bank_question.key_points if bank_question else []
+    eye_contact_ratio = monitoring_repo.eye_contact_ratio_for_question(db, session_question_id)
+
+    analysis = await analysis_service.analyze_answer(
+        llm,
+        question_text=turn.question_text,
+        key_points=key_points,
+        transcription=TranscriptionResult(text="", segments=[]),
+        eye_contact_ratio=eye_contact_ratio,
+        concept=bank_question.concept if bank_question else None,
+        sub_concept=bank_question.sub_concept if bank_question else None,
+        expected_reasoning=bank_question.expected_reasoning if bank_question else None,
+        common_mistakes=bank_question.common_mistakes if bank_question else None,
+        sample_answer=bank_question.sample_answer if bank_question else None,
+    )
+
+    next_difficulty = difficulty_service.next_difficulty(session.current_difficulty, analysis["overall_score"])
+    session.current_difficulty = next_difficulty
+
+    answer = answer_repo.create_answer(
+        db,
+        session_question_id=turn.id,
+        audio_path="",
         transcript=analysis["transcript"],
         grammar_issues=analysis["grammar_issues"],
         filler_words=analysis["filler_words"],

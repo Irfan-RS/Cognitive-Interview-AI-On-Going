@@ -199,10 +199,13 @@ def _build_cognitive_context(
     return ("\n" + "\n\n".join(parts) + "\n") if parts else ""
 
 
-def _build_unanswered_result(key_points: list[str], eye_contact_ratio: float) -> dict:
+def _build_unanswered_result(key_points: list[str], eye_contact_ratio: float, sample_answer: str | None) -> dict:
     """A silent/empty recording is not worth an LLM round-trip: the outcome is
     always the same (score near zero, "you didn't answer"), so skip straight to
-    it instead of waiting 5-90s on a call whose answer we already know."""
+    it instead of waiting 5-90s on a call whose answer we already know. The
+    candidate should still see what a good answer looked like and which key
+    points they'd have needed to hit — that's already authored on bank
+    questions (sample_answer), so it costs nothing extra to show here."""
     dimension_scores = {dim: 0.0 for dim in DIMENSION_WEIGHTS}
     return {
         "transcript": "",
@@ -225,7 +228,7 @@ def _build_unanswered_result(key_points: list[str], eye_contact_ratio: float) ->
         "grammar_issues": [],
         "covered_key_points": [],
         "missed_key_points": list(key_points),
-        "llm_model_solution": "",
+        "llm_model_solution": (sample_answer or "").strip(),
         "eye_contact_ratio": eye_contact_ratio,
     }
 
@@ -246,7 +249,7 @@ async def analyze_answer(
     previous_answer_transcript: str | None = None,
 ) -> dict:
     if not transcription.text.strip():
-        return _build_unanswered_result(key_points, eye_contact_ratio)
+        return _build_unanswered_result(key_points, eye_contact_ratio, sample_answer)
 
     filler_words = count_filler_words(transcription.text)
     pause_count = transcription.count_gaps() if transcription.segments else 0
