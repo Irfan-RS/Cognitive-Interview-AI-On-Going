@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { AlertTriangle, ArrowRight, Eye, MousePointerClick, Scan, X } from "lucide-react";
+import { AlertTriangle, ArrowRight, Camera, CheckCircle2, MousePointerClick, Scan, Users, X } from "lucide-react";
 import Button from "../components/ui/Button";
 import useCalibration, { CALIBRATION_POINTS } from "../hooks/useCalibration";
-import useFacePresence from "../hooks/useFacePresence";
-import { preloadFaceTracking } from "../lib/gaze";
+import useFaceMonitor from "../hooks/useFaceMonitor";
+import { preloadFaceModels } from "../lib/faceModel";
 
 // Visual inset from the true viewport edge so corner dots stay comfortably
 // on-screen and clickable-looking, while the calibration target coordinates
@@ -17,18 +17,37 @@ function dotStyle(point) {
   return { top: `${y}vh`, left: `${x}vw` };
 }
 
+const LIVE_STATUS_TEXT = {
+  "no-face": "Couldn't see your face — make sure you're centered and well lit",
+  "multi-face": "More than one face is visible — only the candidate should be in frame",
+  partial: "Part of your face is out of frame — move back a little",
+  ready: "Face detected — ready to capture",
+};
+
 export default function CalibrationScreen({ videoRef, videoRefCallback, onCalibrated, onExit }) {
-  const { start, confirmCurrentPoint, pointIndex, capturing, done, mapper, captureError, activePoint } =
-    useCalibration(videoRef);
-  // Live camera feedback, independent of calibration's own point-by-point capture
-  // check — this runs continuously so a candidate who drifts out of frame between
-  // dots (or before ever clicking Start) sees it immediately, not only after a
-  // failed capture.
-  const { faceDetected, facePartial } = useFacePresence(videoRef, !done);
+  const {
+    stage,
+    liveStatus,
+    captureBusy,
+    captureReference,
+    confirmCurrentPoint,
+    pointIndex,
+    capturing,
+    done,
+    mapper,
+    referenceEmbeddings,
+    captureError,
+    activePoint,
+  } = useCalibration(videoRef);
+
+  // Live camera feedback during the dot stage, independent of each point's own
+  // capture validation — this runs continuously so a candidate who drifts out of
+  // frame between dots sees it immediately, not only after a failed capture.
+  const live = useFaceMonitor({ videoRef, active: stage === "dots" });
 
   // The face model is a multi-MB WASM + weights download loaded lazily on first
-  // use — without this, that cold load happened silently inside the first dot
-  // click, making calibration feel frozen for several seconds with no feedback.
+  // use — without this, that cold load happened silently inside the first live
+  // check, making the reference-capture step feel frozen for several seconds.
   const [modelReady, setModelReady] = useState(false);
   const [modelError, setModelError] = useState(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
@@ -37,7 +56,7 @@ export default function CalibrationScreen({ videoRef, videoRefCallback, onCalibr
   useEffect(() => {
     let cancelled = false;
     setModelError(null);
-    preloadFaceTracking()
+    preloadFaceModels()
       .then(() => {
         if (!cancelled) setModelReady(true);
       })
@@ -48,6 +67,20 @@ export default function CalibrationScreen({ videoRef, videoRefCallback, onCalibr
       cancelled = true;
     };
   }, [loadAttempt]);
+
+  const dotStageBanner =
+    stage === "dots" && (!live.faceDetected || live.multipleFaces || live.facePartial)
+      ? live.multipleFaces
+        ? LIVE_STATUS_TEXT["multi-face"]
+        : !live.faceDetected
+          ? LIVE_STATUS_TEXT["no-face"]
+          : LIVE_STATUS_TEXT.partial
+      : null;
+
+  const referenceStageBanner =
+    stage === "reference" && modelReady && liveStatus !== "ready" ? LIVE_STATUS_TEXT[liveStatus] : null;
+
+  const banner = dotStageBanner || referenceStageBanner;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-ink-950">
@@ -64,13 +97,11 @@ export default function CalibrationScreen({ videoRef, videoRefCallback, onCalibr
         Exit
       </button>
 
-      {(!faceDetected || facePartial) && (
+      {banner && (
         <div className="fixed left-1/2 top-16 z-30 -translate-x-1/2 animate-rise-in">
           <div className="glass-panel flex items-center gap-2 border-mock-500/40 px-4 py-2 text-sm font-medium text-mock-500 shadow-[0_10px_40px_-10px_rgba(255,107,107,0.5)]">
             <AlertTriangle size={16} className="shrink-0" />
-            {faceDetected
-              ? "Part of your face is out of frame — center yourself and move back a little"
-              : "Face not detected — move into frame and make sure you're well lit"}
+            {banner}
           </div>
         </div>
       )}
@@ -80,61 +111,94 @@ export default function CalibrationScreen({ videoRef, videoRefCallback, onCalibr
           dead-center dot would render underneath the centered instructional text (later in
           the DOM = painted on top), swallowing every click and landing on the text instead —
           which is exactly what "clicking selects nearby text" was. */}
-      {CALIBRATION_POINTS.map((point, i) => {
-        const isActive = pointIndex === i;
-        const isDone = done || i < pointIndex;
-        return isActive ? (
-          <button
-            key={point.key}
-            onClick={confirmCurrentPoint}
-            disabled={capturing}
-            aria-label={`Confirm looking at ${point.key.replace("-", " ")}`}
-            className="absolute z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer select-none disabled:cursor-wait"
-            style={dotStyle(point)}
-          >
-            <span className="absolute inset-0 -m-3 animate-ping rounded-full bg-brand-400/40" />
-            <span
-              className={`relative block h-8 w-8 rounded-full border-2 border-brand-300 bg-brand-400 shadow-[0_0_28px_4px_rgba(109,91,255,0.7)] transition-transform ${
-                capturing ? "scale-90" : "scale-100 hover:scale-110"
-              }`}
-            />
-          </button>
-        ) : (
-          <span key={point.key} className="absolute z-20 -translate-x-1/2 -translate-y-1/2" style={dotStyle(point)}>
-            <span
-              className={`block h-6 w-6 rounded-full border-2 transition-all duration-300 ${
-                isDone
-                  ? "border-practice-500 bg-practice-500/60 shadow-[0_0_12px_0_rgba(34,211,184,0.5)]"
-                  : "border-ink-500 bg-ink-700"
-              }`}
-            />
-          </span>
-        );
-      })}
+      {stage !== "reference" &&
+        CALIBRATION_POINTS.map((point, i) => {
+          const isActive = pointIndex === i;
+          const isDone = done || i < pointIndex;
+          return isActive ? (
+            <button
+              key={point.key}
+              onClick={confirmCurrentPoint}
+              disabled={capturing}
+              aria-label={`Confirm looking at ${point.key.replace("-", " ")}`}
+              className="absolute z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer select-none disabled:cursor-wait"
+              style={dotStyle(point)}
+            >
+              <span className="absolute inset-0 -m-3 animate-ping rounded-full bg-brand-400/40" />
+              <span
+                className={`relative block h-8 w-8 rounded-full border-2 border-brand-300 bg-brand-400 shadow-[0_0_28px_4px_rgba(109,91,255,0.7)] transition-transform ${
+                  capturing ? "scale-90" : "scale-100 hover:scale-110"
+                }`}
+              />
+            </button>
+          ) : (
+            <span key={point.key} className="absolute z-20 -translate-x-1/2 -translate-y-1/2" style={dotStyle(point)}>
+              <span
+                className={`block h-6 w-6 rounded-full border-2 transition-all duration-300 ${
+                  isDone
+                    ? "border-practice-500 bg-practice-500/60 shadow-[0_0_12px_0_rgba(34,211,184,0.5)]"
+                    : "border-ink-500 bg-ink-700"
+                }`}
+              />
+            </span>
+          );
+        })}
 
       {/* Anchored to the bottom third, not dead-center — the true center of the screen is
           reserved for the center calibration dot and must stay completely free. */}
       <div className="fixed inset-x-0 bottom-10 z-10 flex flex-col items-center gap-5 px-6 text-center">
-        <div className="animate-rise-in flex flex-col items-center gap-3">
-          <span className="glass-panel flex h-12 w-12 items-center justify-center rounded-2xl text-brand-300">
-            <Scan size={22} strokeWidth={1.75} />
-          </span>
-          <div>
-            <h1 className="text-2xl font-semibold text-white text-balance sm:text-3xl">
-              Calibrate eye &amp; face tracking
-            </h1>
-            <p className="mx-auto mt-1.5 max-w-md text-sm text-mist-400 text-balance">
-              Look directly at the highlighted dot, then click it to confirm — one click per corner, plus the
-              center.
-            </p>
-          </div>
-        </div>
+        {stage === "reference" && (
+          <>
+            <div className="animate-rise-in flex flex-col items-center gap-3">
+              <span className="glass-panel flex h-12 w-12 items-center justify-center rounded-2xl text-brand-300">
+                <Camera size={22} strokeWidth={1.75} />
+              </span>
+              <div>
+                <h1 className="text-2xl font-semibold text-white text-balance sm:text-3xl">
+                  Capture your reference photo
+                </h1>
+                <p className="mx-auto mt-1.5 max-w-md text-sm text-mist-400 text-balance">
+                  Look at the camera, alone in frame. This is what the interview checks against later, so it can
+                  tell if someone else steps in.
+                </p>
+              </div>
+            </div>
 
-        {pointIndex === -1 && !done && !modelError && (
-          <Button variant="primary" onClick={start} className="animate-rise-in" disabled={!modelReady}>
-            <Eye size={16} />
-            {modelReady ? "Start calibration" : "Loading face tracking…"}
-          </Button>
+            {!modelError && (
+              <Button
+                variant="primary"
+                onClick={captureReference}
+                className="animate-rise-in"
+                disabled={!modelReady || captureBusy || liveStatus !== "ready"}
+              >
+                {liveStatus === "ready" ? <CheckCircle2 size={16} /> : <Users size={16} />}
+                {!modelReady
+                  ? "Loading face tracking…"
+                  : captureBusy
+                    ? "Capturing…"
+                    : liveStatus === "ready"
+                      ? "Capture reference photo"
+                      : "Waiting for a clear view of your face…"}
+              </Button>
+            )}
+          </>
+        )}
+
+        {stage !== "reference" && (
+          <div className="animate-rise-in flex flex-col items-center gap-3">
+            <span className="glass-panel flex h-12 w-12 items-center justify-center rounded-2xl text-brand-300">
+              <Scan size={22} strokeWidth={1.75} />
+            </span>
+            <div>
+              <h1 className="text-2xl font-semibold text-white text-balance sm:text-3xl">
+                Calibrate eye &amp; face tracking
+              </h1>
+              <p className="mx-auto mt-1.5 max-w-md text-sm text-mist-400 text-balance">
+                Look directly at the highlighted dot, then click it to confirm — one click per corner, plus the
+                center.
+              </p>
+            </div>
+          </div>
         )}
 
         {modelError && (
@@ -166,20 +230,20 @@ export default function CalibrationScreen({ videoRef, videoRefCallback, onCalibr
           <div className="glass-panel animate-rise-in max-w-md px-5 py-4 text-sm text-mock-500">
             {captureError}
             <div className="mt-3">
-              <Button variant="ghost" onClick={confirmCurrentPoint}>
+              <Button variant="ghost" onClick={stage === "reference" ? captureReference : confirmCurrentPoint}>
                 Retry
               </Button>
             </div>
           </div>
         )}
 
-        {done && (
+        {stage === "done" && (
           <div className="animate-rise-in flex flex-col items-center gap-4">
             <p className="flex items-center gap-2 text-lg font-semibold text-practice-500">
               <span className="h-2 w-2 rounded-full bg-practice-500" />
               Calibration complete
             </p>
-            <Button variant="primary" onClick={() => onCalibrated(mapper)}>
+            <Button variant="primary" onClick={() => onCalibrated(mapper, referenceEmbeddings)}>
               Start the interview
               <ArrowRight size={16} />
             </Button>

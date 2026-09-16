@@ -1,27 +1,19 @@
-// Client-side face/gaze tracking built on MediaPipe's FaceLandmarker
-// (runs fully in-browser via WASM, no frames ever leave the device).
+// Turns one face's MediaPipe landmarks into a 2D "attention vector", and turns
+// 5 calibration samples into a fitted vector->screen mapping. Pure math only —
+// no face-count, visibility, or identity logic; that's faceIdentity.js's job.
 //
-// We don't attempt true infrared-grade gaze estimation — that needs
-// specialized hardware. Instead we combine two cheap, robust signals from
-// the 478-point face mesh into one 2D "attention vector" per frame:
+// We don't attempt true infrared-grade gaze estimation — that needs specialized
+// hardware. Instead we combine two cheap, robust signals from the 478-point face
+// mesh into one 2D "attention vector" per frame:
 //   - head yaw/pitch: how far the nose tip sits from the face's own center,
 //     normalized by face size (turning your head away from the screen)
 //   - iris offset: how far the iris centers sit from their eye corners,
 //     normalized by eye width (looking away without turning your head)
-// The 5-point calibration (4 corners + center) then fits a linear map from
-// that vector space to normalized screen space, exactly like calibrating a
-// mouse-free pointer: we don't know the camera's intrinsics, but we do know
-// where the user was looking at 5 known moments, which is enough to fit a
-// plane.
+// The 5-point calibration (4 corners + center) then fits a linear map from that
+// vector space to normalized screen space, exactly like calibrating a mouse-free
+// pointer: we don't know the camera's intrinsics, but we do know where the user
+// was looking at 5 known moments, which is enough to fit a plane.
 
-let _visionModulePromise = null;
-let _landmarkerPromise = null;
-
-const WASM_BASE = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
-const MODEL_URL =
-  "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
-
-// Landmark indices from MediaPipe's canonical face mesh topology.
 const LEFT_EYE_CORNERS = [33, 133];
 const RIGHT_EYE_CORNERS = [362, 263];
 const LEFT_EYE_LID = { upper: [160, 158], lower: [144, 153] };
@@ -34,66 +26,6 @@ const FACE_TOP = 10;
 const FACE_BOTTOM = 152;
 const NOSE_TIP = 1;
 
-// How close a face landmark is allowed to get to the video frame's edge before we
-// treat the face as clipped (part of it is out of the camera's view). MediaPipe's
-// mesh model will happily extrapolate landmarks for a partially-cropped face rather
-// than failing outright, so "a face was detected" alone doesn't mean the whole face
-// is visible — we have to check the mesh's own bounding box against the frame.
-const FACE_EDGE_MARGIN = 0.035;
-
-/** Kicks off loading the WASM runtime + face model ahead of time (cached, so a
- * later sampleAttentionVector call reuses it) — call this as soon as a screen
- * that will need face tracking mounts, rather than paying the multi-second
- * cold-load cost silently on the user's first calibration click. */
-export function preloadFaceTracking() {
-  return getLandmarker();
-}
-
-async function createLandmarker(vision, delegate) {
-  const { FaceLandmarker } = await import("@mediapipe/tasks-vision");
-  return FaceLandmarker.createFromOptions(vision, {
-    baseOptions: { modelAssetPath: MODEL_URL, delegate },
-    // IMAGE mode, not VIDEO — VIDEO mode's internal tracker is built for continuous,
-    // evenly-timed frames and smooths a face's position across them, including
-    // briefly still "tracking" a face that has actually left the frame or become
-    // occluded. This app polls one frame every 400ms (sparse, irregular), so that
-    // tracking assumption doesn't hold — it was letting a stale detection survive
-    // long enough for calibration/live monitoring to read "face present" when it
-    // wasn't. IMAGE mode has no tracking state: every call is an independent,
-    // from-scratch detection on exactly the frame handed to it.
-    runningMode: "IMAGE",
-    numFaces: 1,
-    refineLandmarks: true,
-  });
-}
-
-async function getLandmarker() {
-  if (_landmarkerPromise) return _landmarkerPromise;
-
-  _landmarkerPromise = (async () => {
-    const { FilesetResolver } = await import("@mediapipe/tasks-vision");
-    if (!_visionModulePromise) _visionModulePromise = FilesetResolver.forVisionTasks(WASM_BASE);
-    const vision = await _visionModulePromise;
-
-    // GPU delegate is faster but unsupported on some systems/browsers (no WebGL2,
-    // driver blocklisted, etc.) — fall back to CPU rather than failing outright.
-    try {
-      return await createLandmarker(vision, "GPU");
-    } catch {
-      return await createLandmarker(vision, "CPU");
-    }
-  })();
-
-  // A cached REJECTED promise would permanently break calibration for the rest of
-  // the session (every future call returns the same failure, with no retry) — so
-  // on failure, clear the cache and let the next call try again from scratch.
-  _landmarkerPromise.catch(() => {
-    _landmarkerPromise = null;
-  });
-
-  return _landmarkerPromise;
-}
-
 function centroid(points, landmarks) {
   let x = 0;
   let y = 0;
@@ -104,25 +36,8 @@ function centroid(points, landmarks) {
   return { x: x / points.length, y: y / points.length };
 }
 
-/** Reads one video frame and returns a normalized {dx, dy} attention vector, or null if no face was found. */
-export async function sampleAttentionVector(videoEl, timestampMs) {
-  // MediaPipe's ROI stage throws "width and height must be > 0" if asked to process a
-  // frame before the video actually has decoded pixels — guard against that instead of
-  // letting one bad frame take down the whole detection graph.
-  if (!videoEl || videoEl.readyState < 2 || videoEl.videoWidth === 0 || videoEl.videoHeight === 0) {
-    return null;
-  }
-
-  const landmarker = await getLandmarker();
-  let result;
-  try {
-    result = landmarker.detect(videoEl);
-  } catch {
-    return null;
-  }
-  const landmarks = result.faceLandmarks?.[0];
-  if (!landmarks) return null;
-
+/** Turns one face's landmarks into a normalized {dx, dy} attention vector. */
+export function computeAttentionVector(landmarks) {
   const faceLeft = landmarks[FACE_LEFT];
   const faceRight = landmarks[FACE_RIGHT];
   const faceTop = landmarks[FACE_TOP];
@@ -165,26 +80,9 @@ export async function sampleAttentionVector(videoEl, timestampMs) {
   const irisOffsetY =
     ((leftIris.y - leftLidMidY) / leftEyeHeight + (rightIris.y - rightLidMidY) / rightEyeHeight) / 2;
 
-  // Whole-mesh bounding box, in the video frame's own normalized [0,1] space —
-  // if any of it presses up against the frame edge, the camera is cropping part
-  // of the face (too close, off-center, or partially out of shot).
-  let minX = 1, maxX = 0, minY = 1, maxY = 0;
-  for (const p of landmarks) {
-    if (p.x < minX) minX = p.x;
-    if (p.x > maxX) maxX = p.x;
-    if (p.y < minY) minY = p.y;
-    if (p.y > maxY) maxY = p.y;
-  }
-  const faceFullyVisible =
-    minX > FACE_EDGE_MARGIN &&
-    maxX < 1 - FACE_EDGE_MARGIN &&
-    minY > FACE_EDGE_MARGIN &&
-    maxY < 1 - FACE_EDGE_MARGIN;
-
   return {
     dx: headYaw * 0.6 + irisOffsetX * 0.4,
     dy: headPitch * 0.6 + irisOffsetY * 0.4,
-    faceFullyVisible,
   };
 }
 
@@ -253,7 +151,9 @@ export function fitCalibration(samples) {
 // This is a heuristic head-pose + iris estimate, not true infrared-grade gaze
 // tracking — even with a good calibration it's noisy by nature. A tight margin
 // here reads as "constantly told I'm looking away while staring at the screen,"
-// which is worse than occasionally missing a genuine glance off-screen.
-export function isWithinBounds(point, margin = 0.32) {
+// which is worse than occasionally missing a genuine glance off-screen. Widened
+// from 0.32 after real-world testing still showed false "looking away" hits
+// while looking dead at the screen.
+export function isWithinBounds(point, margin = 0.45) {
   return point.x >= -margin && point.x <= 1 + margin && point.y >= -margin && point.y <= 1 + margin;
 }
