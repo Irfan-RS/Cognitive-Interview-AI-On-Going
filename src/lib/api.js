@@ -65,7 +65,10 @@ export const api = {
   getReport: (sessionId) => request(`/sessions/${sessionId}/report`, { timeoutMs: 180_000 }),
   completeSession: (sessionId) => request(`/sessions/${sessionId}/complete`, { method: "POST" }),
   deleteSession: (sessionId) => request(`/sessions/${sessionId}`, { method: "DELETE" }),
-  getHint: (sessionQuestionId) => request(`/sessions/questions/${sessionQuestionId}/hint`, { method: "POST" }),
+  // hintLevel escalates with each click (1 = gentlest nudge, higher = more direct) —
+  // the backend generates a progressively stronger hint per level, never repeating.
+  getHint: (sessionQuestionId, hintLevel = 1) =>
+    request(`/sessions/questions/${sessionQuestionId}/hint?hint_level=${hintLevel}`, { method: "POST" }),
 
   parseResume: (file) => {
     const form = new FormData();
@@ -80,6 +83,10 @@ export const api = {
   },
   requestFollowUp: (sessionQuestionId) =>
     request(`/questions/${sessionQuestionId}/follow-up`, { method: "POST" }),
+  // Returns the same shape as submitAnswer — a skipped question is scored and
+  // analyzed exactly like a recorded-but-silent one (0 score, model solution +
+  // missed key points shown), just without ever touching audio/STT.
+  skipQuestion: (sessionQuestionId) => request(`/questions/${sessionQuestionId}/skip`, { method: "POST" }),
   requestNext: (sessionQuestionId) => request(`/questions/${sessionQuestionId}/next`, { method: "POST" }),
   voiceCommand: (sessionQuestionId, command) =>
     request(`/questions/${sessionQuestionId}/voice-command`, { method: "POST", body: { command } }),

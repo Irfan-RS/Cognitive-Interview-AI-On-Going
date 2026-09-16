@@ -3,6 +3,8 @@ import {
   AlertTriangle,
   ArrowRight,
   Briefcase,
+  CheckCircle2,
+  Circle,
   Eye,
   EyeOff,
   Lightbulb,
@@ -10,12 +12,14 @@ import {
   Mic,
   RotateCcw,
   Send,
+  SkipForward,
   Sparkles,
   Square,
+  TimerOff,
 } from "lucide-react";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
-import useGazeMonitor from "../hooks/useGazeMonitor";
+import useFaceMonitor from "../hooks/useFaceMonitor";
 import useRecorder from "../hooks/useRecorder";
 import { api } from "../lib/api";
 
@@ -43,12 +47,15 @@ export default function InterviewScreen({
   videoRefCallback,
   stream,
   mapper,
+  referenceEmbeddings,
   onTurnChange,
   onSessionComplete,
+  onPausedChange,
+  onEndInterview,
 }) {
   const [phase, setPhase] = useState("asking"); // asking | recording | recorded | analyzing | submitted
   const [hintAvailable, setHintAvailable] = useState(false);
-  const [hintText, setHintText] = useState(null);
+  const [hints, setHints] = useState([]); // stacked, one per click — each escalates (hint_level) past the last
   const [hintLoading, setHintLoading] = useState(false);
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState(null);
@@ -58,9 +65,10 @@ export default function InterviewScreen({
   const [recordedUrl, setRecordedUrl] = useState(null);
 
   const recorder = useRecorder(stream);
-  const gaze = useGazeMonitor({
+  const gaze = useFaceMonitor({
     videoRef,
     mapper,
+    referenceEmbeddings,
     active: phase === "asking" || phase === "recording",
     sessionId: session.id,
     sessionQuestionId: turn.session_question_id,
@@ -77,6 +85,14 @@ export default function InterviewScreen({
     };
   }, []);
 
+  // The overall interview clock should only run while the candidate is actively
+  // being asked or recording — not while they're reviewing a take, waiting on
+  // transcription/analysis, or looking at results before the next question.
+  // That processing time is the system thinking, not the candidate's time.
+  useEffect(() => {
+    onPausedChange?.(phase !== "asking" && phase !== "recording");
+  }, [phase, onPausedChange]);
+
   const startRecording = useCallback(() => {
     clearTimeout(autoRecordTimerRef.current);
     const started = recorder.start();
@@ -91,7 +107,7 @@ export default function InterviewScreen({
   useEffect(() => {
     setPhase("asking");
     setHintAvailable(false);
-    setHintText(null);
+    setHints([]);
     setAnalysis(null);
     setError(null);
     setSpokenBanner(null);
@@ -167,11 +183,31 @@ export default function InterviewScreen({
     }
   };
 
+  // Scored and shown exactly like a recorded-but-silent answer (0 score, model
+  // solution + missed key points) — just without ever recording anything.
+  const handleSkip = async () => {
+    if (busy) return;
+    setPhase("analyzing");
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await api.skipQuestion(turn.session_question_id);
+      setAnalysis(res.analysis);
+      setPhase("submitted");
+    } catch (err) {
+      setError(err.message);
+      setPhase("asking");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleHint = async () => {
+    if (hintLoading) return;
     setHintLoading(true);
     try {
-      const res = await api.getHint(turn.session_question_id);
-      setHintText(res.hint);
+      const res = await api.getHint(turn.session_question_id, hints.length + 1);
+      setHints((prev) => [...prev, res.hint]);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -229,11 +265,15 @@ export default function InterviewScreen({
           <div className="glass-panel animate-rise-in flex items-center gap-3 border-mock-500/40 px-6 py-4 shadow-[0_20px_60px_-15px_rgba(255,107,107,0.5)]">
             <AlertTriangle size={20} className="shrink-0 text-mock-500" />
             <p className="text-sm font-medium text-white text-balance">
-              {gaze.facePartial
-                ? "Part of your face is out of frame — center yourself and move back a little"
-                : gaze.faceDetected
-                  ? "Eye contact shows confidence — look back at the screen"
-                  : "We can't see your face — make sure you're centered in the camera"}
+              {gaze.multipleFaces
+                ? "More than one face is visible — only the candidate should be in frame"
+                : gaze.facePartial
+                  ? "Part of your face is out of frame — center yourself and move back a little"
+                  : gaze.identityMismatch
+                    ? "This doesn't look like the candidate who calibrated"
+                    : gaze.faceDetected
+                      ? "Eye contact shows confidence — look back at the screen"
+                      : "We can't see your face — make sure you're centered in the camera"}
             </p>
           </div>
         </div>
@@ -299,6 +339,10 @@ export default function InterviewScreen({
             <Button variant="ghost" onClick={() => handleVoiceCommand("rephrase")}>
               Rephrase
             </Button>
+            <Button variant="ghost" onClick={handleSkip} disabled={busy}>
+              <SkipForward size={14} />
+              Skip question
+            </Button>
           </div>
 
           {spokenBanner && (
@@ -324,13 +368,17 @@ export default function InterviewScreen({
               }`}
             >
               {gaze.inBounds ? <Eye size={12} /> : <EyeOff size={12} />}
-              {!gaze.faceDetected
-                ? "Face not detected"
-                : gaze.facePartial
-                  ? "Face partially out of frame"
-                  : gaze.inBounds
-                    ? "On screen"
-                    : "Looking away"}
+              {gaze.multipleFaces
+                ? "Multiple faces detected"
+                : !gaze.faceDetected
+                  ? "Face not detected"
+                  : gaze.facePartial
+                    ? "Face partially out of frame"
+                    : gaze.identityMismatch
+                      ? "Unrecognized candidate"
+                      : gaze.inBounds
+                        ? "On screen"
+                        : "Looking away"}
             </div>
           )}
 
@@ -365,11 +413,11 @@ export default function InterviewScreen({
                 onClick={handleHint}
                 disabled={!hintAvailable || hintLoading}
                 className={
-                  hintAvailable && !hintText ? "border-practice-500 text-practice-500 animate-soft-pulse" : ""
+                  hintAvailable && hints.length === 0 ? "border-practice-500 text-practice-500 animate-soft-pulse" : ""
                 }
               >
                 <Lightbulb size={16} />
-                {hintLoading ? "Thinking…" : "Hint"}
+                {hintLoading ? "Thinking…" : hints.length === 0 ? "Hint" : "Another hint"}
               </Button>
             )}
           </div>
@@ -402,9 +450,16 @@ export default function InterviewScreen({
           </div>
         )}
 
-        {hintText && (
-          <div className="animate-rise-in rounded-xl border border-practice-500/40 bg-practice-500/10 px-4 py-3 text-sm text-mist-100">
-            <span className="font-semibold text-practice-500">Hint:</span> {hintText}
+        {hints.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {hints.map((hint, i) => (
+              <div
+                key={i}
+                className="animate-rise-in rounded-xl border border-practice-500/40 bg-practice-500/10 px-4 py-3 text-sm text-mist-100"
+              >
+                <span className="font-semibold text-practice-500">Hint {i + 1}:</span> {hint}
+              </div>
+            ))}
           </div>
         )}
 
@@ -485,6 +540,26 @@ export default function InterviewScreen({
               </div>
             )}
 
+            {(analysis.covered_key_points?.length > 0 || analysis.missed_key_points?.length > 0) && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-mist-400">Areas to cover</p>
+                <ul className="mt-2 flex flex-col gap-1.5 text-sm">
+                  {analysis.covered_key_points?.map((point, i) => (
+                    <li key={`covered-${i}`} className="flex items-start gap-2 text-mist-200">
+                      <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-practice-500" />
+                      {point}
+                    </li>
+                  ))}
+                  {analysis.missed_key_points?.map((point, i) => (
+                    <li key={`missed-${i}`} className="flex items-start gap-2 text-mist-400">
+                      <Circle size={14} className="mt-0.5 shrink-0 text-mock-500" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {analysis.llm_model_solution && (
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-mist-400">Model solution</p>
@@ -492,7 +567,7 @@ export default function InterviewScreen({
               </div>
             )}
 
-            <div className="flex gap-3 border-t border-ink-700 pt-4">
+            <div className="flex flex-wrap gap-3 border-t border-ink-700 pt-4">
               <Button variant="ghost" onClick={handleFollowUp} disabled={busy}>
                 <MessageCircleQuestion size={16} />
                 Follow-up question
@@ -506,6 +581,17 @@ export default function InterviewScreen({
         )}
       </div>
       </div>
+
+      {analysis && (
+        <button
+          onClick={onEndInterview}
+          disabled={busy}
+          className="fixed bottom-6 right-6 z-20 flex items-center gap-1.5 rounded-full border border-practice-500/50 bg-practice-500 px-4 py-2.5 text-sm font-semibold text-ink-950 shadow-[0_10px_30px_-8px_rgba(34,211,184,0.6)] transition-all hover:brightness-110 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <TimerOff size={16} />
+          End interview
+        </button>
+      )}
     </div>
   );
 }

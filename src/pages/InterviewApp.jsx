@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Mic, TimerOff, X } from "lucide-react";
+import { Mic, Pause, TimerOff, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useMediaStream from "../hooks/useMediaStream";
 import SetupScreen from "./SetupScreen";
@@ -22,8 +22,10 @@ export default function InterviewApp() {
   const [session, setSession] = useState(null);
   const [turn, setTurn] = useState(null);
   const [mapper, setMapper] = useState(null);
+  const [referenceEmbeddings, setReferenceEmbeddings] = useState(null);
   const [error, setError] = useState(null);
   const [remainingMs, setRemainingMs] = useState(null);
+  const [interviewPaused, setInterviewPaused] = useState(false);
   const endingRef = useRef(false);
 
   const media = useMediaStream();
@@ -41,8 +43,9 @@ export default function InterviewApp() {
     }
   };
 
-  const handleCalibrated = (fittedMapper) => {
+  const handleCalibrated = (fittedMapper, capturedReferenceEmbeddings) => {
     setMapper(fittedMapper);
+    setReferenceEmbeddings(capturedReferenceEmbeddings);
     setStep("interview");
   };
 
@@ -65,24 +68,32 @@ export default function InterviewApp() {
     navigate(`/dashboard/${session.id}`);
   };
 
+  // Starts the budget fresh the moment the interview itself begins (not from
+  // session creation, so calibration time isn't charged against it either).
   useEffect(() => {
     if (step !== "interview" || !session) {
       setRemainingMs(null);
       return;
     }
-
-    const endsAt = new Date(session.created_at).getTime() + session.duration_minutes * 60 * 1000;
-    const tick = () => {
-      const left = endsAt - Date.now();
-      setRemainingMs(left);
-      if (left <= 0) handleEndInterview();
-    };
-
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
+    setRemainingMs(session.duration_minutes * 60 * 1000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, session]);
+  }, [step, session?.id]);
+
+  // A pausable stopwatch, not a wall-clock countdown: it only ticks down while
+  // interviewPaused is false (i.e. while InterviewScreen reports the candidate
+  // is actively being asked or recording) — reviewing a take, waiting on
+  // transcription/analysis, and looking at results before the next question
+  // don't cost the candidate any of their interview time.
+  useEffect(() => {
+    if (step !== "interview" || !session || remainingMs == null || interviewPaused) return;
+    if (remainingMs <= 0) {
+      handleEndInterview();
+      return;
+    }
+    const timer = setTimeout(() => setRemainingMs((prev) => (prev == null ? prev : prev - 1000)), 1000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, session, interviewPaused, remainingMs]);
 
   return (
     <div className="relative min-h-screen bg-ink-950">
@@ -101,12 +112,15 @@ export default function InterviewApp() {
         <div className="flex shrink-0 items-center gap-2">
           {step === "interview" && remainingMs != null && (
             <span
-              className={`rounded-full border px-3 py-1.5 text-xs font-semibold tabular-nums ${
-                remainingMs < 60000
-                  ? "border-mock-500/40 bg-mock-500/10 text-mock-500"
-                  : "border-ink-600 text-mist-300"
+              className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-semibold tabular-nums ${
+                interviewPaused
+                  ? "border-ink-600 text-mist-500"
+                  : remainingMs < 60000
+                    ? "border-mock-500/40 bg-mock-500/10 text-mock-500"
+                    : "border-ink-600 text-mist-300"
               }`}
             >
+              {interviewPaused && <Pause size={11} />}
               {formatCountdown(remainingMs)}
             </span>
           )}
@@ -166,8 +180,11 @@ export default function InterviewApp() {
             videoRefCallback={media.videoRefCallback}
             stream={media.stream}
             mapper={mapper}
+            referenceEmbeddings={referenceEmbeddings}
             onTurnChange={setTurn}
             onSessionComplete={handleSessionComplete}
+            onPausedChange={setInterviewPaused}
+            onEndInterview={handleEndInterview}
           />
         </div>
       )}
