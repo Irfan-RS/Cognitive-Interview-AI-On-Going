@@ -430,7 +430,9 @@ export default function SessionDetail() {
                   </span>
                 </div>
                 <h1 className="mt-3 text-2xl font-semibold text-white text-balance">
-                  {report.turns.length} question{report.turns.length === 1 ? "" : "s"} answered
+                  {report.answered_count} question{report.answered_count === 1 ? "" : "s"} answered
+                  {report.skipped_count > 0 &&
+                    ` · ${report.skipped_count} skipped`}
                 </h1>
                 {report.summary && <p className="mt-2 text-sm text-mist-300 text-balance">{report.summary}</p>}
               </div>

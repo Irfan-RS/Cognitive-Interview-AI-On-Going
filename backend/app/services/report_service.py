@@ -19,7 +19,7 @@ Never give generic advice like "practice more" or "communicate clearly".
 
 Respond with ONLY a JSON object, no markdown fences, no extra prose."""
 
-_USER_TEMPLATE = """SESSION: {mode} mode, {track} track, {question_count} question(s) answered.
+_USER_TEMPLATE = """SESSION: {mode} mode, {track} track, {question_count}.
 
 PER-QUESTION BREAKDOWN:
 {breakdown}
@@ -33,14 +33,23 @@ Return a JSON object with exactly these fields:
 _FALLBACK = {"summary": "", "action_items": []}
 
 
+def _is_skipped(turn) -> bool:
+    """A skip and a genuinely-recorded-but-silent answer look identical in
+    score (both 0, both empty transcript) — audio_path is the one field that
+    tells them apart: skip_question never writes a recording, submit_answer
+    always does (even for silence)."""
+    return turn.answer is not None and not turn.answer.transcript.strip() and not turn.answer.audio_path
+
+
 def _format_breakdown(session: InterviewSession) -> str:
     blocks = []
     for i, turn in enumerate(session.turns, start=1):
         if turn.answer is None:
             continue
         a = turn.answer
+        label = f"Q{i} [SKIPPED]" if _is_skipped(turn) else f"Q{i}"
         blocks.append(
-            f"Q{i}: {turn.question_text}\n"
+            f"{label}: {turn.question_text}\n"
             f"  Overall: {a.overall_score}/100 | Category scores: {a.category_scores}\n"
             f"  Reasoning analysis: {a.reasoning_analysis}\n"
             f"  Strengths: {'; '.join(a.strengths) or 'none noted'}\n"
@@ -57,10 +66,12 @@ async def _generate_summary_and_actions(llm: LLMProvider, session: InterviewSess
     if not has_answers:
         return _FALLBACK
 
+    answered_count = sum(1 for t in session.turns if t.answer is not None and not _is_skipped(t))
+    skipped_count = sum(1 for t in session.turns if _is_skipped(t))
     user_prompt = _USER_TEMPLATE.format(
         mode=session.mode,
         track=session.track,
-        question_count=sum(1 for t in session.turns if t.answer is not None),
+        question_count=f"{answered_count} answered, {skipped_count} skipped" if skipped_count else str(answered_count),
         breakdown=_format_breakdown(session),
     )
     raw = await llm.chat(_SYSTEM_PROMPT, user_prompt, json_mode=True, temperature=0.3)
@@ -92,16 +103,27 @@ async def build_report(db: Session, llm: LLMProvider, session: InterviewSession)
     category_totals: dict[str, list[float]] = {"technical": [], "cognitive": [], "communication": [], "adaptability": []}
     eye_contact_ratios: list[float] = []
 
+    answered_count = 0
+    skipped_count = 0
+
     for turn in session.turns:
         answer_out = None
+        skipped = _is_skipped(turn)
         if turn.answer is not None:
             answer_out = AnswerAnalysisOut.model_validate(turn.answer)
-            relevance_scores.append(turn.answer.relevance_score)
-            overall_scores.append(turn.answer.overall_score)
-            eye_contact_ratios.append(turn.answer.eye_contact_ratio)
-            for category, values in category_totals.items():
-                if category in turn.answer.category_scores:
-                    values.append(turn.answer.category_scores[category])
+            if skipped:
+                skipped_count += 1
+            else:
+                # A skipped question's 0 score isn't a real performance data point —
+                # averaging it in would silently tank readiness/category scores for
+                # questions the candidate never actually attempted answering.
+                answered_count += 1
+                relevance_scores.append(turn.answer.relevance_score)
+                overall_scores.append(turn.answer.overall_score)
+                eye_contact_ratios.append(turn.answer.eye_contact_ratio)
+                for category, values in category_totals.items():
+                    if category in turn.answer.category_scores:
+                        values.append(turn.answer.category_scores[category])
 
         turns.append(
             ReportTurn(
@@ -114,6 +136,7 @@ async def build_report(db: Session, llm: LLMProvider, session: InterviewSession)
                 roles=turn.roles,
                 answer=answer_out,
                 has_recording=bool(turn.answer and turn.answer.audio_path),
+                was_skipped=skipped,
             )
         )
 
@@ -144,6 +167,8 @@ async def build_report(db: Session, llm: LLMProvider, session: InterviewSession)
         created_at=session.created_at,
         completed_at=session.completed_at,
         turns=turns,
+        answered_count=answered_count,
+        skipped_count=skipped_count,
         average_relevance=average_relevance,
         technical_pct=avg(category_totals["technical"]),
         cognitive_pct=avg(category_totals["cognitive"]),

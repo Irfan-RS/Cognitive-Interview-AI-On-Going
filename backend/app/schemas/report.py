@@ -15,6 +15,7 @@ class ReportTurn(BaseModel):
     roles: list[str] = Field(default_factory=list)
     answer: AnswerAnalysisOut | None
     has_recording: bool = False
+    was_skipped: bool = False
 
 
 class ProctoringSummary(BaseModel):
@@ -34,6 +35,8 @@ class SessionReport(BaseModel):
     created_at: datetime
     completed_at: datetime | None
     turns: list[ReportTurn]
+    answered_count: int = 0
+    skipped_count: int = 0
     average_relevance: float
     technical_pct: float = 0.0
     cognitive_pct: float = 0.0
