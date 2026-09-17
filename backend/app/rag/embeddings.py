@@ -1,13 +1,6 @@
-import os
 from functools import lru_cache
 
 from app.core.config import get_settings
-
-# The model is already fully cached locally (see fastembed's cache dir), so
-# skip the HEAD request huggingface_hub otherwise makes on every load to
-# check for updates — that request has no timeout tuning here and hangs/fails
-# the whole request whenever the network is flaky.
-os.environ.setdefault("HF_HUB_OFFLINE", "1")
 
 
 @lru_cache
@@ -17,7 +10,15 @@ def _model():
     from fastembed import TextEmbedding
 
     settings = get_settings()
-    return TextEmbedding(model_name=settings.embedding_model)
+    try:
+        # Try the local cache first — skips huggingface_hub's HEAD
+        # "check for updates" request, which otherwise hangs/fails the
+        # whole request whenever the network is flaky, even though the
+        # model is already downloaded.
+        return TextEmbedding(model_name=settings.embedding_model, local_files_only=True)
+    except Exception:
+        # Not cached yet (first run / fresh container) — fetch normally.
+        return TextEmbedding(model_name=settings.embedding_model)
 
 
 def embed_texts(texts: list[str]) -> list[list[float]]:

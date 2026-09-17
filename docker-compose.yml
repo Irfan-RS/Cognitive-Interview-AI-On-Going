@@ -49,6 +49,11 @@ services:
       OMP_WAIT_POLICY: "PASSIVE"
       OPENBLAS_NUM_THREADS: "1"
       MKL_NUM_THREADS: "1"
+      # fastembed defaults to a cache dir under /tmp, which the model_cache
+      # volume below doesn't cover — pin it under /root/.cache so the
+      # downloaded embedding model survives a rebuild instead of
+      # re-downloading every time.
+      FASTEMBED_CACHE_PATH: /root/.cache/fastembed
     ports:
       - "8000:8000"
     volumes:
