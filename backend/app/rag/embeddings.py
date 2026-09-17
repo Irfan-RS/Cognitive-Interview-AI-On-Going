@@ -1,6 +1,13 @@
+import os
 from functools import lru_cache
 
 from app.core.config import get_settings
+
+# The model is already fully cached locally (see fastembed's cache dir), so
+# skip the HEAD request huggingface_hub otherwise makes on every load to
+# check for updates — that request has no timeout tuning here and hangs/fails
+# the whole request whenever the network is flaky.
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
 
 
 @lru_cache
