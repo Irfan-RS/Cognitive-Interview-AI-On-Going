@@ -26,7 +26,7 @@ class InterviewSession(Base):
     resume_projects: Mapped[list[dict]] = mapped_column(JSON, default=list)
     topic: Mapped[str | None] = mapped_column(String, nullable=True)
 
-    status: Mapped[str] = mapped_column(String, default="active")  # active | completed
+    status: Mapped[str] = mapped_column(String, default="active")  # active | completed | ended_early
     current_difficulty: Mapped[int] = mapped_column(Integer, default=2)
     duration_minutes: Mapped[int] = mapped_column(Integer, default=10)
 

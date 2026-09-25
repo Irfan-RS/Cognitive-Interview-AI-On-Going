@@ -9,6 +9,7 @@ from app.schemas.session import CreateSessionRequest, HintOut, SessionOut, Sessi
 from app.schemas.report import SessionReport
 from app.services import hint_service, interview_service, report_service
 from app.services.interview_service import NoQuestionsAvailableError, build_turn_out
+from app.services.report_service import is_skipped_turn
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
@@ -20,8 +21,21 @@ def _session_out(session, turn) -> SessionOut:
 
 
 def _session_summary_out(session) -> SessionSummaryOut:
-    scores = [t.answer.relevance_score for t in session.turns if t.answer is not None]
-    overall_scores = [t.answer.overall_score for t in session.turns if t.answer is not None]
+    # Same answered-vs-skipped distinction the report uses (see
+    # report_service.is_skipped_turn) — a skipped question's 0 score isn't a
+    # real performance data point, so it's excluded from every average here too.
+    answered_turns = [t for t in session.turns if t.answer is not None and not is_skipped_turn(t)]
+    scores = [t.answer.relevance_score for t in answered_turns]
+    overall_scores = [t.answer.overall_score for t in answered_turns]
+    category_totals: dict[str, list[float]] = {"technical": [], "cognitive": [], "communication": [], "adaptability": []}
+    for t in answered_turns:
+        for category, values in category_totals.items():
+            if category in t.answer.category_scores:
+                values.append(t.answer.category_scores[category])
+
+    def avg(values: list[float]) -> float | None:
+        return round(sum(values) / len(values), 1) if values else None
+
     return SessionSummaryOut(
         id=session.id,
         mode=session.mode,
@@ -32,8 +46,13 @@ def _session_summary_out(session) -> SessionSummaryOut:
         created_at=session.created_at,
         completed_at=session.completed_at,
         question_count=len(session.turns),
-        average_relevance=round(sum(scores) / len(scores), 1) if scores else None,
-        average_overall_score=round(sum(overall_scores) / len(overall_scores), 1) if overall_scores else None,
+        answered_count=len(answered_turns),
+        average_relevance=avg(scores),
+        average_overall_score=avg(overall_scores),
+        technical_pct=avg(category_totals["technical"]),
+        cognitive_pct=avg(category_totals["cognitive"]),
+        communication_pct=avg(category_totals["communication"]),
+        adaptability_pct=avg(category_totals["adaptability"]),
     )
 
 

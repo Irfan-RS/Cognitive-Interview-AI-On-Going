@@ -82,5 +82,10 @@ class SessionSummaryOut(BaseModel):
     created_at: datetime
     completed_at: datetime | None
     question_count: int
+    answered_count: int = 0
     average_relevance: float | None = None
     average_overall_score: float | None = None
+    technical_pct: float | None = None
+    cognitive_pct: float | None = None
+    communication_pct: float | None = None
+    adaptability_pct: float | None = None

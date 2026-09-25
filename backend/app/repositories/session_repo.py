@@ -85,6 +85,15 @@ def complete_session(db: Session, session: InterviewSession) -> None:
     db.flush()
 
 
+def end_session_early(db: Session, session: InterviewSession) -> None:
+    """Distinct from complete_session: this is a candidate-initiated or
+    timer-expiry stop, not the question bank running out — kept as a
+    separate status so the dashboard/report can tell the two apart."""
+    session.status = "ended_early"
+    session.completed_at = datetime.now(timezone.utc)
+    db.flush()
+
+
 def delete_session(db: Session, session: InterviewSession) -> None:
     """Removes a session and everything hanging off it. Turns (and their
     answers) cascade via the ORM relationships, but monitoring events are

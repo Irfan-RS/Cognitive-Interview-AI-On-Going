@@ -33,7 +33,7 @@ Return a JSON object with exactly these fields:
 _FALLBACK = {"summary": "", "action_items": []}
 
 
-def _is_skipped(turn) -> bool:
+def is_skipped_turn(turn) -> bool:
     """A skip and a genuinely-recorded-but-silent answer look identical in
     score (both 0, both empty transcript) — audio_path is the one field that
     tells them apart: skip_question never writes a recording, submit_answer
@@ -47,7 +47,7 @@ def _format_breakdown(session: InterviewSession) -> str:
         if turn.answer is None:
             continue
         a = turn.answer
-        label = f"Q{i} [SKIPPED]" if _is_skipped(turn) else f"Q{i}"
+        label = f"Q{i} [SKIPPED]" if is_skipped_turn(turn) else f"Q{i}"
         blocks.append(
             f"{label}: {turn.question_text}\n"
             f"  Overall: {a.overall_score}/100 | Category scores: {a.category_scores}\n"
@@ -66,8 +66,8 @@ async def _generate_summary_and_actions(llm: LLMProvider, session: InterviewSess
     if not has_answers:
         return _FALLBACK
 
-    answered_count = sum(1 for t in session.turns if t.answer is not None and not _is_skipped(t))
-    skipped_count = sum(1 for t in session.turns if _is_skipped(t))
+    answered_count = sum(1 for t in session.turns if t.answer is not None and not is_skipped_turn(t))
+    skipped_count = sum(1 for t in session.turns if is_skipped_turn(t))
     user_prompt = _USER_TEMPLATE.format(
         mode=session.mode,
         track=session.track,
@@ -108,7 +108,7 @@ async def build_report(db: Session, llm: LLMProvider, session: InterviewSession)
 
     for turn in session.turns:
         answer_out = None
-        skipped = _is_skipped(turn)
+        skipped = is_skipped_turn(turn)
         if turn.answer is not None:
             answer_out = AnswerAnalysisOut.model_validate(turn.answer)
             if skipped:

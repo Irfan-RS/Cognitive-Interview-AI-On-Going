@@ -409,12 +409,17 @@ def delete_session(db: Session, session_id: str) -> None:
 def complete_session_now(db: Session, session_id: str) -> InterviewSession:
     """Ends a session on demand — either the candidate chose to stop, or the
     client-side duration timer ran out — rather than only completing once the
-    question bank for this track is exhausted."""
+    question bank for this track is exhausted. Always an early end: the
+    natural-completion path (bank exhausted) goes through
+    session_repo.complete_session instead, inside request_next_question.
+    Only transitions from "active" so a late/duplicate call (e.g. the
+    countdown firing this right after the candidate already ended manually)
+    can't downgrade an already-final status."""
     session = session_repo.get_session(db, session_id)
     if session is None:
         raise ValueError(f"No such session: {session_id}")
-    if session.status != "completed":
-        session_repo.complete_session(db, session)
+    if session.status == "active":
+        session_repo.end_session_early(db, session)
         db.commit()
         db.refresh(session)
     return session

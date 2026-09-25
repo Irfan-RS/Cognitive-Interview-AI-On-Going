@@ -55,16 +55,17 @@ export default function InterviewApp() {
   };
 
   // The candidate ended early, or the duration timer ran out — the backend
-  // session is still "active" in either case, so it must be explicitly closed.
-  const handleEndInterview = async () => {
+  // session is still "active" in either case, so it must be explicitly closed
+  // (marked "ended_early", distinct from a natural bank-exhaustion completion).
+  // Navigate immediately rather than awaiting the request first: that's what
+  // unmounts the timer, recorder, and face-monitoring hooks, so the interview
+  // actually stops the moment the candidate ends it instead of continuing to
+  // run for the length of a network round-trip. The API call is fire-and-forget —
+  // the dashboard/report will simply reflect whatever the session's actual state was.
+  const handleEndInterview = () => {
     if (endingRef.current || !session) return;
     endingRef.current = true;
-    try {
-      await api.completeSession(session.id);
-    } catch {
-      // Best-effort — still take the candidate to their report even if this call failed;
-      // the dashboard report will simply reflect whatever the session's actual state was.
-    }
+    api.completeSession(session.id).catch(() => {});
     navigate(`/dashboard/${session.id}`);
   };
 
